@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88f0c095efe30c74b914fca949ada273, type: 3}
+  m_Name: Harvester
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.HarvesterDefinition
+  id: harvester
+  displayName: Harvester
+  cost: 800
+  buildTime: 10
+  prefab: {fileID: 1863706686148026517, guid: d3fcc8015f5bc734499f80d8702d0484, type: 3}
+  cargoCapacity: 200
+  harvestRate: 50
+  unloadRate: 100

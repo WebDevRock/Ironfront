@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using Ironfront.CameraControl;
 using Ironfront.Commands;
+using Ironfront.Construction;
+using Ironfront.Match;
 using Ironfront.Selection;
 using Ironfront.UI;
 using Ironfront.Units;
@@ -26,16 +28,21 @@ namespace Ironfront.EditorTools
     {
         public const string ScenePath = "Assets/Scenes/RTS_Sandbox.unity";
         private const string Root = "Assets/Ironfront";
-        private const string MaterialsDir = Root + "/Materials";
-        private const string PrefabsDir = Root + "/Prefabs";
+        internal const string MaterialsDir = Root + "/Materials";
+        internal const string PrefabsDir = Root + "/Prefabs";
+        internal const string DataDir = Root + "/Data";
         private const string NavDir = Root + "/Navigation";
         public const string UnitPrefabPath = PrefabsDir + "/Unit.prefab";
         private const string NavMeshDataPath = NavDir + "/RTS_Sandbox_NavMesh.asset";
 
         public const string GroundLayerName = "Ground";
         public const string UnitsLayerName = "Units";
-        private const int GroundLayerIndex = 8;
-        private const int UnitsLayerIndex = 9;
+        public const string StructuresLayerName = "Structures";
+        public const string ResourcesLayerName = "Resources";
+        internal const int GroundLayerIndex = 8;
+        internal const int UnitsLayerIndex = 9;
+        internal const int StructuresLayerIndex = 10;
+        internal const int ResourcesLayerIndex = 11;
 
         private const float MapSize = 100f;
 
@@ -81,8 +88,10 @@ namespace Ironfront.EditorTools
 
             var mats = CreateMaterials();
             var unitPrefab = CreateUnitPrefab(mats["SelectionRing"]);
+            EconomyContentBuilder.CreateAssets(mats["SelectionRing"]);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var economy = EconomyContentBuilder.Load(); // reload: NewScene unloads unreferenced assets
 
             CreateLighting();
             var env = new GameObject("Environment");
@@ -91,8 +100,9 @@ namespace Ironfront.EditorTools
 
             var cam = CreateCameraRig();
             var units = CreateUnits(unitPrefab, mats);
-            var (selection, commands) = CreateSystems(cam);
-            CreateUI(selection);
+            var (selection, _, placement) = CreateSystems(cam, economy);
+            CreateUI(selection, placement);
+            EconomyContentBuilder.PopulateScene(economy);
 
             var surface = CreateNavMesh();
 
@@ -103,7 +113,8 @@ namespace Ironfront.EditorTools
             AddSceneToBuildSettingsFirst(ScenePath);
             AssetDatabase.SaveAssets();
 
-            string summary = $"RTS_Sandbox built: {units.Count} units, {Obstacles.Length} obstacles, " +
+            string summary = $"RTS_Sandbox built: {units.Count} scouts, {Obstacles.Length} obstacles, " +
+                             $"{EconomyContentBuilder.Summary}, " +
                              $"navmesh={(surface.navMeshData != null ? AssetDatabase.GetAssetPath(surface.navMeshData) : "MISSING")}";
             Debug.Log("[Ironfront] " + summary);
             return summary;
@@ -111,7 +122,7 @@ namespace Ironfront.EditorTools
 
         // ---------- Assets ----------
 
-        private static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
             string parent = Path.GetDirectoryName(path).Replace('\\', '/');
@@ -125,6 +136,8 @@ namespace Ironfront.EditorTools
             var layers = tagManager.FindProperty("layers");
             SetLayer(layers, GroundLayerIndex, GroundLayerName);
             SetLayer(layers, UnitsLayerIndex, UnitsLayerName);
+            SetLayer(layers, StructuresLayerIndex, StructuresLayerName);
+            SetLayer(layers, ResourcesLayerIndex, ResourcesLayerName);
             tagManager.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -153,7 +166,7 @@ namespace Ironfront.EditorTools
             return mats;
         }
 
-        private static Material CreateOrUpdateMaterial(string name, Shader shader, Color color)
+        internal static Material CreateOrUpdateMaterial(string name, Shader shader, Color color)
         {
             string path = $"{MaterialsDir}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -174,19 +187,9 @@ namespace Ironfront.EditorTools
             unit.name = "Unit";
             unit.layer = UnitsLayerIndex;
 
-            var agent = unit.AddComponent<NavMeshAgent>();
-            agent.radius = 0.5f;
-            agent.height = 2f;
-            agent.baseOffset = 1f; // capsule pivot is at its centre
-            agent.speed = 7f;
-            agent.angularSpeed = 720f;
-            agent.acceleration = 25f;
-            agent.stoppingDistance = 0.1f;
-            agent.autoBraking = true;
-            agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
-            agent.enabled = false; // UnitMover enables it in Start, after the NavMesh is loaded
-
+            AddAgent(unit, radius: 0.5f, height: 2f, baseOffset: 1f, speed: 7f); // capsule pivot is at its centre
             unit.AddComponent<UnitMover>();
+            unit.AddComponent<FactionMember>();
             var selectable = unit.AddComponent<SelectableUnit>();
 
             // Facing marker so orientation is readable.
@@ -198,26 +201,63 @@ namespace Ironfront.EditorTools
             nose.transform.localScale = new Vector3(0.35f, 0.25f, 0.3f);
             nose.layer = UnitsLayerIndex;
 
-            var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            ring.name = "SelectionIndicator";
-            Object.DestroyImmediate(ring.GetComponent<Collider>());
-            ring.transform.SetParent(unit.transform, false);
-            ring.transform.localPosition = new Vector3(0f, -0.97f, 0f);
-            ring.transform.localScale = new Vector3(1.7f, 0.02f, 1.7f);
-            ring.layer = UnitsLayerIndex;
-            var ringRenderer = ring.GetComponent<MeshRenderer>();
-            ringRenderer.sharedMaterial = ringMaterial;
-            ringRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            ring.SetActive(false);
-
-            var so = new SerializedObject(selectable);
-            so.FindProperty("selectionIndicator").objectReferenceValue = ring;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            var ring = AddSelectionRing(unit.transform, ringMaterial, -0.97f, 1.7f);
+            SetRef(selectable, "selectionIndicator", ring);
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(unit, UnitPrefabPath, out bool ok);
             Object.DestroyImmediate(unit);
             if (!ok || prefab == null) throw new IOException("Failed to save unit prefab.");
             return prefab;
+        }
+
+        internal static NavMeshAgent AddAgent(GameObject go, float radius, float height, float baseOffset, float speed)
+        {
+            var agent = go.AddComponent<NavMeshAgent>();
+            agent.radius = radius;
+            agent.height = height;
+            agent.baseOffset = baseOffset;
+            agent.speed = speed;
+            agent.angularSpeed = 720f;
+            agent.acceleration = 25f;
+            agent.stoppingDistance = 0.1f;
+            agent.autoBraking = true;
+            agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+            agent.enabled = false; // UnitMover enables it in Start, after the NavMesh is loaded
+            return agent;
+        }
+
+        internal static GameObject AddSelectionRing(Transform parent, Material material, float localY, float diameter)
+        {
+            var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            ring.name = "SelectionIndicator";
+            Object.DestroyImmediate(ring.GetComponent<Collider>());
+            ring.transform.SetParent(parent, false);
+            ring.transform.localPosition = new Vector3(0f, localY, 0f);
+            ring.transform.localScale = new Vector3(diameter, 0.02f, diameter);
+            ring.layer = parent.gameObject.layer;
+            var ringRenderer = ring.GetComponent<MeshRenderer>();
+            ringRenderer.sharedMaterial = material;
+            ringRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            ring.SetActive(false);
+            return ring;
+        }
+
+        internal static void SetRef(Object target, string property, Object value)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(property);
+            if (prop == null) throw new System.ArgumentException($"{target.GetType().Name} has no serialized field {property}.");
+            prop.objectReferenceValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        internal static void SetInt(Object target, string property, int value)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(property);
+            if (prop == null) throw new System.ArgumentException($"{target.GetType().Name} has no serialized field {property}.");
+            prop.intValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // ---------- Scene content ----------
@@ -267,7 +307,7 @@ namespace Ironfront.EditorTools
         private static Camera CreateCameraRig()
         {
             var rig = new GameObject("CameraRig");
-            rig.transform.position = new Vector3(-20f, 0f, -14f);
+            rig.transform.position = new Vector3(-28f, 0f, -33f);
 
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
@@ -309,26 +349,38 @@ namespace Ironfront.EditorTools
             return units;
         }
 
-        private static (SelectionManager, UnitCommandController) CreateSystems(Camera cam)
+        private static (SelectionManager, UnitCommandController, BuildingPlacementController) CreateSystems(
+            Camera cam, EconomyContentBuilder.Content economy)
         {
+            var matchGo = new GameObject("Match");
+            var match = matchGo.AddComponent<MatchController>();
+            SetRef(match, "setup", economy.MatchSetup);
+
             var systems = new GameObject("RTS Systems");
             var selection = systems.AddComponent<SelectionManager>();
             var commands = systems.AddComponent<UnitCommandController>();
+            var placement = systems.AddComponent<BuildingPlacementController>();
 
-            var so = new SerializedObject(selection);
-            so.FindProperty("viewCamera").objectReferenceValue = cam;
-            so.FindProperty("unitLayers").intValue = 1 << UnitsLayerIndex;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            SetRef(selection, "viewCamera", cam);
+            SetInt(selection, "unitLayers", 1 << UnitsLayerIndex);
+            SetInt(selection, "structureLayers", 1 << StructuresLayerIndex);
 
-            so = new SerializedObject(commands);
-            so.FindProperty("selectionManager").objectReferenceValue = selection;
-            so.FindProperty("groundLayers").intValue = 1 << GroundLayerIndex;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            SetRef(commands, "selectionManager", selection);
+            SetInt(commands, "groundLayers", 1 << GroundLayerIndex);
+            SetInt(commands, "resourceLayers", 1 << ResourcesLayerIndex);
 
-            return (selection, commands);
+            SetRef(placement, "viewCamera", cam);
+            SetInt(placement, "groundLayers", 1 << GroundLayerIndex);
+            SetInt(placement, "obstacleLayers", 1 << 0); // Environment/Obstacles are on Default
+            SetInt(placement, "resourceLayers", 1 << ResourcesLayerIndex);
+            SetInt(placement, "unitLayers", 1 << UnitsLayerIndex);
+            SetRef(placement, "validMaterial", economy.GhostValid);
+            SetRef(placement, "invalidMaterial", economy.GhostInvalid);
+
+            return (selection, commands, placement);
         }
 
-        private static void CreateUI(SelectionManager selection)
+        private static void CreateUI(SelectionManager selection, BuildingPlacementController placement)
         {
             var esGo = new GameObject("EventSystem");
             esGo.AddComponent<EventSystem>();
@@ -349,7 +401,7 @@ namespace Ironfront.EditorTools
             var panelRect = (RectTransform)panel.transform;
             panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(0f, 1f);
             panelRect.anchoredPosition = new Vector2(10f, -10f);
-            panelRect.sizeDelta = new Vector2(420f, 70f);
+            panelRect.sizeDelta = new Vector2(460f, 70f);
             var panelImage = panel.AddComponent<Image>();
             panelImage.color = new Color(0f, 0f, 0f, 0.55f);
             panelImage.raycastTarget = true;
@@ -389,9 +441,30 @@ namespace Ironfront.EditorTools
             boxSo.ApplyModifiedPropertiesWithoutUndo();
             box.SetActive(false);
 
-            var selSo = new SerializedObject(selection);
-            selSo.FindProperty("selectionBox").objectReferenceValue = boxView;
-            selSo.ApplyModifiedPropertiesWithoutUndo();
+            SetRef(selection, "selectionBox", boxView);
+
+            // Economy sidebar (raycast target, so clicks on it never reach the world).
+            var sidebar = NewUiObject("EconomyPanel", canvasGo.transform);
+            var sidebarRect = (RectTransform)sidebar.transform;
+            sidebarRect.anchorMin = sidebarRect.anchorMax = sidebarRect.pivot = new Vector2(1f, 1f);
+            sidebarRect.anchoredPosition = new Vector2(-10f, -10f);
+            sidebarRect.sizeDelta = new Vector2(320f, 580f);
+            var sidebarImage = sidebar.AddComponent<Image>();
+            sidebarImage.color = new Color(0f, 0f, 0f, 0.6f);
+            sidebarImage.raycastTarget = true;
+            var layout = sidebar.AddComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(10, 10, 10, 10);
+            layout.spacing = 4f;
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = true;
+
+            var economyHud = sidebar.AddComponent<EconomyHud>();
+            SetRef(economyHud, "content", sidebarRect);
+            SetRef(economyHud, "placement", placement);
+            SetRef(economyHud, "selectionManager", selection);
+            SetRef(economyHud, "font", font);
         }
 
         private static GameObject NewUiObject(string name, Transform parent)
@@ -408,7 +481,10 @@ namespace Ironfront.EditorTools
             var surface = navGo.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.All;
             surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
-            surface.layerMask = ~(1 << UnitsLayerIndex) & ~(1 << LayerMask.NameToLayer("UI"));
+            // Units, structures and ore deposits are excluded: structures and deposits carve the NavMesh at
+            // runtime with NavMeshObstacles, so the bake stays valid as buildings are added or ore runs out.
+            surface.layerMask = ~(1 << UnitsLayerIndex) & ~(1 << StructuresLayerIndex) & ~(1 << ResourcesLayerIndex)
+                                & ~(1 << LayerMask.NameToLayer("UI"));
             surface.agentTypeID = 0; // Humanoid default: radius 0.5, height 2
 
             surface.BuildNavMesh();

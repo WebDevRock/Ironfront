@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dde82e58f08d6b0439864dbe6c7b8db3, type: 3}
+  m_Name: Tank
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.UnitDefinition
+  id: tank
+  displayName: Tank
+  cost: 400
+  buildTime: 6
+  prefab: {fileID: 7207854982819082335, guid: ca9ecbb6f2951b2418c93b7adc97606b, type: 3}

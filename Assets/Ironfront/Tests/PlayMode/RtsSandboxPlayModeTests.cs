@@ -36,14 +36,18 @@ namespace Ironfront.Tests
             _camera = _selection != null ? _selection.ViewCamera : null;
         }
 
+        /// <summary>The five Milestone 001 capsule units (the scene now also contains a harvester).</summary>
+        private static SelectableUnit[] Scouts =>
+            SelectableUnit.All.Where(u => u.name.StartsWith("Unit_")).OrderBy(u => u.name).ToArray();
+
         [Test]
-        public void Scene_HasRequiredSystemsAndFiveUnits()
+        public void Scene_HasRequiredSystemsAndFiveScouts()
         {
             Assert.IsNotNull(_selection, "SelectionManager missing");
             Assert.IsNotNull(_commands, "UnitCommandController missing");
             Assert.IsNotNull(_camera, "Selection camera missing");
             Assert.IsNotNull(Object.FindAnyObjectByType<RtsCameraController>(), "RTS camera missing");
-            Assert.AreEqual(5, SelectableUnit.All.Count);
+            Assert.AreEqual(5, Scouts.Length);
             Assert.IsTrue(SelectableUnit.All.All(u => u.GetComponent<NavMeshAgent>().isOnNavMesh),
                 "All units must start on the baked NavMesh");
             Assert.IsTrue(SelectableUnit.All.All(u => u.SelectionIndicator != null && !u.SelectionIndicator.activeSelf));
@@ -52,7 +56,7 @@ namespace Ironfront.Tests
         [Test]
         public void ClickOnUnit_SelectsIt_AndShowsIndicator_ClickOnGroundClears()
         {
-            var unit = SelectableUnit.All[0];
+            var unit = Scouts[0];
             _selection.ClickAt(ScreenPos(unit), additive: false);
 
             Assert.AreEqual(1, _selection.Selection.Count);
@@ -67,8 +71,8 @@ namespace Ironfront.Tests
         [Test]
         public void ShiftClick_TogglesUnits()
         {
-            var a = SelectableUnit.All[0];
-            var b = SelectableUnit.All[1];
+            var a = Scouts[0];
+            var b = Scouts[1];
             _selection.ClickAt(ScreenPos(a), false);
             _selection.ClickAt(ScreenPos(b), true);
             Assert.AreEqual(2, _selection.Selection.Count);
@@ -80,17 +84,23 @@ namespace Ironfront.Tests
         }
 
         [Test]
-        public void ScreenRectangle_SelectsAllFiveUnits()
+        public void ScreenRectangle_SelectsEveryUnitOnScreen()
         {
-            _selection.SelectInScreenRect(new Rect(0, 0, Screen.width, Screen.height), false);
-            Assert.AreEqual(5, _selection.Selection.Count);
-            Assert.IsTrue(SelectableUnit.All.All(u => u.SelectionIndicator.activeSelf));
+            var screen = new Rect(0, 0, Screen.width, Screen.height);
+            var visible = SelectableUnit.All
+                .Where(u => { var p = _camera.WorldToScreenPoint(u.transform.position); return p.z > 0 && screen.Contains(p); })
+                .ToList();
+            Assert.GreaterOrEqual(visible.Count, 5, "The start view should show at least the five scouts");
+
+            _selection.SelectInScreenRect(screen, false);
+            CollectionAssert.AreEquivalent(visible, _selection.Selection.Items);
+            Assert.IsTrue(visible.All(u => u.SelectionIndicator.activeSelf));
         }
 
         [UnityTest]
         public IEnumerator MoveOrder_SpreadsUnitsIntoFormation_AroundObstacles()
         {
-            _selection.Selection.Replace(SelectableUnit.All);
+            _selection.Selection.Replace(Scouts);
             var root = GameObject.Find("Environment/Obstacles");
             Assert.IsNotNull(root, "Environment/Obstacles not found");
             var obstacles = root.GetComponentsInChildren<Collider>().Select(c => c.bounds).ToList();
@@ -101,7 +111,7 @@ namespace Ironfront.Tests
             int accepted = _commands.IssueMove(target);
             Assert.AreEqual(5, accepted, "Every selected unit should accept the move order");
 
-            var agents = SelectableUnit.All.Select(u => u.GetComponent<NavMeshAgent>()).ToList();
+            var agents = Scouts.Select(u => u.GetComponent<NavMeshAgent>()).ToList();
             float timeout = 30f;
             while (timeout > 0f && !agents.All(Arrived))
             {

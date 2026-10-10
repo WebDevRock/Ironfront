@@ -1,0 +1,110 @@
+using System;
+using System.Collections.Generic;
+using Ironfront.Core.Construction;
+using Ironfront.Data;
+using Ironfront.Match;
+using UnityEngine;
+
+namespace Ironfront.Buildings
+{
+    /// <summary>
+    /// A placed structure. Registers with its faction (structure count and power) while active and
+    /// provides its footprint for placement validation.
+    /// </summary>
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(FactionMember))]
+    public class Building : MonoBehaviour
+    {
+        private static readonly List<Building> s_All = new List<Building>();
+        public static IReadOnlyList<Building> All => s_All;
+
+        /// <summary>Raised when any building registers with or leaves its faction.</summary>
+        public static event Action<Building> AnyRegistrationChanged;
+
+        [SerializeField] private BuildingDefinition definition;
+        [SerializeField] private GameObject selectionIndicator;
+
+        private FactionMember _member;
+        private bool _started;
+        private int _registeredFaction = int.MinValue;
+
+        public BuildingDefinition Definition => definition;
+        public int FactionId => Member.FactionId;
+        public bool IsSelected { get; private set; }
+        public Footprint Footprint => definition != null ? definition.FootprintAt(transform.position) : default;
+
+        /// <summary>Centre of the apron strip in front (+Z) of the building, or the front edge if none.</summary>
+        public Vector3 FrontPoint
+        {
+            get
+            {
+                if (definition == null) return transform.position;
+                float offset = definition.FootprintSize.y * 0.5f + definition.ApronDepth * 0.5f;
+                var p = transform.position + Vector3.forward * offset;
+                p.y = transform.position.y;
+                return p;
+            }
+        }
+
+        private FactionMember Member => _member != null ? _member : (_member = GetComponent<FactionMember>());
+
+        private void OnEnable()
+        {
+            if (!s_All.Contains(this)) s_All.Add(this);
+            if (_started) Register();
+            ApplyIndicator();
+        }
+
+        private void Start()
+        {
+            _started = true;
+            Register();
+        }
+
+        private void OnDisable()
+        {
+            s_All.Remove(this);
+            Unregister();
+        }
+
+        public void SetSelected(bool selected)
+        {
+            if (IsSelected == selected) return;
+            IsSelected = selected;
+            ApplyIndicator();
+        }
+
+        private void ApplyIndicator()
+        {
+            if (selectionIndicator != null) selectionIndicator.SetActive(IsSelected);
+        }
+
+        private void Register()
+        {
+            if (_registeredFaction != int.MinValue || definition == null) return;
+            var match = MatchController.Current;
+            if (match == null) return;
+
+            _registeredFaction = FactionId;
+            match.GetFaction(_registeredFaction).RegisterStructure(definition.Id, definition.PowerOutput, definition.PowerDrain);
+            AnyRegistrationChanged?.Invoke(this);
+        }
+
+        private void Unregister()
+        {
+            if (_registeredFaction == int.MinValue) return;
+            var match = MatchController.Current;
+            if (match != null)
+                match.GetFaction(_registeredFaction).UnregisterStructure(definition.Id, definition.PowerOutput, definition.PowerDrain);
+            _registeredFaction = int.MinValue;
+            AnyRegistrationChanged?.Invoke(this);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            s_All.Clear();
+            AnyRegistrationChanged = null;
+        }
+    }
+}

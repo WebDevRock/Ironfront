@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb45c7de50a198f4a93840797192cb50, type: 3}
+  m_Name: VehicleFactory
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.BuildingDefinition
+  id: vehicle_factory
+  displayName: Vehicle Factory
+  cost: 1300
+  footprintSize: {x: 8, y: 7}
+  apronDepth: 5
+  powerOutput: 0
+  powerDrain: 30
+  prerequisites:
+  - {fileID: 11400000, guid: 58406427a7df3e54185a1c26a64fb60c, type: 2}
+  constructible: 1
+  prefab: {fileID: 1195869673595706449, guid: 0a53ec16713156a45b70772604a39a7d, type: 3}
+  producibleUnits:
+  - {fileID: 11400000, guid: c61b3c9f4ce81c442a26c17804a92147, type: 2}
+  - {fileID: 11400000, guid: 451f89be4d9b6774ca4bdb1b0ca42041, type: 2}

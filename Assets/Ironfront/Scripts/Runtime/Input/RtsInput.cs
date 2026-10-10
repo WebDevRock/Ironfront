@@ -20,6 +20,7 @@ namespace Ironfront.InputBindings
         public static InputAction Select => Get("Select");
         public static InputAction Command => Get("Command");
         public static InputAction Additive => Get("Additive");
+        public static InputAction Cancel => Get("Cancel");
 
         public static Vector2 PointerPosition => Point?.ReadValue<Vector2>() ?? Vector2.zero;
         public static bool AdditiveHeld => Additive != null && Additive.IsPressed();

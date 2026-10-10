@@ -68,3 +68,60 @@ tests, a Windows build and documentation.
 
 ### Relevant commit hash
 Milestone commit: `0424e3b` (0424e3b5823144897c477a779d42d9e000bc9f3b)
+
+---
+
+## Milestone 002 — Economy, Construction and Production (2026-10-10)
+
+### Feature requested
+A single resource (Ore) with finite deposits and automated harvesters delivering to a refinery, credits in
+the HUD that can never go negative, construction (Headquarters, Refinery, Power Plant, Vehicle Factory) from
+a menu with a validity preview, and Vehicle Factory production of harvesters and tanks with costs, build
+times, a visible queue, valid spawning and rally points. Required architecture: data-driven definitions,
+independently testable rules, faction-agnostic state and event-driven HUD updates. No combat or AI.
+
+### Changes implemented
+- **Pure rules** (`Core/Economy`, `Core/Production`, `Core/Construction`, `Core/Harvesting`): `ResourceWallet`,
+  `PowerGrid`, `StructureRoster`, `FactionState`, `ConstructionRules`, `ProductionQueue`, `SpawnLocator`,
+  `PlacementRules`, `HarvesterStateMachine`.
+- **Data**: `BuildingDefinition`, `UnitDefinition`, `HarvesterDefinition` and `MatchSetup` ScriptableObjects,
+  with generated assets in `Assets/Ironfront/Data`.
+- **Components**: `MatchController`, `FactionMember`, `Building`, `Refinery`, `VehicleFactory`, `OreDeposit`,
+  `Harvester`, `BuildingPlacementController`, `EconomyHud` (sidebar), `RtsInputMode`.
+- **Reused and extended Milestone 001 systems**: `SelectionManager` (structure selection, faction filter,
+  placement arbitration), `UnitCommandController` (harvest orders, rally points, move interrupts harvesting),
+  `UnitMover` (buffers orders given before Start), `SelectionHud` (structure/harvester detail), and an
+  Escape `Cancel` action in the RTS input map.
+- **Editor**: the new `EconomyContentBuilder` generates definitions, 4 structure prefabs, harvester and tank
+  prefabs, the ore deposit prefab and the starting base. `RtsSandboxBuilder` adds `Structures`/`Resources`
+  layers, Match/placement systems and the sidebar, and excludes structures/deposits from the bake (they carve at runtime).
+- **Tests**: 46 new EditMode tests and 8 new PlayMode tests; the 5 Milestone 001 PlayMode tests were adapted to the extra harvester.
+- **Docs**: `Docs/Milestone-002-Report.md`.
+
+### Tests attempted and results
+- EditMode: **82/82 passed**.
+- PlayMode: **13/13 passed**, including the automated acceptance scenario (harvest → Power Plant + Factory → two tanks → rally → select → move).
+- The acceptance scenario through the real UI with simulated input in Play Mode passed every step (see the report). There were 0 game warnings or errors.
+- Milestone 001 regression: click/box selection, move orders, panning and zoom were re-checked through simulated input, and the 5 Milestone 001 PlayMode tests pass.
+- Windows build: **succeeded**, 0 errors, no project-code warnings. Player smoke test (20 s): clean log.
+
+### Problems encountered
+1. **Lost ScriptableObject reference in the generated scene.** `EditorSceneManager.NewScene` unloads unreferenced assets, so the `MatchSetup` reference cached before `NewScene` was dead when assigned. The scene saved `setup: {fileID: 0}` and all 12 PlayMode tests failed with "MatchController has no MatchSetup". Fix: `EconomyContentBuilder.Load()` reloads all generated content from asset paths after `NewScene`.
+2. **Bash tool heredocs** containing apostrophes failed to parse. Patch scripts were written to files and run instead (tooling only).
+3. **Input harness flakiness:** after a Game-view capture, two injected placement clicks arrived with the pointer at (0,0) and were ignored. Without captures between hover and click the steps worked every time. This was a harness artefact, not a game-code path.
+4. **HUD label bug** found during the UI run: the production label showed "VehicleFactory(Clone)", because the HUD bound before the instance was renamed. It now uses the definition's display name.
+5. A player build added the Input Actions asset to `PlayerSettings.preloadedAssets` (expected Input System behaviour); committed as is.
+
+### Human interventions required
+- None.
+
+### Known limitations
+- Construction is instant (no build time). Footprints are axis-aligned with no rotation.
+- Navigation protection is rule-based (clearance, aprons, NavMesh check at the site), not a full path check.
+- All units use the default NavMesh agent type (radius 0.5). Vehicles (radius 0.8) can clip corners slightly.
+- Production cost is paid in full when queued; cancel refunds it in full.
+- One player faction is configured; there is no AI or combat (out of scope).
+- Interactive play of the built `.exe` was not automated; only launch and the log were checked.
+
+### Relevant commit hash
+Milestone commit: see the "Commit" line below (recorded after committing).

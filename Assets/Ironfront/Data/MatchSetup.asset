@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1323f4804e6e26d43b5646a267b67bd7, type: 3}
+  m_Name: MatchSetup
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.MatchSetup
+  factions:
+  - id: 1
+    displayName: Player
+    color: {r: 0.2, g: 0.45, b: 0.95, a: 1}
+    humanControlled: 1
+    startingCredits: 2000
+  constructionOptions:
+  - {fileID: 11400000, guid: a3461439d6b06fc40ab163071321394c, type: 2}
+  - {fileID: 11400000, guid: 4774e8e316b21c048bffd76d5b2db895, type: 2}
+  - {fileID: 11400000, guid: 8e1d567c3aad37f49af0caf2c9df4142, type: 2}
+  creditsPerOre: 1
+  lowPowerProductionMultiplier: 0.5
+  productionQueueCapacity: 5

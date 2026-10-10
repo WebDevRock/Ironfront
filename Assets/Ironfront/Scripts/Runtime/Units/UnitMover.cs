@@ -13,6 +13,8 @@ namespace Ironfront.Units
         [SerializeField] private float destinationSearchRadius = 4f;
 
         private NavMeshAgent _agent;
+        private bool _started;
+        private Vector3? _pendingDestination;
 
         public NavMeshAgent Agent => _agent != null ? _agent : (_agent = GetComponent<NavMeshAgent>());
 
@@ -34,8 +36,16 @@ namespace Ironfront.Units
             var agent = Agent;
             if (agent != null && !agent.enabled) agent.enabled = true;
 
+            _started = true;
             if (!EnsureOnNavMesh())
                 Debug.LogWarning($"[Ironfront] {name} could not be placed on the NavMesh at {transform.position}.", this);
+
+            if (_pendingDestination.HasValue)
+            {
+                var destination = _pendingDestination.Value;
+                _pendingDestination = null;
+                MoveTo(destination);
+            }
         }
 
         /// <summary>Binds the agent to the NavMesh if it is not already. Returns true when on the NavMesh.</summary>
@@ -51,8 +61,17 @@ namespace Ironfront.Units
         }
 
         /// <summary>Orders the unit to move. Returns false if no reachable NavMesh point was found.</summary>
+        /// <remarks>
+        /// Orders given before Start (e.g. to a freshly spawned unit) are applied once the agent is enabled.
+        /// </remarks>
         public bool MoveTo(Vector3 destination)
         {
+            if (!_started)
+            {
+                _pendingDestination = destination;
+                return true;
+            }
+
             var agent = Agent;
             if (agent == null || !EnsureOnNavMesh()) return false;
 
@@ -65,6 +84,7 @@ namespace Ironfront.Units
 
         public void Stop()
         {
+            _pendingDestination = null;
             var agent = Agent;
             if (agent != null && agent.isOnNavMesh)
             {

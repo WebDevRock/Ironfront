@@ -4,6 +4,7 @@
     "references": [
         "Ironfront.Runtime",
         "Unity.AI.Navigation",
+        "UnityEngine.UI",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [],

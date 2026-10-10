@@ -1,19 +1,24 @@
+using System;
 using System.Collections.Generic;
+using Ironfront.Buildings;
 using Ironfront.Core;
 using Ironfront.InputBindings;
+using Ironfront.Match;
 using Ironfront.Units;
 using UnityEngine;
 
 namespace Ironfront.Selection
 {
     /// <summary>
-    /// Handles left-click selection: single click, shift-click toggle and drag-rectangle selection.
-    /// Gestures that start over UI are ignored.
+    /// Handles left-click selection: single click, shift-click toggle and drag-rectangle selection of the
+    /// player's units, plus single-click selection of the player's structures. Gestures that start over UI,
+    /// or while another system owns the pointer (building placement), are ignored.
     /// </summary>
     public class SelectionManager : MonoBehaviour
     {
         [SerializeField] private Camera viewCamera;
         [SerializeField] private LayerMask unitLayers = ~0;
+        [SerializeField] private LayerMask structureLayers = 0;
         [SerializeField] private SelectionBoxView selectionBox;
         [Tooltip("Pointer travel in pixels before a press becomes a drag-select.")]
         [SerializeField] private float dragThreshold = 8f;
@@ -21,26 +26,35 @@ namespace Ironfront.Selection
 
         public SelectionSet<SelectableUnit> Selection { get; } = new SelectionSet<SelectableUnit>();
 
+        /// <summary>The selected structure, if any. Units and a structure are never selected together.</summary>
+        public Building SelectedStructure { get; private set; }
+
+        public event Action<Building> StructureSelectionChanged;
+
         public Camera ViewCamera => viewCamera;
 
         private bool _pressActive;
         private bool _dragging;
         private Vector2 _pressPosition;
 
+        private int PlayerFactionId =>
+            MatchController.Current != null ? MatchController.Current.PlayerFactionId : MatchController.DefaultPlayerFactionId;
+
         private void Awake()
         {
             if (viewCamera == null) viewCamera = Camera.main;
-            Selection.Changed += SyncIndicators;
+            Selection.Changed += OnUnitSelectionChanged;
         }
 
         private void OnDestroy()
         {
-            Selection.Changed -= SyncIndicators;
+            Selection.Changed -= OnUnitSelectionChanged;
         }
 
         private void Update()
         {
             Selection.RemoveWhere(u => u == null || !u.isActiveAndEnabled);
+            if (SelectedStructure != null && !SelectedStructure.isActiveAndEnabled) SelectStructure(null);
 
             var select = RtsInput.Select;
             if (select == null) return;
@@ -49,8 +63,8 @@ namespace Ironfront.Selection
 
             if (select.WasPressedThisFrame())
             {
-                // Pointer over UI: the press belongs to the UI, not to the selection system.
-                _pressActive = !RtsInput.PointerOverUI();
+                // Pointer over UI, or consumed by placement: the press does not belong to selection.
+                _pressActive = !RtsInput.PointerOverUI() && !RtsInputMode.WorldPointerBlocked;
                 _dragging = false;
                 _pressPosition = pointer;
             }
@@ -80,10 +94,21 @@ namespace Ironfront.Selection
         /// <summary>Applies a single click at a screen position.</summary>
         public void ClickAt(Vector2 screenPosition, bool additive)
         {
-            SelectionRules.ApplyClick(Selection, RaycastUnit(screenPosition), additive);
+            var hit = RaycastSelectable(screenPosition);
+
+            if (hit is Building building)
+            {
+                if (additive) return; // shift-click on a structure leaves the unit selection alone
+                Selection.Clear();
+                SelectStructure(building);
+                return;
+            }
+
+            if (!additive) SelectStructure(null);
+            SelectionRules.ApplyClick(Selection, hit as SelectableUnit, additive);
         }
 
-        /// <summary>Selects every unit whose pivot projects inside the screen rectangle.</summary>
+        /// <summary>Selects every player unit whose pivot projects inside the screen rectangle.</summary>
         public void SelectInScreenRect(Rect screenRect, bool additive)
         {
             var inBox = new List<SelectableUnit>();
@@ -91,26 +116,51 @@ namespace Ironfront.Selection
             {
                 foreach (var unit in SelectableUnit.All)
                 {
+                    if (!IsPlayerOwned(unit)) continue;
                     if (SelectionRules.IsInsideBox(screenRect, viewCamera.WorldToScreenPoint(unit.transform.position)))
                         inBox.Add(unit);
                 }
             }
+            if (!additive) SelectStructure(null);
             SelectionRules.ApplyBox(Selection, inBox, additive);
         }
 
-        public SelectableUnit RaycastUnit(Vector2 screenPosition)
+        public void SelectStructure(Building building)
+        {
+            if (building != null && FactionMember.Of(building) != PlayerFactionId) building = null;
+            if (SelectedStructure == building) return;
+            if (SelectedStructure != null) SelectedStructure.SetSelected(false);
+            SelectedStructure = building;
+            if (SelectedStructure != null) SelectedStructure.SetSelected(true);
+            StructureSelectionChanged?.Invoke(SelectedStructure);
+        }
+
+        /// <summary>Player-owned unit under the pointer, or null.</summary>
+        public SelectableUnit RaycastUnit(Vector2 screenPosition) => RaycastSelectable(screenPosition) as SelectableUnit;
+
+        /// <summary>Player-owned unit or structure under the pointer, or null.</summary>
+        public Component RaycastSelectable(Vector2 screenPosition)
         {
             if (viewCamera == null) return null;
             Ray ray = viewCamera.ScreenPointToRay(screenPosition);
-            if (Physics.Raycast(ray, out var hit, maxRayDistance, unitLayers, QueryTriggerInteraction.Ignore))
-                return hit.collider.GetComponentInParent<SelectableUnit>();
+            if (!Physics.Raycast(ray, out var hit, maxRayDistance, unitLayers | structureLayers, QueryTriggerInteraction.Ignore))
+                return null;
+
+            var unit = hit.collider.GetComponentInParent<SelectableUnit>();
+            if (unit != null) return IsPlayerOwned(unit) ? unit : null;
+
+            var building = hit.collider.GetComponentInParent<Building>();
+            if (building != null && FactionMember.Of(building) == PlayerFactionId) return building;
             return null;
         }
 
-        private void SyncIndicators()
+        private bool IsPlayerOwned(Component c) => FactionMember.Of(c) == PlayerFactionId;
+
+        private void OnUnitSelectionChanged()
         {
             foreach (var unit in SelectableUnit.All)
                 unit.SetSelected(Selection.Contains(unit));
+            if (Selection.Count > 0) SelectStructure(null);
         }
     }
 }
