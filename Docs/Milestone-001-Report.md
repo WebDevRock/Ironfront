@@ -3,7 +3,7 @@
 **Date:** 2026-10-10
 **Engine:** Unity 6000.6.5f1 (Unity 6), URP 17.6.0
 **Packages used:** Input System 1.20.0, AI Navigation 2.0.15, uGUI 2.6.0, Test Framework 1.8.0
-**Commit:** see `Docs/AI-Development-Log.md` (Milestone 001 entry)
+**Commit:** `0424e3b`
 
 ## Summary
 

@@ -67,4 +67,4 @@ tests, a Windows build and documentation.
 - `Assets/Editor/HubForceResolve.cs`, a Unity Hub bootstrap script, deleted itself during the Editor restart, as it was designed to.
 
 ### Relevant commit hash
-Milestone commit: see the "Commit" line below (recorded after committing).
+Milestone commit: `0424e3b` (0424e3b5823144897c477a779d42d9e000bc9f3b)
