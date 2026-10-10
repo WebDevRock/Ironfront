@@ -394,3 +394,4 @@ MonoBehaviour:
   height: 1.7
   width: 1.4
   thickness: 0.22
+  flashDuration: 0.15

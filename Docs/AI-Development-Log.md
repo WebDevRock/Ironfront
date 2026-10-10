@@ -237,3 +237,99 @@ An autonomous enemy commander and a complete single-player match:
 
 ### Relevant commit hash
 Milestone commit: `105ec38` (105ec383bbaefdfe7fa0a117a75f86603a1072e2)
+
+## Milestone 005 — Gameplay Quality, User Experience and Performance (2026-10-10)
+
+### Feature requested
+Audit the project, then make it more reliable, responsive and readable, and measure performance:
+- **Audit:** findings ranked by severity, player impact and effort.
+- **Gameplay:** reliable commands, sensible combat, responsive controls, clear feedback.
+- **UI:**
+  - minimap;
+  - selection and unit info;
+  - queue progress and cancellation;
+  - placement feedback;
+  - notifications;
+  - damage feedback;
+  - tooltips and shortcuts;
+  - victory/defeat presentation;
+  - a consistent style.
+- **Performance:** profile at 25/50/100/200 units and optimise proven bottlenecks only.
+- **Regression:** a full regression pass, plus an AI-vs-AI balance re-run with multiple seeds and swapped starts.
+- **Constraints:** no new factions, multiplayer or campaign content.
+
+### Changes implemented
+- **Audit and measurement:**
+  - `Docs/Milestone-005-Audit.md` (21 findings).
+  - `Diagnostics/PerfMarkers`, `BenchmarkRunner` and `AllocProbe`.
+  - `RTS_Benchmark` scene and a `-ironfrontBenchmark` player switch.
+- **Gameplay:**
+  - Retaliation (`CombatOrderMachine.NotifyAttacked`, leashed).
+  - Control groups with double-tap camera focus.
+  - Double-click to select all of a type.
+  - Formation spacing by unit size.
+  - `UnitMover` fallback search for destinations inside footprints.
+  - `EnemyCommander`: stuck-attacker give-up plus an optional variation seed.
+- **UI:**
+  - Minimap.
+  - Notification centre with Space jump.
+  - Tooltips, F1 help and placement hint.
+  - Queue % and seconds remaining.
+  - Health-bar hit flash.
+  - `MatchStatisticsTracker` and result-screen statistics.
+  - `UiTheme`, with the HUD scaling with screen size.
+- **Performance:**
+  - `FxPool`: projectiles and effects are pooled.
+  - Allocation-free target search with a pre-filter and staggered scans.
+  - Cached input-action names; throttle checked before formatting notifications.
+- **Scenes:**
+  - All rebuilt by `MatchSceneBuilder.BuildAll()`.
+  - New test-only `RTS_Match_Swapped`, not in Build Settings.
+  - `RTS_Benchmark` added last in Build Settings.
+- **Tests:**
+  - 20 EditMode tests.
+  - 7 PlayMode tests plus statistics assertions in the victory test.
+  - The `[Explicit]` balance study.
+- **Docs:** `Docs/Milestone-005-Report.md`.
+
+### Tests attempted and results
+- EditMode **162/162**, PlayMode **42/42**, which includes all Milestone 001–004 tests.
+- Release benchmark: 3 runs of the final build compared against the baseline. Average frame times are unchanged (2.22 → 2.15 ms at 200-unit combat) and GC collections halved (4 → 2). One run had two isolated stalls (1073 ms and 103 ms) that the other two runs did not reproduce.
+- Development player: 0.05–0.23 KB/frame GC allocation.
+- Balance study on the final code: 20 matches (10 seeds × 2 layouts), all decisive.
+  - By faction: F1 won 7, F2 won 13.
+  - By start: north-east won 13, south-west won 7.
+  - With n = 20 this is not significant (p ≈ 0.26) and is not claimed as balance evidence.
+- Release Windows build: 0 errors, and the player ran with no errors in its log.
+- Screenshots confirmed that the HUD, minimap, notifications and help overlay render. F1 and Space were verified with a simulated keyboard in the Editor.
+
+### Problems encountered
+1. **Four MonoBehaviours in one file (`Tooltips.cs`)** compiled and worked when added at runtime, but the builder-added components were silently missing from saved scenes. The tooltip test passed alone and failed in the full suite. Split into one class per file.
+2. **First "after" release benchmark showed 3–6× more GC collections.** The cause was 0.55 KB/frame of control-group polling (`"Group" + n` strings). Names are now cached and the result was re-measured.
+3. **Balance study timeouts (2 of 20).** A state dump on timeout showed an AI attacker idle forever. `UnitMover` dropped destinations deep inside building footprints, and the commander re-ordered the idle unit indefinitely. Fixed both; a regression test was checked to fail without the fix.
+4. **The unused `com.unity.ai.assistant` relay process crashed mid-study** and its logged error aborted the test run. The study now ignores unrelated logged errors.
+5. **Tooling issues:**
+   - `[Explicit]` tests need `run_tests --include_explicit true`.
+   - `test_status` reports the previous run as completed right after a new launch.
+   - WScript SendKeys doesn't reach the player's Input System.
+   - PrintWindow flag 3 gives a blank image (use 2, sized to the window rect).
+   - Editor Play Mode doesn't tick when unfocused unless `runInBackground` is set.
+6. **Earlier in the milestone:**
+   - A pooled projectile could keep flying when reused (in-flight guard added).
+   - Collider bounds weren't valid at `Awake` (lazy bounding radius).
+   - The killing blow lost the attacker (attacker is now recorded before damage is applied).
+
+### Human interventions required
+- None.
+- Pending decision: approve removal of the unused AI packages (audit #18).
+
+### Known limitations
+- Needs a human playtest for feel, readability, pacing, hitching on slower hardware and balance.
+- The balance sample of 20 can't separate a faction-order effect from a position effect.
+- No fog of war, so the minimap shows all units.
+- Tooltips on HUD buttons only.
+- Keyboard shortcuts were verified in the Editor, not in the built player.
+- Audit items 15–17 left by design.
+
+### Relevant commit hash
+Milestone commit: _recorded after commit_

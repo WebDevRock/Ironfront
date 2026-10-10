@@ -34,6 +34,12 @@ namespace Ironfront.Selection
 
         public Camera ViewCamera => viewCamera;
 
+        [Tooltip("Seconds within which a second click on a unit of the same type selects all of that type on screen.")]
+        [SerializeField] private float doubleClickWindow = 0.35f;
+
+        private Units.UnitIdentity _lastClickedType;
+        private float _lastClickTime = float.NegativeInfinity;
+
         private bool _pressActive;
         private bool _dragging;
         private Vector2 _pressPosition;
@@ -116,7 +122,39 @@ namespace Ironfront.Selection
             }
 
             if (!additive) SelectStructure(null);
-            SelectionRules.ApplyClick(Selection, hit as SelectableUnit, additive);
+            var unit = hit as SelectableUnit;
+
+            // Double-click on a unit: select every player unit of the same type that is on screen.
+            var identity = unit != null ? unit.GetComponent<UnitIdentity>() : null;
+            float now = Time.unscaledTime;
+            if (!additive && identity != null && identity.Definition != null && _lastClickedType != null &&
+                _lastClickedType.Definition == identity.Definition && now - _lastClickTime <= doubleClickWindow)
+            {
+                SelectAllOfTypeOnScreen(identity.Definition);
+                _lastClickedType = null;
+                return;
+            }
+            _lastClickedType = identity;
+            _lastClickTime = now;
+
+            SelectionRules.ApplyClick(Selection, unit, additive);
+        }
+
+        /// <summary>Selects every player unit of the given type whose position is on screen.</summary>
+        public void SelectAllOfTypeOnScreen(Data.UnitDefinition type)
+        {
+            if (viewCamera == null || type == null) return;
+            var screen = new Rect(0f, 0f, Screen.width, Screen.height);
+            var matches = new List<SelectableUnit>();
+            foreach (var u in SelectableUnit.All)
+            {
+                if (!IsPlayerOwned(u)) continue;
+                var id = u.GetComponent<UnitIdentity>();
+                if (id == null || id.Definition != type) continue;
+                if (SelectionRules.IsInsideBox(screen, viewCamera.WorldToScreenPoint(u.transform.position))) matches.Add(u);
+            }
+            SelectStructure(null);
+            Selection.Replace(matches);
         }
 
         /// <summary>Selects every player unit whose pivot projects inside the screen rectangle.</summary>

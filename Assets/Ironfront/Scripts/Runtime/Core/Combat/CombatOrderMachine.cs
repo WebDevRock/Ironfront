@@ -115,6 +115,8 @@ namespace Ironfront.Core.Combat
         public CombatActivity Activity { get; private set; } = CombatActivity.Idle;
         public ICombatTarget Target { get; private set; }
         public bool IsAutoTarget { get; private set; }
+        /// <summary>True while pursuing an attacker after being shot while idle (leashed, unlike a player Attack order).</summary>
+        public bool IsRetaliating { get; private set; }
         public Vector3 Destination { get; private set; }
         /// <summary>Why the last order ended early, e.g. "Target unreachable". Cleared by new orders.</summary>
         public string LastResult { get; private set; }
@@ -128,6 +130,38 @@ namespace Ironfront.Core.Combat
             if (settings.Range <= 0f) throw new ArgumentOutOfRangeException(nameof(settings), "Range must be positive.");
             _s = settings;
         }
+
+        /// <summary>
+        /// The unit was damaged by <paramref name="attacker"/>. Idle units respond: they shoot back if they can,
+        /// otherwise pursue the attacker (up to AcquisitionRange × LeashFactor, then give up and stay idle).
+        /// Attack-moving units take the attacker as their target if they have none. Hold never moves;
+        /// Move and explicit Attack orders are not interrupted.
+        /// </summary>
+        public void NotifyAttacked(ICombatBody body, ICombatTarget attacker)
+        {
+            if (!IsValid(attacker)) return;
+            switch (Order)
+            {
+                case CombatOrderType.Idle:
+                    if (IsValid(Target)) return; // already fighting something in range
+                    SetOrder(CombatOrderType.Attack);
+                    SetTarget(attacker, auto: true, body);
+                    IsRetaliating = true;
+                    LastResult = null;
+                    Activity = CombatActivity.Chasing;
+                    break;
+                case CombatOrderType.AttackMove:
+                    if (!IsValid(Target)) SetTarget(attacker, auto: true, body);
+                    break;
+                case CombatOrderType.Hold:
+                    if (!IsValid(Target) && body.DistanceTo(attacker) <= _s.Range && HasSight(body, attacker))
+                        SetTarget(attacker, auto: true, body);
+                    break;
+            }
+        }
+
+        /// <summary>Delays the first target scan (used to spread scans of many units across frames).</summary>
+        public void OffsetScan(float seconds) => _scanTimer = seconds;
 
         // ---------- Orders ----------
 
@@ -144,6 +178,7 @@ namespace Ironfront.Core.Combat
         {
             if (!IsValid(target)) return;
             SetOrder(CombatOrderType.Attack);
+            IsRetaliating = false;
             SetTarget(target, auto: false, body);
             Activity = CombatActivity.Chasing; // resolved on the next tick
         }
@@ -205,6 +240,15 @@ namespace Ironfront.Core.Combat
                     break;
 
                 case CombatOrderType.Attack:
+                    if (IsRetaliating && IsValid(Target) && body.DistanceTo(Target) > _s.AcquisitionRange * _s.LeashFactor)
+                    {
+                        ClearTarget();
+                        SetOrder(CombatOrderType.Idle);
+                        Activity = CombatActivity.Idle;
+                        LastResult = "attacker escaped";
+                        body.Halt();
+                        return;
+                    }
                     if (!IsValid(Target))
                     {
                         ClearTarget();
@@ -395,6 +439,7 @@ namespace Ironfront.Core.Combat
 
         private void SetOrder(CombatOrderType order)
         {
+            if (order != CombatOrderType.Attack) IsRetaliating = false;
             if (order != CombatOrderType.Idle) LastResult = null;
             if (Order == order) return;
             Order = order;
@@ -410,6 +455,7 @@ namespace Ironfront.Core.Combat
                 case CombatOrderType.Move:
                     return "Moving";
                 case CombatOrderType.Attack:
+                    if (IsRetaliating) return $"Returning fire on {target}";
                     return Activity == CombatActivity.Engaging ? $"Attacking {target} - firing" : $"Attacking {target} - closing in";
                 case CombatOrderType.AttackMove:
                     return target != null

@@ -372,6 +372,7 @@ namespace Ironfront.EditorTools
             var matchGo = new GameObject("Match");
             var match = matchGo.AddComponent<MatchController>();
             SetRef(match, "setup", economy.MatchSetup);
+            matchGo.AddComponent<MatchStatisticsTracker>();
 
             var systems = new GameObject("RTS Systems");
             var selection = systems.AddComponent<SelectionManager>();
@@ -379,6 +380,9 @@ namespace Ironfront.EditorTools
             var placement = systems.AddComponent<BuildingPlacementController>();
             var orders = systems.AddComponent<OrderInputController>();
             var feedback = systems.AddComponent<OrderFeedback>();
+            var groups = systems.AddComponent<ControlGroupInput>();
+            SetRef(groups, "selection", selection);
+            SetRef(groups, "cameraController", cam.transform.parent.GetComponent<RtsCameraController>());
 
             SetRef(selection, "viewCamera", cam);
             SetInt(selection, "unitLayers", 1 << UnitsLayerIndex);
@@ -415,7 +419,10 @@ namespace Ironfront.EditorTools
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = canvasGo.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            // Scale the HUD with resolution (was constant pixel size: oversized at 720p, tiny at 4K).
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1600f, 900f);
+            scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -427,7 +434,7 @@ namespace Ironfront.EditorTools
             panelRect.anchoredPosition = new Vector2(10f, -10f);
             panelRect.sizeDelta = new Vector2(600f, 112f);
             var panelImage = panel.AddComponent<Image>();
-            panelImage.color = new Color(0f, 0f, 0f, 0.55f);
+            panelImage.color = UiTheme.Panel;
             panelImage.raycastTarget = true;
 
             var labelGo = NewUiObject("Label", panel.transform);
@@ -474,7 +481,7 @@ namespace Ironfront.EditorTools
             sidebarRect.anchoredPosition = new Vector2(-10f, -10f);
             sidebarRect.sizeDelta = new Vector2(320f, 580f);
             var sidebarImage = sidebar.AddComponent<Image>();
-            sidebarImage.color = new Color(0f, 0f, 0f, 0.6f);
+            sidebarImage.color = UiTheme.Panel;
             sidebarImage.raycastTarget = true;
             var layout = sidebar.AddComponent<VerticalLayoutGroup>();
             layout.padding = new RectOffset(10, 10, 10, 10);
@@ -497,7 +504,7 @@ namespace Ironfront.EditorTools
             ordersRect.anchoredPosition = new Vector2(0f, 10f);
             ordersRect.sizeDelta = new Vector2(560f, 76f);
             var ordersImage = ordersPanel.AddComponent<Image>();
-            ordersImage.color = new Color(0f, 0f, 0f, 0.6f);
+            ordersImage.color = UiTheme.Panel;
             ordersImage.raycastTarget = true;
             var ordersLayout = ordersPanel.AddComponent<VerticalLayoutGroup>();
             ordersLayout.padding = new RectOffset(8, 8, 8, 6);
@@ -511,7 +518,108 @@ namespace Ironfront.EditorTools
             SetRef(ordersHud, "orders", orders);
             SetRef(ordersHud, "selectionManager", selection);
             SetRef(ordersHud, "font", font);
+
+            CreateFeedbackUI(canvasGo.transform, placement);
             return canvasGo;
+        }
+
+        /// <summary>Minimap, notification feed, placement hint, tooltip panel and F1 help overlay.</summary>
+        private static void CreateFeedbackUI(Transform canvas, BuildingPlacementController placement)
+        {
+            var cameraController = Object.FindAnyObjectByType<RtsCameraController>();
+
+            // Minimap (bottom-left).
+            var mapFrame = NewUiObject("MinimapPanel", canvas);
+            var mapRect = (RectTransform)mapFrame.transform;
+            mapRect.anchorMin = mapRect.anchorMax = mapRect.pivot = Vector2.zero;
+            mapRect.anchoredPosition = new Vector2(10f, 10f);
+            mapRect.sizeDelta = new Vector2(210f, 210f);
+            var frameImage = mapFrame.AddComponent<Image>();
+            frameImage.color = UiTheme.PanelStrong;
+            frameImage.raycastTarget = true;
+            var mapGo = NewUiObject("Map", mapFrame.transform);
+            UiTheme.Stretch((RectTransform)mapGo.transform, 5f);
+            var raw = mapGo.AddComponent<RawImage>();
+            raw.raycastTarget = true;
+            var minimap = mapGo.AddComponent<Minimap>();
+            SetRef(minimap, "image", raw);
+            SetRef(minimap, "cameraController", cameraController);
+            SetInt(minimap, "obstacleLayers", 1 << 0);
+
+            // Notification feed (top centre, between the selection panel and the sidebar).
+            var feedGo = NewUiObject("NotificationFeed", canvas);
+            var feedRect = (RectTransform)feedGo.transform;
+            feedRect.anchorMin = feedRect.anchorMax = feedRect.pivot = new Vector2(0.5f, 1f);
+            feedRect.anchoredPosition = new Vector2(130f, -10f);
+            feedRect.sizeDelta = new Vector2(560f, 130f);
+            var feedLayout = feedGo.AddComponent<VerticalLayoutGroup>();
+            feedLayout.childControlHeight = true;
+            feedLayout.childControlWidth = true;
+            feedLayout.childForceExpandHeight = false;
+            feedLayout.childAlignment = TextAnchor.UpperCenter;
+            feedLayout.spacing = 2f;
+            var center = canvas.gameObject.AddComponent<NotificationCenter>();
+            SetRef(center, "feed", feedRect);
+            SetRef(center, "cameraController", cameraController);
+            SetRef(center, "placement", placement);
+
+            // Placement hint (follows the cursor while placing).
+            var hintGo = NewUiObject("PlacementHint", canvas);
+            var hintRect = (RectTransform)hintGo.transform;
+            hintRect.anchorMin = hintRect.anchorMax = Vector2.zero;
+            hintRect.pivot = new Vector2(0f, 1f);
+            hintRect.sizeDelta = new Vector2(300f, 64f);
+            var hintImage = hintGo.AddComponent<Image>();
+            hintImage.color = UiTheme.PanelStrong;
+            hintImage.raycastTarget = false;
+            var hintLabel = UiTheme.Label(hintGo.transform, "Label", 13, UiTheme.Text);
+            UiTheme.Stretch(hintLabel.rectTransform, 6f);
+            var hint = canvas.gameObject.AddComponent<PlacementHint>();
+            SetRef(hint, "placement", placement);
+            SetRef(hint, "panel", hintRect);
+            SetRef(hint, "label", hintLabel);
+            hintGo.SetActive(false);
+
+            // F1 help overlay (centred).
+            var helpGo = NewUiObject("HelpOverlay", canvas);
+            var helpRect = (RectTransform)helpGo.transform;
+            helpRect.anchorMin = helpRect.anchorMax = helpRect.pivot = new Vector2(0.5f, 0.5f);
+            helpRect.sizeDelta = new Vector2(820f, 360f);
+            var helpImage = helpGo.AddComponent<Image>();
+            helpImage.color = UiTheme.PanelStrong;
+            helpImage.raycastTarget = true;
+            var keysLabel = UiTheme.Label(helpGo.transform, "Keys", 15, UiTheme.Accent);
+            UiTheme.Stretch(keysLabel.rectTransform, 18f);
+            var descriptionsLabel = UiTheme.Label(helpGo.transform, "Descriptions", 15, UiTheme.Text);
+            UiTheme.Stretch(descriptionsLabel.rectTransform, 18f);
+            descriptionsLabel.rectTransform.offsetMin = new Vector2(200f, 18f); // second column
+            var help = canvas.gameObject.AddComponent<HelpOverlay>();
+            SetRef(help, "panel", helpGo);
+            SetRef(help, "keysLabel", keysLabel);
+            SetRef(help, "descriptionsLabel", descriptionsLabel);
+
+            // Reminder that help exists (above the minimap).
+            var helpHint = UiTheme.Label(canvas, "HelpHint", 12, UiTheme.Muted);
+            helpHint.rectTransform.anchorMin = helpHint.rectTransform.anchorMax = helpHint.rectTransform.pivot = Vector2.zero;
+            helpHint.rectTransform.anchoredPosition = new Vector2(12f, 224f);
+            helpHint.rectTransform.sizeDelta = new Vector2(240f, 18f);
+            helpHint.text = "F1: controls    Space: last alert";
+
+            // Tooltip panel (last: drawn on top).
+            var tipGo = NewUiObject("Tooltip", canvas);
+            var tipRect = (RectTransform)tipGo.transform;
+            tipRect.anchorMin = tipRect.anchorMax = tipRect.pivot = Vector2.zero;
+            tipRect.sizeDelta = new Vector2(280f, 60f);
+            var tipImage = tipGo.AddComponent<Image>();
+            tipImage.color = UiTheme.PanelStrong;
+            tipImage.raycastTarget = false;
+            var tipOutline = tipGo.AddComponent<Outline>();
+            tipOutline.effectColor = UiTheme.Accent;
+            var tipLabel = UiTheme.Label(tipGo.transform, "Label", 13, UiTheme.Text);
+            UiTheme.Stretch(tipLabel.rectTransform, 8f);
+            var tooltip = canvas.gameObject.AddComponent<TooltipView>();
+            SetRef(tooltip, "panel", tipRect);
+            SetRef(tooltip, "label", tipLabel);
         }
 
         internal static GameObject NewUiObject(string name, Transform parent)
@@ -544,6 +652,13 @@ namespace Ironfront.EditorTools
             AssetDatabase.CreateAsset(surface.navMeshData, navMeshDataPath);
             EditorUtility.SetDirty(surface);
             return surface;
+        }
+
+        internal static void AddSceneToBuildSettingsLast(string path)
+        {
+            var scenes = EditorBuildSettings.scenes.Where(s => s.path != path).ToList();
+            scenes.Add(new EditorBuildSettingsScene(path, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
         }
 
         internal static void AddSceneToBuildSettingsFirst(string path)

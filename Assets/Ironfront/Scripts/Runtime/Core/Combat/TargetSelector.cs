@@ -25,15 +25,16 @@ namespace Ironfront.Core.Combat
     /// </summary>
     public static class TargetSelector
     {
-        public static bool TryChoose<T>(IEnumerable<TargetCandidate<T>> candidates, float maxDistance, out T best)
+        public static bool TryChoose<T>(IReadOnlyList<TargetCandidate<T>> candidates, float maxDistance, out T best)
         {
             best = default;
             bool found = false;
             int bestRank = int.MaxValue;
             float bestDistance = float.MaxValue;
 
-            foreach (var c in candidates)
+            for (int i = 0; i < candidates.Count; i++) // indexed: no enumerator allocation
             {
+                var c = candidates[i];
                 if (c.Distance > maxDistance) continue;
                 int rank = c.IsStructure ? 2 : c.IsArmed ? 0 : 1;
                 if (rank < bestRank || (rank == bestRank && c.Distance < bestDistance))

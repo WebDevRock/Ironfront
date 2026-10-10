@@ -47,6 +47,7 @@ namespace Ironfront.UI
 
         private void LateUpdate()
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.Hud.Auto();
             _targets.Clear();
             if (selectionManager != null)
             {

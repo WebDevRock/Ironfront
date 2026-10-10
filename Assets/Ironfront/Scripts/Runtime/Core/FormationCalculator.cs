@@ -78,6 +78,10 @@ namespace Ironfront.Core
             return result;
         }
 
+        /// <summary>Slot spacing that leaves a gap between the largest units in a group (radius in metres).</summary>
+        public static float SpacingFor(float largestUnitRadius, float minimumSpacing, float gap = 0.6f) =>
+            Mathf.Max(minimumSpacing, largestUnitRadius * 2f + gap);
+
         public static Vector3 Centroid(IReadOnlyList<Vector3> points)
         {
             if (points.Count == 0) return Vector3.zero;

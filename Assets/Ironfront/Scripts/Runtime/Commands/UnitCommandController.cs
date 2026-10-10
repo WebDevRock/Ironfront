@@ -238,8 +238,14 @@ namespace Ironfront.Commands
             }
             if (units.Count == 0) return 0;
 
+            float largest = 0f;
+            foreach (var u in units)
+            {
+                var agent = u.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (agent != null && agent.radius > largest) largest = agent.radius;
+            }
             Vector3 facing = target - FormationCalculator.Centroid(positions);
-            var slots = FormationCalculator.GetGridSlots(target, facing, units.Count, formationSpacing);
+            var slots = FormationCalculator.GetGridSlots(target, facing, units.Count, FormationCalculator.SpacingFor(largest, formationSpacing));
             var assignment = FormationCalculator.AssignSlots(positions, slots);
 
             int accepted = 0;

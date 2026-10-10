@@ -12,6 +12,8 @@ namespace Ironfront.Units
         [Tooltip("How far from the requested point to search for a valid NavMesh position.")]
         [SerializeField] private float destinationSearchRadius = 4f;
 
+        private const float FallbackSearchFactor = 4f;
+
         /// <summary>Total path requests issued by all units since load (diagnostics for path-spam checks).</summary>
         public static long PathRequests { get; private set; }
 
@@ -69,6 +71,7 @@ namespace Ironfront.Units
         /// </remarks>
         public bool MoveTo(Vector3 destination)
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.PathRequest.Auto();
             if (!_started)
             {
                 _pendingDestination = destination;
@@ -78,7 +81,11 @@ namespace Ironfront.Units
             var agent = Agent;
             if (agent == null || !EnsureOnNavMesh()) return false;
 
-            if (!NavMesh.SamplePosition(destination, out var hit, destinationSearchRadius, agent.areaMask))
+            // A point deep inside a structure's carved footprint (e.g. attack-move onto a factory) is further than the
+            // normal radius from any walkable surface: widen the search once so the unit goes to the nearest edge
+            // instead of silently ignoring the order.
+            if (!NavMesh.SamplePosition(destination, out var hit, destinationSearchRadius, agent.areaMask) &&
+                !NavMesh.SamplePosition(destination, out hit, destinationSearchRadius * FallbackSearchFactor, agent.areaMask))
                 return false;
 
             agent.isStopped = false;

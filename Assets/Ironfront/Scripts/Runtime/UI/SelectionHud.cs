@@ -60,6 +60,7 @@ namespace Ironfront.UI
 
         private void Refresh()
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.Hud.Auto();
             if (label == null) return;
             label.text = $"{Describe()}\n{Help}";
         }

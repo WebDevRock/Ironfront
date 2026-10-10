@@ -6,7 +6,8 @@ namespace Ironfront.Combat
 {
     /// <summary>
     /// World-space health bar that faces the camera. Shown while the object is damaged or selected;
-    /// the fill shrinks and shifts from green to red as health drops.
+    /// the fill shrinks and shifts from green to red as health drops. Each hit briefly flashes the bar white
+    /// and enlarges it, so damage is visible even on units at full zoom-out.
     /// </summary>
     [RequireComponent(typeof(Health))]
     public class HealthBar : MonoBehaviour
@@ -14,6 +15,7 @@ namespace Ironfront.Combat
         [SerializeField] private float height = 2.6f;
         [SerializeField] private float width = 1.8f;
         [SerializeField] private float thickness = 0.22f;
+        [SerializeField] private float flashDuration = 0.15f;
 
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
@@ -24,8 +26,10 @@ namespace Ironfront.Combat
         private Renderer _fillRenderer;
         private MaterialPropertyBlock _block;
         private Camera _camera;
+        private float _flash;
 
         public bool IsVisible => _root != null && _root.gameObject.activeSelf;
+        public bool IsFlashing => _flash > 0f;
 
         private void Awake()
         {
@@ -33,6 +37,21 @@ namespace Ironfront.Combat
             _unit = GetComponent<SelectableUnit>();
             _building = GetComponent<Building>();
             _block = new MaterialPropertyBlock();
+        }
+
+        private void OnEnable()
+        {
+            if (_health != null) _health.Damaged += OnDamaged;
+        }
+
+        private void OnDisable()
+        {
+            if (_health != null) _health.Damaged -= OnDamaged;
+        }
+
+        private void OnDamaged(float amount)
+        {
+            if (amount > 0f) _flash = flashDuration;
         }
 
         private void Start()
@@ -59,6 +78,7 @@ namespace Ironfront.Combat
 
         private void LateUpdate()
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.HealthBars.Auto();
             if (_root == null || _health == null || _health.Model == null) return;
 
             bool selected = (_unit != null && _unit.IsSelected) || (_building != null && _building.IsSelected);
@@ -70,10 +90,15 @@ namespace Ironfront.Combat
             _root.position = transform.position + Vector3.up * height;
             if (_camera != null) _root.rotation = _camera.transform.rotation;
 
+            bool flashing = _flash > 0f;
+            if (flashing) _flash -= Time.deltaTime;
+            _root.localScale = flashing ? Vector3.one * 1.25f : Vector3.one;
+
             float f = Mathf.Clamp01(_health.Model.Fraction);
             _fill.localScale = new Vector3(width * f, thickness, 0.01f);
             _fill.localPosition = new Vector3(-width * (1f - f) * 0.5f, 0f, 0f);
-            _block.SetColor(BaseColor, f > 0.5f ? Color.Lerp(Color.yellow, Color.green, (f - 0.5f) * 2f) : Color.Lerp(Color.red, Color.yellow, f * 2f));
+            var color = f > 0.5f ? Color.Lerp(Color.yellow, Color.green, (f - 0.5f) * 2f) : Color.Lerp(Color.red, Color.yellow, f * 2f);
+            _block.SetColor(BaseColor, flashing ? Color.white : color);
             _fillRenderer.SetPropertyBlock(_block);
         }
     }

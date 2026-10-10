@@ -25,6 +25,17 @@ namespace Ironfront.InputBindings
         public static InputAction Stop => Get("Stop");
         public static InputAction Hold => Get("Hold");
         public static InputAction ToggleAiDebug => Get("ToggleAiDebug");
+        public static InputAction Help => Get("Help");
+        public static InputAction JumpToAlert => Get("JumpToAlert");
+        public static InputAction GroupModifier => Get("GroupModifier");
+        public static bool GroupModifierHeld => GroupModifier != null && GroupModifier.IsPressed();
+
+        /// <summary>Control group key 0–9.</summary>
+        public static InputAction ControlGroup(int group) => Get(GroupActionNames[group]);
+
+        // Cached: polled for all ten groups every frame, and "Group" + n allocates (measured ~0.55 KB/frame).
+        private static readonly string[] GroupActionNames =
+            { "Group0", "Group1", "Group2", "Group3", "Group4", "Group5", "Group6", "Group7", "Group8", "Group9" };
 
         public static Vector2 PointerPosition => Point?.ReadValue<Vector2>() ?? Vector2.zero;
         public static bool AdditiveHeld => Additive != null && Additive.IsPressed();

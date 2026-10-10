@@ -15,6 +15,7 @@ namespace Ironfront.Combat
 
         public static GameObject Primitive(PrimitiveType type, string name, Vector3 position, Vector3 scale, Material material)
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.FxSpawn.Auto();
             var go = GameObject.CreatePrimitive(type);
             go.name = name;
             Object.Destroy(go.GetComponent<Collider>());
@@ -36,11 +37,17 @@ namespace Ironfront.Combat
         public static void Explosion(Vector3 position, float size) =>
             Burst("Explosion", position, size * 0.3f, size, 0.6f, Visuals != null ? Visuals.Explosion : null);
 
-        /// <summary>A sphere that grows from <paramref name="from"/> to <paramref name="to"/> scale and disappears.</summary>
+        /// <summary>A sphere that grows from <paramref name="from"/> to <paramref name="to"/> scale and disappears (pooled).</summary>
         public static void Burst(string name, Vector3 position, float from, float to, float lifetime, Material material)
         {
-            var go = Primitive(PrimitiveType.Sphere, name, position, Vector3.one * from, material);
-            go.AddComponent<TransientEffect>().Init(Vector3.one * from, Vector3.one * to, lifetime);
+            var go = FxPool.Get(PrimitiveType.Sphere, name, position, Vector3.one * from, material);
+            Transient(go).Init(Vector3.one * from, Vector3.one * to, lifetime);
+        }
+
+        private static TransientEffect Transient(GameObject go)
+        {
+            var effect = go.GetComponent<TransientEffect>();
+            return effect != null ? effect : go.AddComponent<TransientEffect>();
         }
 
         /// <summary>A flat ring marker on the ground (order feedback).</summary>
@@ -48,12 +55,12 @@ namespace Ironfront.Combat
         {
             var start = new Vector3(diameter, 0.02f, diameter);
             var end = new Vector3(diameter * 0.3f, 0.02f, diameter * 0.3f);
-            var go = Primitive(PrimitiveType.Cylinder, "OrderMarker", position + Vector3.up * 0.05f, start, material);
-            go.AddComponent<TransientEffect>().Init(start, end, lifetime);
+            var go = FxPool.Get(PrimitiveType.Cylinder, "OrderMarker", position + Vector3.up * 0.05f, start, material);
+            Transient(go).Init(start, end, lifetime);
         }
     }
 
-    /// <summary>Scales an effect over its lifetime, then destroys it.</summary>
+    /// <summary>Scales an effect over its lifetime, then returns it to the pool.</summary>
     public class TransientEffect : MonoBehaviour
     {
         private Vector3 _from, _to;
@@ -64,6 +71,8 @@ namespace Ironfront.Combat
             _from = from;
             _to = to;
             _lifetime = Mathf.Max(0.01f, lifetime);
+            _age = 0f;
+            transform.localScale = from;
         }
 
         private void Update()
@@ -72,7 +81,7 @@ namespace Ironfront.Combat
             float t = _age / _lifetime;
             if (t >= 1f)
             {
-                Destroy(gameObject);
+                FxPool.Release(gameObject);
                 return;
             }
             transform.localScale = Vector3.Lerp(_from, _to, t);

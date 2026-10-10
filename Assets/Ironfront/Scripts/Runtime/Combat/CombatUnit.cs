@@ -55,13 +55,30 @@ namespace Ironfront.Combat
             }
             _cooldown = new WeaponCooldown(Weapon.Cooldown);
             Machine = new CombatOrderMachine(CombatSettings.ForWeapon(Weapon.Range, Weapon.AcquisitionRange, Weapon.RequiresLineOfSight));
+            // Spread target scans over frames instead of every unit scanning in the same frame.
+            Machine.OffsetScan((s_spawnIndex++ % 8) * Machine.Settings.ScanInterval / 8f);
         }
 
-        private void OnEnable() { if (!s_All.Contains(this)) s_All.Add(this); }
-        private void OnDisable() => s_All.Remove(this);
+        private void OnEnable()
+        {
+            if (!s_All.Contains(this)) s_All.Add(this);
+            if (_health != null) _health.DamagedBy += OnDamaged;
+        }
+
+        private void OnDisable()
+        {
+            s_All.Remove(this);
+            if (_health != null) _health.DamagedBy -= OnDamaged;
+        }
+
+        private void OnDamaged(float amount, Health attacker)
+        {
+            if (Machine != null && attacker != null && attacker != _health) Machine.NotifyAttacked(this, attacker);
+        }
 
         private void Update()
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.CombatTick.Auto();
             if (Machine == null || !_health.IsAlive) return;
             _cooldown.Tick(Time.deltaTime);
             Machine.Tick(Time.deltaTime, this);
@@ -87,6 +104,7 @@ namespace Ironfront.Combat
 
         public bool HasLineOfSight(ICombatTarget target)
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.LineOfSight.Auto();
             if (!(target is Health h) || h == null) return false;
             Vector3 from = MuzzlePosition;
             Vector3 to = h.AimPoint(from);
@@ -94,18 +112,32 @@ namespace Ironfront.Combat
             return hit.collider.GetComponentInParent<Health>() == h; // the first thing hit is the target itself
         }
 
+        // Reused between calls (main thread only) so target scans do not allocate.
+        private static readonly List<TargetCandidate<Health>> s_candidates = new List<TargetCandidate<Health>>(64);
+        private static int s_spawnIndex;
+
         public ICombatTarget FindTarget(float radius, ICombatTarget ignore)
         {
-            int myFaction = FactionMember.Of(this);
-            var candidates = new List<TargetCandidate<Health>>();
-            foreach (var h in Health.All)
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.FindTarget.Auto();
+            int myFaction = _health.FactionId;
+            Vector3 me = transform.position;
+            s_candidates.Clear();
+            var all = Health.All;
+            for (int i = 0; i < all.Count; i++)
             {
+                var h = all[i];
                 if (h == _health || !h.IsAlive || ReferenceEquals(h, ignore)) continue;
                 if (!DamageRules.AreHostile(myFaction, h.FactionId)) continue;
-                float d = h.DistanceFrom(transform.position);
-                if (d <= radius) candidates.Add(new TargetCandidate<Health>(h, d, h.IsArmed, h.IsStructure));
+
+                // Cheap centre-distance rejection before the physics closest-point query.
+                Vector3 p = h.transform.position;
+                float dx = p.x - me.x, dz = p.z - me.z, reach = radius + h.BoundingRadius;
+                if (dx * dx + dz * dz > reach * reach) continue;
+
+                float d = h.DistanceFrom(me);
+                if (d <= radius) s_candidates.Add(new TargetCandidate<Health>(h, d, h.IsArmed, h.IsStructure));
             }
-            return TargetSelector.TryChoose(candidates, radius, out var best) ? best : null;
+            return TargetSelector.TryChoose(s_candidates, radius, out var best) ? best : null;
         }
 
         public void MoveTo(Vector3 destination) => _mover.MoveTo(destination);
@@ -130,8 +162,8 @@ namespace Ironfront.Combat
             if (!_cooldown.TryFire()) return false;
 
             Vector3 from = MuzzlePosition;
-            Projectile.Launch(from, h, Weapon.Damage, FactionMember.Of(this), Weapon.AllowFriendlyFire,
-                Weapon.ProjectileSpeed, Weapon.ProjectileSize);
+            Projectile.Launch(from, h, Weapon.Damage, _health.FactionId, Weapon.AllowFriendlyFire,
+                Weapon.ProjectileSpeed, Weapon.ProjectileSize, _health);
             CombatFx.MuzzleFlash(from);
             ShotsFired++;
             Fired?.Invoke(h);
@@ -160,6 +192,11 @@ namespace Ironfront.Combat
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => s_All.Clear();
+        private static void ResetStatics()
+        {
+            s_All.Clear();
+            s_candidates.Clear();
+            s_spawnIndex = 0;
+        }
     }
 }

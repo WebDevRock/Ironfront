@@ -32,6 +32,7 @@ namespace Ironfront.Combat
 
         private HealthModel _model;
         private Collider _collider;
+        private FactionMember _member;
         private bool _isStructure;
         private bool _isArmed;
         private string _displayName;
@@ -42,7 +43,26 @@ namespace Ironfront.Combat
         public float Armour => _model != null ? _model.Armour : 0f;
         public bool IsStructure => _isStructure;
         public bool IsArmed => _isArmed;
-        public int FactionId => FactionMember.Of(this);
+        public int FactionId => _member != null ? _member.FactionId : FactionMember.Of(this);
+
+        private float _boundingRadius = -1f;
+
+        /// <summary>Horizontal radius enclosing the collider (cheap pre-filter for range checks). Computed on
+        /// first use, once collider bounds are valid.</summary>
+        public float BoundingRadius
+        {
+            get
+            {
+                if (_boundingRadius < 0f && _collider != null)
+                {
+                    var e = _collider.bounds.extents;
+                    float r = Mathf.Sqrt(e.x * e.x + e.z * e.z);
+                    if (r > 0f) _boundingRadius = r;
+                    return r > 0f ? r : 50f; // unknown yet: never reject by pre-filter
+                }
+                return _boundingRadius < 0f ? 50f : _boundingRadius;
+            }
+        }
         public float AimHeight => aimHeight;
 
         // ICombatTarget. "this != null" uses Unity's lifetime check, so a destroyed object reports dead.
@@ -50,13 +70,21 @@ namespace Ironfront.Combat
         public Vector3 Position => transform.position;
         public string DisplayName => _displayName ?? name;
 
+        /// <summary>Faction of whoever damaged this object most recently (null if never damaged by an enemy).</summary>
+        public int? LastAttackerFaction { get; private set; }
+
         /// <summary>Raised with the damage dealt after armour.</summary>
         public event Action<float> Damaged;
+        /// <summary>Raised with the damage dealt and the attacker (may be null, e.g. for scripted damage).</summary>
+        public event Action<float, Health> DamagedBy;
+        /// <summary>Raised for every damage event in the scene (notifications, statistics).</summary>
+        public static event Action<Health, float, Health> AnyDamaged;
         public event Action<Health> Died;
 
         private void Awake()
         {
             _collider = GetComponent<Collider>();
+            _member = GetComponentInParent<FactionMember>();
             _isArmed = GetComponent<CombatUnit>() != null;
 
             float max = fallbackMaxHealth, armour = fallbackArmour;
@@ -87,12 +115,19 @@ namespace Ironfront.Combat
         /// Applies damage from <paramref name="attackerFaction"/>. Same-faction damage is ignored unless
         /// <paramref name="allowFriendlyFire"/>. Returns the damage dealt after armour.
         /// </summary>
-        public float ApplyDamage(float rawDamage, int attackerFaction, bool allowFriendlyFire = false)
+        public float ApplyDamage(float rawDamage, int attackerFaction, bool allowFriendlyFire = false, Health attacker = null)
         {
             if (!IsAlive) return 0f;
             if (!DamageRules.CanDamage(attackerFaction, FactionId, allowFriendlyFire)) return 0f;
+            if (attacker != null) LastAttackerFaction = attacker.FactionId; // set first: the killing blow fires Died inside ApplyDamage
+            else if (DamageRules.AreHostile(attackerFaction, FactionId)) LastAttackerFaction = attackerFaction;
             float dealt = _model.ApplyDamage(rawDamage);
-            if (dealt > 0f) Damaged?.Invoke(dealt);
+            if (dealt > 0f && IsAlive)
+            {
+                Damaged?.Invoke(dealt);
+                DamagedBy?.Invoke(dealt, attacker);
+                AnyDamaged?.Invoke(this, dealt, attacker);
+            }
             return dealt;
         }
 
@@ -126,6 +161,7 @@ namespace Ironfront.Combat
         {
             s_All.Clear();
             AnyDied = null;
+            AnyDamaged = null;
         }
     }
 }

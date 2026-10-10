@@ -18,6 +18,9 @@ namespace Ironfront.Buildings
         /// <summary>Raised with the Ore amount after each delivery.</summary>
         public event Action<int> Delivered;
 
+        /// <summary>Raised for every delivery at any refinery (statistics).</summary>
+        public static event Action<Refinery, int> AnyDelivered;
+
         public Building Building => _building != null ? _building : (_building = GetComponent<Building>());
         public int FactionId => Building.FactionId;
 
@@ -35,6 +38,7 @@ namespace Ironfront.Buildings
             int perOre = match.Setup != null ? match.Setup.CreditsPerOre : 1;
             match.GetFaction(FactionId).Wallet.Add(ore * perOre);
             Delivered?.Invoke(ore);
+            AnyDelivered?.Invoke(this, ore);
         }
 
         public static Refinery FindNearest(Vector3 position, int factionId)
@@ -51,6 +55,10 @@ namespace Ironfront.Buildings
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => s_All.Clear();
+        private static void ResetStatics()
+        {
+            s_All.Clear();
+            AnyDelivered = null;
+        }
     }
 }

@@ -48,12 +48,18 @@ namespace Ironfront.Construction
 
         public event Action<Building> BuildingPlaced;
 
+        /// <summary>Raised for buildings placed by any controller / faction (notifications, statistics).</summary>
+        public static event Action<Building> AnyBuildingPlaced;
+
         private int PlayerFactionId => MatchController.Current != null ? MatchController.Current.PlayerFactionId : MatchController.DefaultPlayerFactionId;
 
         private void Awake()
         {
             if (viewCamera == null) viewCamera = Camera.main;
         }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => AnyBuildingPlaced = null;
 
         private void OnDisable()
         {
@@ -202,6 +208,7 @@ namespace Ironfront.Construction
             reason = $"{definition.DisplayName} constructed (-{definition.Cost})";
             if (factionId == PlayerFactionId) Message?.Invoke(reason); // computer factions build silently
             BuildingPlaced?.Invoke(placed);
+            AnyBuildingPlaced?.Invoke(placed);
             return true;
         }
 

@@ -77,6 +77,17 @@ namespace Ironfront.CameraControl
             transform.position = CameraMath.ClampToBounds(next, boundsMin, boundsMax);
         }
 
+        /// <summary>Centres the camera on a ground point (control-group double-tap, minimap clicks, alerts).</summary>
+        public void Focus(Vector3 groundPoint)
+        {
+            var p = new Vector3(groundPoint.x, transform.position.y, groundPoint.z);
+            transform.position = CameraMath.ClampToBounds(p, boundsMin, boundsMax);
+            ApplyCameraTransform();
+        }
+
+        public Vector2 BoundsMin => boundsMin;
+        public Vector2 BoundsMax => boundsMax;
+
         /// <summary>Applies one scroll step; positive zooms in.</summary>
         public void Zoom(float scroll)
         {

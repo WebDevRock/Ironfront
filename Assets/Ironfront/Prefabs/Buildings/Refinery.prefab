@@ -231,6 +231,7 @@ MonoBehaviour:
   height: 5.2
   width: 4
   thickness: 0.3
+  flashDuration: 0.15
 --- !u!114 &7877114429724271376
 MonoBehaviour:
   m_ObjectHideFlags: 0

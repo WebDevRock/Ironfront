@@ -1,6 +1,8 @@
 using System.IO;
 using Ironfront.AI;
+using Ironfront.CameraControl;
 using Ironfront.Data;
+using Ironfront.Diagnostics;
 using Ironfront.Economy;
 using Ironfront.Match;
 using Ironfront.UI;
@@ -21,6 +23,9 @@ namespace Ironfront.EditorTools
     {
         public const string ScenePath = "Assets/Scenes/RTS_Match.unity";
         private const string NavMeshDataPath = RtsSandboxBuilder.NavDir + "/RTS_Match_NavMesh.asset";
+        /// <summary>Test-only variant with the two factions' starting corners exchanged (balance studies). Not in Build Settings.</summary>
+        public const string SwappedScenePath = "Assets/Scenes/RTS_Match_Swapped.unity";
+        private const string SwappedNavMeshDataPath = RtsSandboxBuilder.NavDir + "/RTS_Match_Swapped_NavMesh.asset";
         private const string AiDir = RtsSandboxBuilder.DataDir + "/AI";
         private const string NormalDifficultyPath = AiDir + "/Normal.asset";
 
@@ -73,15 +78,71 @@ namespace Ironfront.EditorTools
             BuildAll();
         }
 
-        /// <summary>Sandbox first, then the match (so the match is first in Build Settings).</summary>
+        /// <summary>Sandbox, then the match (first in Build Settings), then the benchmark scene (last).</summary>
         public static string BuildAll()
         {
             string a = RtsSandboxBuilder.Build();
             string b = Build();
-            return a + "\n" + b;
+            string s = Build(swapped: true);
+            string c = BuildBenchmark();
+            return a + "\n" + b + "\n" + s + "\n" + c;
         }
 
-        public static string Build()
+        public const string BenchmarkScenePath = "Assets/Scenes/RTS_Benchmark.unity";
+
+        [MenuItem("Ironfront/Build Benchmark Scene")]
+        public static void BuildBenchmarkFromMenu()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            BuildBenchmark();
+        }
+
+        /// <summary>
+        /// RTS_Benchmark: open flat ground with the normal match systems and HUD and a <see cref="BenchmarkRunner"/>.
+        /// No bases or commanders, so measurements isolate unit, combat and UI costs.
+        /// </summary>
+        public static string BuildBenchmark()
+        {
+            RtsSandboxBuilder.EnsureLayers();
+            var mats = RtsSandboxBuilder.CreateMaterials();
+            RtsSandboxBuilder.CreateUnitPrefab(mats["SelectionRing"]);
+            EconomyContentBuilder.CreateAssets(mats["SelectionRing"]);
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var economy = EconomyContentBuilder.Load();
+            var ground = AssetDatabase.LoadAssetAtPath<Material>(RtsSandboxBuilder.MaterialsDir + "/Ground.mat");
+
+            RtsSandboxBuilder.CreateLighting();
+            var env = new GameObject("Environment");
+            RtsSandboxBuilder.CreateGround(env.transform, ground);
+
+            var cam = RtsSandboxBuilder.CreateCameraRig();
+            var rig = cam.transform.parent;
+            rig.position = new Vector3(0f, 0f, -12f);
+            var so = new SerializedObject(rig.GetComponent<RtsCameraController>());
+            so.FindProperty("startDistance").floatValue = 60f;
+            so.FindProperty("edgePanEnabled").boolValue = false;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            var (selection, _, placement, orders) = RtsSandboxBuilder.CreateSystems(cam, economy);
+            RtsSandboxBuilder.CreateUI(selection, placement, orders);
+            new GameObject("BenchmarkRunner").AddComponent<BenchmarkRunner>();
+
+            var surface = RtsSandboxBuilder.CreateNavMesh(RtsSandboxBuilder.NavDir + "/RTS_Benchmark_NavMesh.asset");
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!EditorSceneManager.SaveScene(scene, BenchmarkScenePath))
+                throw new IOException("Failed to save " + BenchmarkScenePath);
+            RtsSandboxBuilder.AddSceneToBuildSettingsLast(BenchmarkScenePath);
+            AssetDatabase.SaveAssets();
+            string summary = "RTS_Benchmark built, navmesh=" + (surface.navMeshData != null ? "ok" : "MISSING");
+            Debug.Log("[Ironfront] " + summary);
+            return summary;
+        }
+
+        public static string Build() => Build(swapped: false);
+
+        /// <param name="swapped">Faction 1 starts in the north-east and faction 2 in the south-west.</param>
+        public static string Build(bool swapped)
         {
             RtsSandboxBuilder.EnsureFolder(RtsSandboxBuilder.MaterialsDir);
             RtsSandboxBuilder.EnsureFolder(RtsSandboxBuilder.PrefabsDir);
@@ -108,8 +169,18 @@ namespace Ironfront.EditorTools
             var (selection, _, placement, orders) = RtsSandboxBuilder.CreateSystems(cam, economy);
             var canvas = RtsSandboxBuilder.CreateUI(selection, placement, orders);
 
-            PlaceBase(economy, "PlayerBase", PlayerFaction, PlayerHq, PlayerRefinery, PlayerHarvester);
-            PlaceBase(economy, "EnemyBase", EnemyFaction, EnemyHq, EnemyRefinery, EnemyHarvester);
+            if (!swapped)
+            {
+                PlaceBase(economy, "PlayerBase", PlayerFaction, PlayerHq, PlayerRefinery, PlayerHarvester);
+                PlaceBase(economy, "EnemyBase", EnemyFaction, EnemyHq, EnemyRefinery, EnemyHarvester);
+            }
+            else
+            {
+                PlaceBase(economy, "PlayerBase", PlayerFaction, EnemyHq, EnemyRefinery, EnemyHarvester);
+                PlaceBase(economy, "EnemyBase", EnemyFaction, PlayerHq, PlayerRefinery, PlayerHarvester);
+                var rig = cam.transform.parent.GetComponent<RtsCameraController>();
+                if (rig != null) rig.transform.position = new Vector3(EnemyHq.x, rig.transform.position.y, EnemyHq.z - 12f);
+            }
 
             var resources = new GameObject("Resources").transform;
             foreach (var (name, position, amount) in OreFields)
@@ -129,15 +200,16 @@ namespace Ironfront.EditorTools
             CreateMatchFlow(canvas);
             CreateDebugPanel(canvas);
 
-            var surface = RtsSandboxBuilder.CreateNavMesh(NavMeshDataPath);
+            var surface = RtsSandboxBuilder.CreateNavMesh(swapped ? SwappedNavMeshDataPath : NavMeshDataPath);
 
+            string path = swapped ? SwappedScenePath : ScenePath;
             EditorSceneManager.MarkSceneDirty(scene);
-            if (!EditorSceneManager.SaveScene(scene, ScenePath))
-                throw new IOException("Failed to save " + ScenePath);
-            RtsSandboxBuilder.AddSceneToBuildSettingsFirst(ScenePath);
+            if (!EditorSceneManager.SaveScene(scene, path))
+                throw new IOException("Failed to save " + path);
+            if (!swapped) RtsSandboxBuilder.AddSceneToBuildSettingsFirst(ScenePath);
             AssetDatabase.SaveAssets();
 
-            string summary = $"RTS_Match built: 2 bases, {OreFields.Length} ore fields, {Obstacles.Length} obstacles, " +
+            string summary = $"{System.IO.Path.GetFileNameWithoutExtension(path)} built: 2 bases, {OreFields.Length} ore fields, {Obstacles.Length} obstacles, " +
                              $"AI {normal.DisplayName}, navmesh={(surface.navMeshData != null ? AssetDatabase.GetAssetPath(surface.navMeshData) : "MISSING")}";
             Debug.Log("[Ironfront] " + summary);
             return summary;
@@ -152,11 +224,11 @@ namespace Ironfront.EditorTools
         private static void PlaceBase(EconomyContentBuilder.Content c, string rootName, int faction, Vector3 hq, Vector3 refinery, Vector3 harvester)
         {
             var root = new GameObject(rootName).transform;
-            var facing = BuildingDefinition.Facing(faction != PlayerFaction);
+            var facing = BuildingDefinition.Facing(hq.z > 0f); // fronts face the opponent
             Place(c.Headquarters.Prefab, root, hq, $"Headquarters_F{faction}", faction).transform.rotation = facing;
             Place(c.Refinery.Prefab, root, refinery, $"Refinery_F{faction}", faction).transform.rotation = facing;
             var h = Place(c.Harvester.Prefab, root, harvester, $"Harvester_F{faction}", faction);
-            h.transform.rotation = Quaternion.Euler(0f, faction == PlayerFaction ? 90f : -90f, 0f);
+            h.transform.rotation = Quaternion.Euler(0f, hq.z < 0f ? 90f : -90f, 0f);
 
             var start = new GameObject($"StartLocation_F{faction}");
             start.transform.SetParent(root, false);
@@ -190,13 +262,22 @@ namespace Ironfront.EditorTools
             bg.color = new Color(0f, 0f, 0f, 0.75f);
             bg.raycastTarget = true; // blocks clicks on the world while shown
 
-            var title = Label(panel.transform, "Title", font, 72, FontStyle.Bold, new Vector2(0f, 80f), new Vector2(900f, 110f));
-            var detail = Label(panel.transform, "Detail", font, 22, FontStyle.Normal, new Vector2(0f, -10f), new Vector2(900f, 70f));
+            var title = Label(panel.transform, "Title", font, 72, FontStyle.Bold, new Vector2(0f, 210f), new Vector2(900f, 110f));
+            var detail = Label(panel.transform, "Detail", font, 22, FontStyle.Normal, new Vector2(0f, 120f), new Vector2(900f, 70f));
+
+            // Statistics table: row labels plus one column per side.
+            var statLabels = Label(panel.transform, "StatLabels", font, 18, FontStyle.Normal, new Vector2(-110f, -30f), new Vector2(300f, 200f));
+            statLabels.alignment = TextAnchor.UpperLeft;
+            statLabels.color = new Color(0.75f, 0.8f, 0.88f);
+            var statPlayer = Label(panel.transform, "StatPlayer", font, 18, FontStyle.Bold, new Vector2(100f, -30f), new Vector2(100f, 200f));
+            statPlayer.alignment = TextAnchor.UpperRight;
+            var statEnemy = Label(panel.transform, "StatEnemy", font, 18, FontStyle.Bold, new Vector2(210f, -30f), new Vector2(100f, 200f));
+            statEnemy.alignment = TextAnchor.UpperRight;
 
             var buttonGo = RtsSandboxBuilder.NewUiObject("RestartButton", panel.transform);
             var bRect = (RectTransform)buttonGo.transform;
             bRect.anchorMin = bRect.anchorMax = bRect.pivot = new Vector2(0.5f, 0.5f);
-            bRect.anchoredPosition = new Vector2(0f, -100f);
+            bRect.anchoredPosition = new Vector2(0f, -190f);
             bRect.sizeDelta = new Vector2(240f, 54f);
             buttonGo.AddComponent<Image>().color = new Color(0.2f, 0.45f, 0.95f, 1f);
             var button = buttonGo.AddComponent<Button>();
@@ -207,6 +288,9 @@ namespace Ironfront.EditorTools
             RtsSandboxBuilder.SetRef(view, "panel", panel);
             RtsSandboxBuilder.SetRef(view, "title", title);
             RtsSandboxBuilder.SetRef(view, "detail", detail);
+            RtsSandboxBuilder.SetRef(view, "statLabels", statLabels);
+            RtsSandboxBuilder.SetRef(view, "statPlayer", statPlayer);
+            RtsSandboxBuilder.SetRef(view, "statEnemy", statEnemy);
             RtsSandboxBuilder.SetRef(view, "restartButton", button);
             RtsSandboxBuilder.SetRef(view, "flow", flow);
             RtsSandboxBuilder.SetRef(flow, "resultView", view);

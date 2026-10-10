@@ -35,6 +35,11 @@ namespace Ironfront.AI
         [SerializeField] private int factionId = 2;
         [SerializeField] private AiDifficulty difficulty;
         [SerializeField] private BuildingPlacementController placement;
+        [Tooltip("0 = fixed timing (default). Any other value varies decision timing and rally points slightly, " +
+                 "so repeated AI-vs-AI matches differ (balance studies).")]
+        [SerializeField] private int seed;
+        [SerializeField, Range(0f, 0.5f)] private float decisionJitter = 0.2f;
+        [SerializeField] private float rallyJitter = 6f;
 
         private CommanderSettings _cfg;
         private CostTable _cost;
@@ -42,6 +47,7 @@ namespace Ironfront.AI
         private UnitDefinition _harvesterDef, _lightDef, _heavyDef;
         private AiPerception _perception;
         private float _timer;
+        private System.Random _rng;
         private float _stateSince;
         private bool _halted;
         private bool _initialised;
@@ -73,6 +79,8 @@ namespace Ironfront.AI
         public int AttackersCount => _attackers.Count;
         public bool IsHalted => _halted;
         public Vector3 RallyPoint { get; private set; }
+        public int Seed => seed;
+        private Vector3 _rallyOffset;
 
         /// <summary>Raised for each decision-log entry.</summary>
         public event Action<string> Logged;
@@ -84,6 +92,27 @@ namespace Ironfront.AI
             difficulty = settings;
             placement = placementController;
         }
+
+        /// <summary>Sets the variation seed (0 = none). Takes effect immediately, also on a running commander.</summary>
+        public void SetSeed(int value)
+        {
+            seed = value;
+            if (_initialised) ApplySeed();
+        }
+
+        private void ApplySeed()
+        {
+            _rng = null;
+            _rallyOffset = Vector3.zero;
+            if (seed == 0) return;
+            _rng = new System.Random(seed);
+            _timer = (float)_rng.NextDouble() * difficulty.DecisionInterval;
+            float angle = (float)(_rng.NextDouble() * Math.PI * 2.0);
+            _rallyOffset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * rallyJitter * (float)_rng.NextDouble();
+        }
+
+        private float Jitter(float baseValue) =>
+            _rng == null ? baseValue : baseValue * (1f + decisionJitter * (float)(_rng.NextDouble() * 2.0 - 1.0));
 
         private void OnEnable() { if (!s_All.Contains(this)) s_All.Add(this); }
         private void OnDisable() => s_All.Remove(this);
@@ -108,8 +137,9 @@ namespace Ironfront.AI
             }
             _stateSince = Time.time;
             _timer = difficulty.DecisionInterval * 0.5f; // stagger from other per-interval work
+            ApplySeed();
             _initialised = true;
-            Record($"Commander online ({difficulty.DisplayName}), faction {factionId}");
+            Record($"Commander online ({difficulty.DisplayName}), faction {factionId}" + (seed != 0 ? $", seed {seed}" : ""));
         }
 
         private void Update()
@@ -122,7 +152,7 @@ namespace Ironfront.AI
             }
             _timer -= Time.deltaTime;
             if (_timer > 0f) return;
-            _timer = difficulty.DecisionInterval;
+            _timer = Jitter(difficulty.DecisionInterval);
             Decide();
         }
 
@@ -139,6 +169,7 @@ namespace Ironfront.AI
         /// <summary>Runs one decision immediately (normally called on the decision interval).</summary>
         public void Decide()
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.Commander.Auto();
             if (!_initialised || _halted) return;
             Decisions++;
 
@@ -480,6 +511,18 @@ namespace Ironfront.AI
 
                 if (m.Order == CombatOrderType.Idle || m.Order == CombatOrderType.Hold)
                 {
+                    // Idle again at every decision without moving: its orders are not taking effect. Give up rather
+                    // than re-issuing them forever (this kept an attack "running" indefinitely in a balance study).
+                    int idleStuck = moved ? 0 : p.stuck + 1;
+                    if (idleStuck >= difficulty.StuckDecisions * 2)
+                    {
+                        _attackers.Remove(u);
+                        _progress.Remove(u);
+                        Order(u, c => c.OrderMove(RallyPoint));
+                        Record($"{u.name} makes no progress towards the objective; sent home");
+                        continue;
+                    }
+
                     // Finished its leg: attack the objective structure if visible, otherwise continue to it.
                     if (_objectiveTarget != null && _objectiveTarget.IsAlive && _perception.Visible.Contains(_objectiveTarget))
                         Order(u, c => c.OrderAttack(_objectiveTarget));
@@ -491,7 +534,7 @@ namespace Ironfront.AI
                         ChooseObjective(exclude: _objectiveTarget);
                         if (_objective != null) Order(u, c => c.OrderAttackMove(_objective.Value));
                     }
-                    _progress[u] = (pos, 0);
+                    _progress[u] = (pos, idleStuck);
                     continue;
                 }
 
@@ -659,7 +702,7 @@ namespace Ironfront.AI
             Vector3 dir = EnemyDirectionTarget(hq) - hq;
             dir.y = 0f;
             dir = dir.sqrMagnitude > 1e-3f ? dir.normalized : Vector3.forward;
-            Vector3 p = hq + dir * difficulty.RallyDistance;
+            Vector3 p = hq + dir * difficulty.RallyDistance + _rallyOffset;
             return NavMesh.SamplePosition(p, out var hit, 8f, NavMesh.AllAreas) ? hit.position : p;
         }
 

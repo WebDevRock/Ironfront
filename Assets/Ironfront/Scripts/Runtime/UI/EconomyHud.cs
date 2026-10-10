@@ -97,8 +97,13 @@ namespace Ironfront.UI
 
         private void Update()
         {
+            using var perfScope = Ironfront.Diagnostics.PerfMarkers.Hud.Auto();
             if (_factory != null && _factory.Queue.Count > 0 && _queueSlots.Count > 0)
+            {
                 SetFill(_queueSlots[0].Fill, _factory.Queue.HeadProgress01);
+                string head = HeadLabel();
+                if (_queueSlots[0].Label.text != head) _queueSlots[0].Label.text = head;
+            }
 
             if (_messageTimer > 0f)
             {
@@ -195,10 +200,59 @@ namespace Ironfront.UI
                 bool used = items != null && i < items.Count;
                 slot.Button.gameObject.SetActive(used);
                 if (!used) continue;
-                slot.Label.text = i == 0 ? $"{items[i].DisplayName}  (building - click to cancel)" : $"{items[i].DisplayName}  (queued)";
+                slot.Label.text = i == 0 ? HeadLabel() : $"{items[i].DisplayName}  (queued - click to cancel)";
                 SetFill(slot.Fill, i == 0 ? _factory.Queue.HeadProgress01 : 0f);
             }
             RefreshUnitButtons();
+        }
+
+        /// <summary>"Heavy Tank  42%  6s" for the item in production (" PAUSED: low power" style hints included).</summary>
+        private string HeadLabel()
+        {
+            var items = _factory.Queue.Items;
+            if (items.Count == 0) return "";
+            int pct = Mathf.FloorToInt(_factory.Queue.HeadProgress01 * 100f);
+            float remaining = _factory.HeadSecondsRemaining;
+            string time = float.IsInfinity(remaining) ? "waiting" : $"{Mathf.CeilToInt(remaining)}s";
+            string slow = _faction != null && _faction.Power.IsLowPower ? "  LOW POWER" : "";
+            return $"{items[0].DisplayName}  {pct}%  {time}{slow}";
+        }
+
+        private string BuildTooltip(BuildingDefinition def)
+        {
+            var check = ConstructionRules.Check(def, _faction);
+            string power = def.PowerOutput > 0 ? $"Power +{def.PowerOutput}" : def.PowerDrain > 0 ? $"Power -{def.PowerDrain}" : "No power use";
+            string status = check == BuildCheck.Ok ? "Click, then place on the map."
+                : check == BuildCheck.MissingPrerequisite ? "Locked: requires " + Prerequisites(def)
+                : check == BuildCheck.InsufficientFunds ? $"Need ${def.Cost - _faction.Wallet.Credits} more credits"
+                : check.ToString();
+            return $"{def.DisplayName.ToUpperInvariant()}   ${def.Cost}\nHealth {def.MaxHealth:0}  Armour {def.Armour:0}\n{power}\n{status}";
+        }
+
+        private static string Prerequisites(BuildingDefinition def)
+        {
+            var names = new List<string>();
+            foreach (var p in def.Prerequisites) if (p != null) names.Add(p.DisplayName);
+            return names.Count > 0 ? string.Join(", ", names) : "another structure";
+        }
+
+        private string UnitTooltip(UnitDefinition def)
+        {
+            string status = _factory == null ? "No factory"
+                : _factory.Queue.Count >= _factory.Queue.Capacity ? "Queue full"
+                : !_faction.Wallet.CanAfford(def.Cost) ? $"Need ${def.Cost - _faction.Wallet.Credits} more credits"
+                : "Click to queue (cost is paid now, refunded on cancel)";
+            var w = def.Weapon;
+            string stats = $"Health {def.MaxHealth:0}  Armour {def.Armour:0}  Speed {def.MoveSpeed:0.#}" +
+                           (w != null ? $"\nWeapon: {w.Damage:0} dmg / {w.Cooldown:0.#}s, range {w.Range:0}" : "\nUnarmed");
+            return $"{def.DisplayName.ToUpperInvariant()}   ${def.Cost}   {def.BuildTime:0}s\n{stats}\n{status}";
+        }
+
+        private string QueueTooltip(int index)
+        {
+            if (_factory == null || index >= _factory.Queue.Count) return null;
+            var item = _factory.Queue.Items[index];
+            return $"{item.DisplayName}: click to cancel and refund ${item.Cost}";
         }
 
         // ---------- Layout ----------
@@ -217,6 +271,7 @@ namespace Ironfront.UI
                     var captured = def;
                     var (button, label, image) = CreateButton(content, def.DisplayName, 30, () => OnBuildClicked(captured));
                     button.name = "Build_" + def.Id;
+                    TooltipTrigger.Attach(button.gameObject, () => BuildTooltip(captured));
                     _buildEntries.Add(new BuildEntry { Def = def, Button = button, Label = label, Image = image });
                 }
             }
@@ -232,6 +287,7 @@ namespace Ironfront.UI
                 int index = i;
                 var (button, label, _) = CreateButton(content, "", 24, () => OnQueueSlotClicked(index));
                 button.name = "QueueSlot_" + i;
+                TooltipTrigger.Attach(button.gameObject, () => QueueTooltip(index));
                 label.fontSize = 12;
                 var fill = CreateFill(button.transform);
                 _queueSlots.Add(new QueueSlot { Button = button, Label = label, Fill = fill });
@@ -255,6 +311,7 @@ namespace Ironfront.UI
                 var (button, label, _) = CreateButton(_unitRoot, $"{def.DisplayName}  ${def.Cost}  ({def.BuildTime:0}s)", 30,
                     () => OnUnitClicked(captured));
                 button.name = "Produce_" + def.Id;
+                TooltipTrigger.Attach(button.gameObject, () => UnitTooltip(captured));
                 _unitEntries.Add(new UnitEntry { Def = def, Button = button, Label = label });
             }
         }
@@ -275,7 +332,11 @@ namespace Ironfront.UI
             {
                 case EnqueueResult.Ok: ShowMessage($"{def.DisplayName} queued (-{def.Cost})"); break;
                 case EnqueueResult.QueueFull: ShowMessage("Production queue is full"); break;
-                case EnqueueResult.InsufficientFunds: ShowMessage($"Insufficient credits for {def.DisplayName}"); break;
+                case EnqueueResult.InsufficientFunds:
+                    ShowMessage($"Insufficient credits for {def.DisplayName}");
+                    if (NotificationCenter.Current != null)
+                        NotificationCenter.Current.Post("Insufficient credits", NotificationCenter.Kind.Warning, "credits", 3f);
+                    break;
             }
         }
 

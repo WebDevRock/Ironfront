@@ -310,6 +310,9 @@ namespace Ironfront.Tests
             var view = Object.FindAnyObjectByType<MatchResultView>();
             Assert.IsTrue(view.IsShown);
             Assert.AreEqual("VICTORY", view.TitleText);
+            Assert.AreEqual(1, MatchStatisticsTracker.Current.Stats.For(Player).EnemyStructuresDestroyed, "the kill is credited");
+            Assert.AreEqual(1, MatchStatisticsTracker.Current.Stats.For(Enemy).StructuresLost);
+            StringAssert.Contains("Enemy structures destroyed", view.StatisticsText, "the result screen shows statistics");
             yield return null;
             Assert.IsTrue(ai.IsHalted, "No more strategic commands after the end");
 

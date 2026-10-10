@@ -23,6 +23,24 @@ namespace Ironfront.Buildings
         /// <summary>Raised when any factory is enabled or disabled.</summary>
         public static event Action FactoriesChanged;
 
+        /// <summary>Raised for every unit produced by any factory (notifications, statistics).</summary>
+        public static event Action<VehicleFactory, GameObject> AnyUnitProduced;
+
+        /// <summary>Current production speed (1, or the low-power multiplier).</summary>
+        public float CurrentSpeed
+        {
+            get
+            {
+                var faction = Faction;
+                var setup = MatchController.Current != null ? MatchController.Current.Setup : null;
+                return faction != null && faction.Power.IsLowPower && setup != null ? setup.LowPowerProductionMultiplier : 1f;
+            }
+        }
+
+        /// <summary>Seconds until the head item completes at the current speed.</summary>
+        public float HeadSecondsRemaining =>
+            Queue.Count == 0 ? 0f : Mathf.Max(0f, Queue.Items[0].BuildTime - Queue.HeadElapsed) / Mathf.Max(0.01f, CurrentSpeed);
+
         [SerializeField] private GameObject rallyMarker;
         [SerializeField] private LayerMask unitLayers = 0;
         [SerializeField] private float spawnSpacing = 2.5f;
@@ -132,6 +150,7 @@ namespace Ironfront.Buildings
             if (mover != null) mover.MoveTo(RallyPoint);
 
             UnitProduced?.Invoke(go);
+            AnyUnitProduced?.Invoke(this, go);
             return go;
         }
 
@@ -153,6 +172,7 @@ namespace Ironfront.Buildings
         {
             s_All.Clear();
             FactoriesChanged = null;
+            AnyUnitProduced = null;
         }
     }
 }

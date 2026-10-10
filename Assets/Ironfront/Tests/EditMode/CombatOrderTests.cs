@@ -406,5 +406,123 @@ namespace Ironfront.Tests
             m.OrderAttack(b, null);
             Assert.AreEqual(CombatOrderType.Idle, m.Order);
         }
+
+        // ---- Retaliation (Milestone 005) ----
+
+        [Test]
+        public void Idle_WhenShotFromBeyondAcquisition_ClosesInAndReturnsFire()
+        {
+            var b = new Body();
+            var attacker = new Target { Pos = new Vector3(18f, 0f, 0f) }; // beyond acquisition (14): never found by scans
+            var m = NewMachine();
+
+            m.NotifyAttacked(b, attacker);
+            Assert.AreEqual(CombatOrderType.Attack, m.Order);
+            Assert.IsTrue(m.IsRetaliating);
+            Assert.AreSame(attacker, m.Target);
+            StringAssert.StartsWith("Returning fire", m.Describe());
+
+            Run(m, b, 4f);
+            Assert.Greater(b.Shots.Count, 0, "the unit closes to weapon range and fires back");
+            Assert.LessOrEqual(Vector3.Distance(b.Pos, attacker.Pos), Range + 0.5f);
+        }
+
+        [Test]
+        public void Retaliation_GivesUpWhenAttackerEscapesBeyondLeash()
+        {
+            var b = new Body { Speed = 3f };
+            var attacker = new Target { Pos = new Vector3(18f, 0f, 0f) };
+            var m = NewMachine();
+
+            m.NotifyAttacked(b, attacker);
+            // The attacker retreats faster than the unit can follow.
+            Run(m, b, 6f, () => attacker.Pos += new Vector3(6f * Dt, 0f, 0f));
+
+            Assert.AreEqual(CombatOrderType.Idle, m.Order, "leashed: the unit does not chase across the map");
+            Assert.IsFalse(m.IsRetaliating);
+            Assert.AreEqual("attacker escaped", m.LastResult);
+            Assert.IsNull(b.Dest, "the unit halts where it gave up");
+            Assert.Less(b.Pos.x, 6f);
+        }
+
+        [Test]
+        public void Idle_AlreadyEngaged_KeepsCurrentTarget()
+        {
+            var b = new Body();
+            var near = new Target { Pos = new Vector3(8f, 0f, 0f) };
+            b.Enemies.Add(near);
+            var m = NewMachine();
+            Run(m, b, 1f);
+            Assert.AreSame(near, m.Target);
+
+            m.NotifyAttacked(b, new Target { Pos = new Vector3(0f, 0f, 18f) });
+            Assert.AreSame(near, m.Target, "a unit already fighting does not switch to a distant attacker");
+            Assert.AreEqual(CombatOrderType.Idle, m.Order);
+        }
+
+        [Test]
+        public void Move_IsNotInterruptedByAttack()
+        {
+            var b = new Body();
+            var m = NewMachine();
+            m.OrderMove(b, new Vector3(30f, 0f, 0f));
+            m.NotifyAttacked(b, new Target { Pos = new Vector3(5f, 0f, 5f) });
+            Assert.AreEqual(CombatOrderType.Move, m.Order);
+            Assert.IsNull(m.Target);
+        }
+
+        [Test]
+        public void ExplicitAttack_IsNotRedirectedByAnotherAttacker()
+        {
+            var b = new Body();
+            var ordered = new Target { Pos = new Vector3(9f, 0f, 0f) };
+            var m = NewMachine();
+            m.OrderAttack(b, ordered);
+            m.NotifyAttacked(b, new Target { Pos = new Vector3(0f, 0f, 6f) });
+            Assert.AreSame(ordered, m.Target);
+            Assert.IsFalse(m.IsRetaliating);
+        }
+
+        [Test]
+        public void Hold_ReturnsFireOnlyWithinRange_AndNeverMoves()
+        {
+            var b = new Body();
+            var m = NewMachine();
+            m.OrderHold(b);
+
+            m.NotifyAttacked(b, new Target { Pos = new Vector3(16f, 0f, 0f) });
+            Assert.IsNull(m.Target, "out of weapon range: hold ignores it");
+
+            var close = new Target { Pos = new Vector3(7f, 0f, 0f) };
+            m.NotifyAttacked(b, close);
+            Assert.AreSame(close, m.Target);
+            Run(m, b, 2f);
+            Assert.Greater(b.Shots.Count, 0);
+            Assert.AreEqual(Vector3.zero, b.Pos);
+            Assert.AreEqual(CombatOrderType.Hold, m.Order);
+        }
+
+        [Test]
+        public void AttackMove_TakesAttackerAsTarget_WhenItHasNone()
+        {
+            var b = new Body();
+            var m = NewMachine();
+            m.OrderAttackMove(b, new Vector3(40f, 0f, 0f));
+            var attacker = new Target { Pos = new Vector3(0f, 0f, 16f) };
+            m.NotifyAttacked(b, attacker);
+            Assert.AreSame(attacker, m.Target);
+            Assert.AreEqual(CombatOrderType.AttackMove, m.Order);
+        }
+
+        [Test]
+        public void NotifyAttacked_IgnoresDeadOrNullAttacker()
+        {
+            var b = new Body();
+            var m = NewMachine();
+            m.NotifyAttacked(b, null);
+            m.NotifyAttacked(b, new Target { Alive = false });
+            Assert.AreEqual(CombatOrderType.Idle, m.Order);
+            Assert.IsNull(m.Target);
+        }
     }
 }

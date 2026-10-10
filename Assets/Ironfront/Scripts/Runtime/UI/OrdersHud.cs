@@ -44,8 +44,12 @@ namespace Ironfront.UI
             row.AddComponent<LayoutElement>().preferredHeight = 34f;
 
             _attackMoveImage = CreateButton(row.transform, "Order_AttackMove", "Attack-Move [F]", () => orders.BeginAttackMove());
-            CreateButton(row.transform, "Order_Stop", "Stop [X]", orders.Stop);
-            CreateButton(row.transform, "Order_Hold", "Hold [H]", orders.Hold);
+            TooltipTrigger.Attach(_attackMoveImage.gameObject, () =>
+                "ATTACK-MOVE  [F]\nThen left-click a destination (or the minimap). Units engage any enemy met on the way.");
+            var stop = CreateButton(row.transform, "Order_Stop", "Stop [X]", orders.Stop);
+            TooltipTrigger.Attach(stop.gameObject, () => "STOP  [X]\nCancel all orders. Idle units still return fire when attacked.");
+            var hold = CreateButton(row.transform, "Order_Hold", "Hold [H]", orders.Hold);
+            TooltipTrigger.Attach(hold.gameObject, () => "HOLD POSITION  [H]\nStay put and fire only at enemies within weapon range.");
 
             var statusGo = new GameObject("Status", typeof(RectTransform));
             statusGo.layer = panel.gameObject.layer;
