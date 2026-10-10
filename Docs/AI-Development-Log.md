@@ -236,4 +236,4 @@ An autonomous enemy commander and a complete single-player match:
 - No complete human-played victory through the UI yet (victory is covered by an automated test).
 
 ### Relevant commit hash
-Milestone commit: see the "Commit" line below (recorded after committing).
+Milestone commit: `105ec38` (105ec383bbaefdfe7fa0a117a75f86603a1072e2)
