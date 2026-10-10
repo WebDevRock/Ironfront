@@ -124,4 +124,4 @@ independently testable rules, faction-agnostic state and event-driven HUD update
 - Interactive play of the built `.exe` was not automated; only launch and the log were checked.
 
 ### Relevant commit hash
-Milestone commit: see the "Commit" line below (recorded after committing).
+Milestone commit: `26a945c` (26a945cfb15f6ce37fb1e9d203727ace1416728f)
