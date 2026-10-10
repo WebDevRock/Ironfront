@@ -229,4 +229,4 @@ Setup:
 
 ## Relevant commit hash
 
-Milestone commit: _recorded after commit_
+Milestone commit: `1ad2601` (1ad2601d67dd11fb3971b3636fffef8950c8ec84)
