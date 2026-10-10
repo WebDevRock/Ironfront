@@ -3,7 +3,7 @@
 **Date:** 2026-10-10
 **Engine:** Unity 6000.6.5f1, URP 17.6.0, Input System 1.20.0, AI Navigation 2.0.15
 **Builds on:** Milestone 002 (`26a945c`)
-**Commit:** see `Docs/AI-Development-Log.md` (Milestone 003 entry)
+**Commit:** `7f7f70b`
 
 ## Summary
 

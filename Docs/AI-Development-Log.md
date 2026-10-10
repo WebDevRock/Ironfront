@@ -178,4 +178,4 @@ Basic RTS combat integrated with movement, production, construction, economy and
 - Placeholder primitive visuals; the sidebar covers part of the view at 1280×720.
 
 ### Relevant commit hash
-Milestone commit: see the "Commit" line below (recorded after committing).
+Milestone commit: `7f7f70b` (7f7f70bdbaf9ae5341a957ebfb558034a10dd893)
