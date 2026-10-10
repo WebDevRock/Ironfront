@@ -18,6 +18,11 @@ MonoBehaviour:
     color: {r: 0.2, g: 0.45, b: 0.95, a: 1}
     humanControlled: 1
     startingCredits: 2000
+  - id: 2
+    displayName: Enemy
+    color: {r: 0.85, g: 0.15, b: 0.12, a: 1}
+    humanControlled: 0
+    startingCredits: 0
   constructionOptions:
   - {fileID: 11400000, guid: a3461439d6b06fc40ab163071321394c, type: 2}
   - {fileID: 11400000, guid: 4774e8e316b21c048bffd76d5b2db895, type: 2}
@@ -25,3 +30,4 @@ MonoBehaviour:
   creditsPerOre: 1
   lowPowerProductionMultiplier: 0.5
   productionQueueCapacity: 5
+  combatVisuals: {fileID: 11400000, guid: 5658449447f8c6e409e889a7bbc98bcb, type: 2}

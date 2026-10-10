@@ -283,6 +283,9 @@ GameObject:
   - component: {fileID: 1679631270199781094}
   - component: {fileID: 4033719854353302307}
   - component: {fileID: 7815757513356459826}
+  - component: {fileID: 4055813496106047383}
+  - component: {fileID: 6271941141654070241}
+  - component: {fileID: 715410682940741372}
   m_Layer: 10
   m_Name: Headquarters
   m_TagString: Untagged
@@ -375,6 +378,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Buildings.Building
   definition: {fileID: 11400000, guid: 58406427a7df3e54185a1c26a64fb60c, type: 2}
   selectionIndicator: {fileID: 1737662355790565583}
+--- !u!114 &4055813496106047383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2578387970938840374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0412ea46f408ce4b849005ae6c11960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.Health
+  fallbackMaxHealth: 100
+  fallbackArmour: 0
+  aimHeight: 2.3
+  explosionSize: 8
+--- !u!114 &6271941141654070241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2578387970938840374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7fca6bcba4740244b6ddcaba68b8008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.HealthBar
+  height: 5.8
+  width: 4
+  thickness: 0.3
+--- !u!114 &715410682940741372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2578387970938840374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a5568f2a895b2f4fbfca2eca32232f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Match.FactionColorizer
+  renderers:
+  - {fileID: 1550011288042128452}
 --- !u!1 &5103070322652229699
 GameObject:
   m_ObjectHideFlags: 0

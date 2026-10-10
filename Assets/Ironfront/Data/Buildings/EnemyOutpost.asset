@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb45c7de50a198f4a93840797192cb50, type: 3}
+  m_Name: EnemyOutpost
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.BuildingDefinition
+  id: enemy_outpost
+  displayName: Enemy Outpost
+  cost: 0
+  footprintSize: {x: 6, y: 6}
+  apronDepth: 0
+  powerOutput: 0
+  powerDrain: 0
+  prerequisites: []
+  constructible: 0
+  prefab: {fileID: 5998540251894590110, guid: bdebed1000023c94aa4c8dfc2a9d21c2, type: 3}
+  producibleUnits: []
+  maxHealth: 1000
+  armour: 0.1

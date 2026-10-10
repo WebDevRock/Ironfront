@@ -10,10 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dde82e58f08d6b0439864dbe6c7b8db3, type: 3}
-  m_Name: Tank
+  m_Name: LightTank
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.UnitDefinition
-  id: tank
-  displayName: Tank
-  cost: 400
+  id: light_tank
+  displayName: Light Tank
+  cost: 500
   buildTime: 6
-  prefab: {fileID: 7207854982819082335, guid: ca9ecbb6f2951b2418c93b7adc97606b, type: 3}
+  prefab: {fileID: 945638235165024381, guid: 1bab2627fc420454d823991264c03ea5, type: 3}
+  maxHealth: 300
+  armour: 0.1
+  moveSpeed: 8
+  weapon: {fileID: 11400000, guid: 3903389b7999cf148b9589f90ea7af7c, type: 2}

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Ironfront.CameraControl;
+using Ironfront.Combat;
 using Ironfront.Commands;
 using Ironfront.Construction;
 using Ironfront.Match;
@@ -100,9 +101,10 @@ namespace Ironfront.EditorTools
 
             var cam = CreateCameraRig();
             var units = CreateUnits(unitPrefab, mats);
-            var (selection, _, placement) = CreateSystems(cam, economy);
-            CreateUI(selection, placement);
+            var (selection, _, placement, orders) = CreateSystems(cam, economy);
+            CreateUI(selection, placement, orders);
             EconomyContentBuilder.PopulateScene(economy);
+            CombatContentBuilder.PopulateScenario(economy.Combat);
 
             var surface = CreateNavMesh();
 
@@ -114,7 +116,7 @@ namespace Ironfront.EditorTools
             AssetDatabase.SaveAssets();
 
             string summary = $"RTS_Sandbox built: {units.Count} scouts, {Obstacles.Length} obstacles, " +
-                             $"{EconomyContentBuilder.Summary}, " +
+                             $"{EconomyContentBuilder.Summary}, {CombatContentBuilder.Summary}, " +
                              $"navmesh={(surface.navMeshData != null ? AssetDatabase.GetAssetPath(surface.navMeshData) : "MISSING")}";
             Debug.Log("[Ironfront] " + summary);
             return summary;
@@ -203,6 +205,19 @@ namespace Ironfront.EditorTools
 
             var ring = AddSelectionRing(unit.transform, ringMaterial, -0.97f, 1.7f);
             SetRef(selectable, "selectionIndicator", ring);
+
+            // Unarmed scout: can be attacked and destroyed (100 HP, no armour).
+            var health = unit.AddComponent<Health>();
+            var hso = new SerializedObject(health);
+            hso.FindProperty("fallbackMaxHealth").floatValue = 100f;
+            hso.FindProperty("aimHeight").floatValue = 0f; // capsule pivot is at its centre
+            hso.FindProperty("explosionSize").floatValue = 2f;
+            hso.ApplyModifiedPropertiesWithoutUndo();
+            var bar = unit.AddComponent<HealthBar>();
+            var bso = new SerializedObject(bar);
+            bso.FindProperty("height").floatValue = 1.7f;
+            bso.FindProperty("width").floatValue = 1.4f;
+            bso.ApplyModifiedPropertiesWithoutUndo();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(unit, UnitPrefabPath, out bool ok);
             Object.DestroyImmediate(unit);
@@ -349,7 +364,7 @@ namespace Ironfront.EditorTools
             return units;
         }
 
-        private static (SelectionManager, UnitCommandController, BuildingPlacementController) CreateSystems(
+        private static (SelectionManager, UnitCommandController, BuildingPlacementController, OrderInputController) CreateSystems(
             Camera cam, EconomyContentBuilder.Content economy)
         {
             var matchGo = new GameObject("Match");
@@ -360,6 +375,8 @@ namespace Ironfront.EditorTools
             var selection = systems.AddComponent<SelectionManager>();
             var commands = systems.AddComponent<UnitCommandController>();
             var placement = systems.AddComponent<BuildingPlacementController>();
+            var orders = systems.AddComponent<OrderInputController>();
+            var feedback = systems.AddComponent<OrderFeedback>();
 
             SetRef(selection, "viewCamera", cam);
             SetInt(selection, "unitLayers", 1 << UnitsLayerIndex);
@@ -368,6 +385,11 @@ namespace Ironfront.EditorTools
             SetRef(commands, "selectionManager", selection);
             SetInt(commands, "groundLayers", 1 << GroundLayerIndex);
             SetInt(commands, "resourceLayers", 1 << ResourcesLayerIndex);
+            SetInt(commands, "targetLayers", (1 << UnitsLayerIndex) | (1 << StructuresLayerIndex));
+            SetRef(orders, "commands", commands);
+            SetRef(orders, "selection", selection);
+            SetRef(feedback, "commands", commands);
+            SetRef(feedback, "selectionManager", selection);
 
             SetRef(placement, "viewCamera", cam);
             SetInt(placement, "groundLayers", 1 << GroundLayerIndex);
@@ -377,10 +399,10 @@ namespace Ironfront.EditorTools
             SetRef(placement, "validMaterial", economy.GhostValid);
             SetRef(placement, "invalidMaterial", economy.GhostInvalid);
 
-            return (selection, commands, placement);
+            return (selection, commands, placement, orders);
         }
 
-        private static void CreateUI(SelectionManager selection, BuildingPlacementController placement)
+        private static void CreateUI(SelectionManager selection, BuildingPlacementController placement, OrderInputController orders)
         {
             var esGo = new GameObject("EventSystem");
             esGo.AddComponent<EventSystem>();
@@ -401,7 +423,7 @@ namespace Ironfront.EditorTools
             var panelRect = (RectTransform)panel.transform;
             panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(0f, 1f);
             panelRect.anchoredPosition = new Vector2(10f, -10f);
-            panelRect.sizeDelta = new Vector2(460f, 70f);
+            panelRect.sizeDelta = new Vector2(600f, 112f);
             var panelImage = panel.AddComponent<Image>();
             panelImage.color = new Color(0f, 0f, 0f, 0.55f);
             panelImage.raycastTarget = true;
@@ -465,6 +487,28 @@ namespace Ironfront.EditorTools
             SetRef(economyHud, "placement", placement);
             SetRef(economyHud, "selectionManager", selection);
             SetRef(economyHud, "font", font);
+
+            // Combat orders panel (bottom centre; shown while armed units are selected).
+            var ordersPanel = NewUiObject("OrdersPanel", canvasGo.transform);
+            var ordersRect = (RectTransform)ordersPanel.transform;
+            ordersRect.anchorMin = ordersRect.anchorMax = ordersRect.pivot = new Vector2(0.5f, 0f);
+            ordersRect.anchoredPosition = new Vector2(0f, 10f);
+            ordersRect.sizeDelta = new Vector2(560f, 76f);
+            var ordersImage = ordersPanel.AddComponent<Image>();
+            ordersImage.color = new Color(0f, 0f, 0f, 0.6f);
+            ordersImage.raycastTarget = true;
+            var ordersLayout = ordersPanel.AddComponent<VerticalLayoutGroup>();
+            ordersLayout.padding = new RectOffset(8, 8, 8, 6);
+            ordersLayout.spacing = 4f;
+            ordersLayout.childControlHeight = true;
+            ordersLayout.childControlWidth = true;
+            ordersLayout.childForceExpandHeight = false;
+
+            var ordersHud = canvasGo.AddComponent<OrdersHud>(); // on the canvas: the panel itself gets hidden
+            SetRef(ordersHud, "panel", ordersRect);
+            SetRef(ordersHud, "orders", orders);
+            SetRef(ordersHud, "selectionManager", selection);
+            SetRef(ordersHud, "font", font);
         }
 
         private static GameObject NewUiObject(string name, Transform parent)

@@ -125,3 +125,57 @@ independently testable rules, faction-agnostic state and event-driven HUD update
 
 ### Relevant commit hash
 Milestone commit: `26a945c` (26a945cfb15f6ce37fb1e9d203727ace1416728f)
+
+---
+
+## Milestone 003 — Combat System (2026-10-10)
+
+### Feature requested
+Basic RTS combat integrated with movement, production, construction, economy and selection:
+- Data-driven Light and Heavy Tanks produced at the factory.
+- Reusable health/armour/damage for units and buildings, with friendly-fire prevention, health bars and full destruction cleanup.
+- Weapons with range, cooldown, projectiles, line of sight and target (re)acquisition.
+- Move / Attack / Attack-Move / Stop / Hold orders with jitter-free chasing and no permanent sticking.
+- An enemy test faction (stationary and moving units plus a destructible building) — no strategic AI.
+- Combat UI: unit info, order buttons and shortcuts, target feedback, current order.
+
+### Changes implemented
+- **Pure rules** (`Core/Combat`): `HealthModel`, `DamageRules`, `WeaponCooldown`, `TargetSelector`, `CombatOrderMachine` (with `ICombatBody`/`ICombatTarget` seams and tuning in `CombatSettings`).
+- **Data**: the new `WeaponDefinition` and `CombatVisuals`. `UnitDefinition` gained health, armour, speed and weapon; `BuildingDefinition` gained health and armour; `MatchSetup` gained the enemy faction and colours.
+- **Components**: `Health`, `HealthBar`, `CombatUnit`, `Projectile`, `CombatFx`/`TransientEffect`, `UnitIdentity`, `FactionColorizer`, plus the test-scenario helpers `PatrolRoute` and `ScenarioStartOrder`.
+- **Orders/UI**:
+  - `UnitCommandController` extended: right-click attack; armed units take move/formation orders through `CombatUnit`; `IssueAttack`/`IssueAttackMove`/`IssueStop`/`IssueHold` and order events.
+  - `OrderInputController` (F/X/H and targeting mode) and `RtsInputMode.IsTargeting`.
+  - `OrdersHud` (buttons and status), `OrderFeedback` (ground markers and target rings) and an extended `SelectionHud`.
+  - `SelectionManager` drops dying objects immediately.
+- **Content**: the new `CombatContentBuilder` (weapons, Light/Heavy Tank prefabs, Enemy Outpost, visuals, enemy scenario). `EconomyContentBuilder` adds Health, HealthBar, UnitIdentity and FactionColorizer to every unit/structure prefab, and the capsule scouts got Health.
+- **Removed**: the Milestone 002 `Tank` definition and prefab, replaced by Light/Heavy Tank (no remaining references).
+- **Tests**: 29 new EditMode and 11 new PlayMode tests. The Milestone 002 acceptance test now produces a Light and a Heavy Tank.
+- **Docs**: `Docs/Milestone-003-Report.md`.
+
+### Tests attempted and results
+- EditMode: **111/111 passed**.
+- PlayMode: **25/25 passed** (all Milestone 001/002 tests plus the combat scenarios: single and multi-unit, building destruction, attack-move, move, hold, stop, line of sight, moving target and reacquisition, selected-unit destruction cleanup).
+- Acceptance scenario through the real UI with simulated input: every step passed, with 0 game warnings or errors (see report).
+- Windows build succeeded; the player smoke test passed (clean log, window screenshot shows correct rendering and rising credits).
+
+### Problems encountered
+1. **Colour assertion** compared a property-block colour exactly and failed on float precision (values identical to 3 decimals). Changed to a tolerance comparison.
+2. **Runtime-spawned NavMeshObstacles** carve only after their stationary delay (0.5 s), so the building test waits before asserting the carve.
+3. **Editor lost OS focus** during the UI run; injected input stopped reaching the game, and `editor_focus` / SetForegroundWindow couldn't take focus back. Setting `Application.runInBackground = true` for the session fixed it; it was restored afterwards.
+4. **Camera/pointer off-screen**: a placement click didn't land because the site was off-screen from the starting camera. Solved by panning the camera there first.
+5. An Attack-Move leash check could have queried a destroyed target's distance. Caught in review before running: validity is now checked first.
+6. **Compile polling**: per the brief, I polled the non-main-thread `console_status` endpoint every 10 s while compiling instead of repeatedly calling main-thread APIs.
+
+### Human interventions required
+- None.
+
+### Known limitations
+- Projectiles are homing with no misses or splash; line of sight is checked at the moment of firing.
+- No enemy AI (test scenario only). Unarmed units don't react to attacks.
+- Unreachable-target detection is a 4 s no-progress timer, which could also trigger for a unit jammed in a crowd.
+- Interactive combat in the built `.exe` was not automated.
+- Placeholder primitive visuals; the sidebar covers part of the view at 1280×720.
+
+### Relevant commit hash
+Milestone commit: see the "Commit" line below (recorded after committing).

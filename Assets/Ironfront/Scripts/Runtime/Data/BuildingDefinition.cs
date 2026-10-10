@@ -25,6 +25,9 @@ namespace Ironfront.Data
         [SerializeField] private GameObject prefab;
         [Tooltip("Units this structure can manufacture (factories only).")]
         [SerializeField] private List<UnitDefinition> producibleUnits = new List<UnitDefinition>();
+        [Header("Combat")]
+        [SerializeField, Min(1f)] private float maxHealth = 1000f;
+        [SerializeField, Range(0f, 0.9f)] private float armour = 0.2f;
 
         public string Id => id;
         public string DisplayName => displayName;
@@ -37,6 +40,8 @@ namespace Ironfront.Data
         public GameObject Prefab => prefab;
         public IReadOnlyList<UnitDefinition> ProducibleUnits => producibleUnits;
         public IReadOnlyList<BuildingDefinition> Prerequisites => prerequisites;
+        public float MaxHealth => maxHealth;
+        public float Armour => armour;
 
         public IReadOnlyList<string> PrerequisiteIds =>
             prerequisites.Where(p => p != null).Select(p => p.Id).ToList();

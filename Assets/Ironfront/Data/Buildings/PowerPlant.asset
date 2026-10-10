@@ -24,3 +24,5 @@ MonoBehaviour:
   constructible: 1
   prefab: {fileID: 5412610221083364938, guid: 1249adb6111a9574ebf806d0ac073897, type: 3}
   producibleUnits: []
+  maxHealth: 800
+  armour: 0.2

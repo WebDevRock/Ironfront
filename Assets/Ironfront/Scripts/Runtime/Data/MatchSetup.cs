@@ -25,11 +25,20 @@ namespace Ironfront.Data
         [Tooltip("Production speed multiplier while a faction's power drain exceeds its output.")]
         [SerializeField, Range(0.05f, 1f)] private float lowPowerProductionMultiplier = 0.5f;
         [SerializeField, Min(1)] private int productionQueueCapacity = 5;
+        [SerializeField] private CombatVisuals combatVisuals;
 
         public IReadOnlyList<FactionSetup> Factions => factions;
         public IReadOnlyList<BuildingDefinition> ConstructionOptions => constructionOptions;
         public int CreditsPerOre => creditsPerOre;
         public float LowPowerProductionMultiplier => lowPowerProductionMultiplier;
         public int ProductionQueueCapacity => productionQueueCapacity;
+        public CombatVisuals CombatVisuals => combatVisuals;
+
+        public Color ColorOf(int factionId)
+        {
+            foreach (var f in factions)
+                if (f.id == factionId) return f.color;
+            return Color.gray;
+        }
     }
 }

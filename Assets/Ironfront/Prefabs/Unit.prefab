@@ -196,6 +196,8 @@ GameObject:
   - component: {fileID: 707174302791214117}
   - component: {fileID: 4265297508548879239}
   - component: {fileID: 3471733176491297799}
+  - component: {fileID: 9012028076288504771}
+  - component: {fileID: 8540945444919061083}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -361,3 +363,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Units.SelectableUnit
   selectionIndicator: {fileID: 2498359196931126256}
+--- !u!114 &9012028076288504771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2995612007430683257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0412ea46f408ce4b849005ae6c11960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.Health
+  fallbackMaxHealth: 100
+  fallbackArmour: 0
+  aimHeight: 0
+  explosionSize: 2
+--- !u!114 &8540945444919061083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2995612007430683257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7fca6bcba4740244b6ddcaba68b8008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.HealthBar
+  height: 1.7
+  width: 1.4
+  thickness: 0.22

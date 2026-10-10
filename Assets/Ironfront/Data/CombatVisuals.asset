@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f7e0c3b858958d44843eb731b4d73e4, type: 3}
+  m_Name: CombatVisuals
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.CombatVisuals
+  projectile: {fileID: 2100000, guid: 99ab2483bf194024f8d4d0344922b6c4, type: 2}
+  muzzleFlash: {fileID: 2100000, guid: f492dee913c9c6040ad52633a065bfbd, type: 2}
+  impact: {fileID: 2100000, guid: 095b569f5a2b8b24eb2f43ce564ccc76, type: 2}
+  explosion: {fileID: 2100000, guid: 6e0b1083635b12c44aba168a91658ee4, type: 2}
+  healthBarBackground: {fileID: 2100000, guid: 6db202a10eda7244db29e0d01ebbb78d, type: 2}
+  healthBarFill: {fileID: 2100000, guid: 14f2556b322ec8942b16280862f0f28a, type: 2}
+  moveMarker: {fileID: 2100000, guid: 3dda8999d2fe0a64ea11cbf40cee30f5, type: 2}
+  attackMoveMarker: {fileID: 2100000, guid: 15cf5548b390d0f448cc87c9a3848682, type: 2}
+  attackMarker: {fileID: 2100000, guid: b2ad58ecbb7c08743aa8140737e865c5, type: 2}

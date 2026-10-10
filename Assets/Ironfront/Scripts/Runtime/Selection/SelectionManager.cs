@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Ironfront.Buildings;
+using Ironfront.Combat;
 using Ironfront.Core;
 using Ironfront.InputBindings;
 using Ironfront.Match;
@@ -44,11 +45,21 @@ namespace Ironfront.Selection
         {
             if (viewCamera == null) viewCamera = Camera.main;
             Selection.Changed += OnUnitSelectionChanged;
+            Health.AnyDied += OnAnyDied;
         }
 
         private void OnDestroy()
         {
             Selection.Changed -= OnUnitSelectionChanged;
+            Health.AnyDied -= OnAnyDied;
+        }
+
+        /// <summary>Drops destroyed units/structures from the selection immediately (before the object is gone).</summary>
+        private void OnAnyDied(Health dead)
+        {
+            var unit = dead.GetComponent<SelectableUnit>();
+            if (unit != null) Selection.Remove(unit);
+            if (SelectedStructure != null && SelectedStructure.gameObject == dead.gameObject) SelectStructure(null);
         }
 
         private void Update()

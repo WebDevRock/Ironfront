@@ -104,7 +104,11 @@ GameObject:
   - component: {fileID: 6106826725636255969}
   - component: {fileID: 3981732507751518308}
   - component: {fileID: 704506766755835594}
+  - component: {fileID: 3315662113287568477}
+  - component: {fileID: 9068857180660972094}
+  - component: {fileID: 2807293710601607510}
   - component: {fileID: 5659566342470229151}
+  - component: {fileID: 3821869116048933091}
   m_Layer: 9
   m_Name: Harvester
   m_TagString: Untagged
@@ -214,6 +218,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Units.SelectableUnit
   selectionIndicator: {fileID: 8034677043669936759}
+--- !u!114 &3315662113287568477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863706686148026517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc94a93adc8108140b80233677fbe747, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Units.UnitIdentity
+  definition: {fileID: 11400000, guid: c61b3c9f4ce81c442a26c17804a92147, type: 2}
+--- !u!114 &9068857180660972094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863706686148026517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0412ea46f408ce4b849005ae6c11960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.Health
+  fallbackMaxHealth: 100
+  fallbackArmour: 0
+  aimHeight: 0.96000004
+  explosionSize: 3
+--- !u!114 &2807293710601607510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863706686148026517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7fca6bcba4740244b6ddcaba68b8008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.HealthBar
+  height: 2.6
+  width: 1.8
+  thickness: 0.22
 --- !u!114 &5659566342470229151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,6 +278,20 @@ MonoBehaviour:
   harvestOnStart: 1
   cargoVisual: {fileID: 3851170140302255367}
   arrivalTolerance: 1.5
+--- !u!114 &3821869116048933091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863706686148026517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a5568f2a895b2f4fbfca2eca32232f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Match.FactionColorizer
+  renderers:
+  - {fileID: 9126044328770194921}
 --- !u!1 &4270259958915606503
 GameObject:
   m_ObjectHideFlags: 0

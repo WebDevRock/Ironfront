@@ -103,7 +103,10 @@ GameObject:
   - component: {fileID: 6327231526033640453}
   - component: {fileID: 6574239353374096464}
   - component: {fileID: 1086067503249725984}
+  - component: {fileID: 1830342745925059795}
+  - component: {fileID: 4344033421590957171}
   - component: {fileID: 7877114429724271376}
+  - component: {fileID: 3920408388825328042}
   m_Layer: 10
   m_Name: Refinery
   m_TagString: Untagged
@@ -197,6 +200,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Buildings.Building
   definition: {fileID: 11400000, guid: a3461439d6b06fc40ab163071321394c, type: 2}
   selectionIndicator: {fileID: 5961122196274881504}
+--- !u!114 &1830342745925059795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562333829319841308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0412ea46f408ce4b849005ae6c11960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.Health
+  fallbackMaxHealth: 100
+  fallbackArmour: 0
+  aimHeight: 2
+  explosionSize: 7
+--- !u!114 &4344033421590957171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562333829319841308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7fca6bcba4740244b6ddcaba68b8008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Combat.HealthBar
+  height: 5.2
+  width: 4
+  thickness: 0.3
 --- !u!114 &7877114429724271376
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209,6 +243,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d37b1c72e9e15148ac480f6da5e4dcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Buildings.Refinery
+--- !u!114 &3920408388825328042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562333829319841308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a5568f2a895b2f4fbfca2eca32232f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Match.FactionColorizer
+  renderers:
+  - {fileID: 8617844240696315976}
 --- !u!1 &3541754498312566281
 GameObject:
   m_ObjectHideFlags: 0

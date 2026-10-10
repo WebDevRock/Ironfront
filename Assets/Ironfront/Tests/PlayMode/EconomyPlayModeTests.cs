@@ -172,7 +172,7 @@ namespace Ironfront.Tests
         }
 
         [UnityTest]
-        public IEnumerator AcceptanceScenario_HarvestBuildPowerPlantAndFactory_ProduceTwoTanks()
+        public IEnumerator AcceptanceScenario_HarvestBuildPowerPlantAndFactory_ProduceLightAndHeavyTank()
         {
             Time.timeScale = TimeScale;
             int lowestCredits = int.MaxValue;
@@ -190,22 +190,28 @@ namespace Ironfront.Tests
             var rally = factory.ExitPoint + new Vector3(4f, 0f, 6f);
             factory.SetRallyPoint(rally);
 
-            var tankDef = factory.Building.Definition.ProducibleUnits.First(u => u.Id == "tank");
+            var order = new[]
+            {
+                factory.Building.Definition.ProducibleUnits.First(u => u.Id == "light_tank"),
+                factory.Building.Definition.ProducibleUnits.First(u => u.Id == "heavy_tank"),
+            };
             var produced = new List<GameObject>();
             factory.UnitProduced += produced.Add;
 
-            // Queue two tanks as soon as harvested credits allow.
+            // Queue a Light then a Heavy Tank as soon as harvested credits allow.
             int queued = 0;
-            float timeout = 240f;
+            float timeout = 300f;
             while (produced.Count < 2 && timeout > 0f)
             {
                 lowestCredits = Mathf.Min(lowestCredits, _player.Wallet.Credits);
-                if (queued < 2 && factory.Enqueue(tankDef) == EnqueueResult.Ok) queued++;
+                if (queued < 2 && factory.Enqueue(order[queued]) == EnqueueResult.Ok) queued++;
                 timeout -= Time.deltaTime;
                 yield return null;
             }
 
-            Assert.AreEqual(2, produced.Count, "Two tanks produced within 240 game-seconds");
+            Assert.AreEqual(2, produced.Count, "Both tanks produced within 300 game-seconds");
+            Assert.AreEqual("light_tank", produced[0].GetComponent<UnitIdentity>().Definition.Id);
+            Assert.AreEqual("heavy_tank", produced[1].GetComponent<UnitIdentity>().Definition.Id);
             Assert.GreaterOrEqual(lowestCredits, 0, "Credits never negative");
 
             // Produced tanks join the existing selection and movement systems.
@@ -254,7 +260,7 @@ namespace Ironfront.Tests
             Assert.AreSame(b, _selection.SelectedStructure, "Clicking the factory selects it");
             Assert.AreEqual(0, _selection.Selection.Count);
 
-            var tank = factory.Building.Definition.ProducibleUnits.First(u => u.Id == "tank");
+            var tank = factory.Building.Definition.ProducibleUnits.First(u => u.Id == "light_tank");
             int before = _player.Wallet.Credits;
             Assert.AreEqual(EnqueueResult.Ok, factory.Enqueue(tank));
             Assert.AreEqual(before - tank.Cost, _player.Wallet.Credits);

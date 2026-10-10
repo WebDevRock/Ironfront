@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Ironfront.Buildings;
+using Ironfront.Combat;
 using Ironfront.Data;
 using Ironfront.Economy;
 using Ironfront.Match;
@@ -15,6 +16,8 @@ namespace Ironfront.EditorTools
 {
     /// <summary>
     /// Milestone 002 content: data definitions, structure/unit/deposit prefabs and the starting base.
+    /// Milestone 003 adds health, health bars and faction tinting to every unit and structure prefab and
+    /// delegates combat content (tanks, weapons, enemy scenario) to <see cref="CombatContentBuilder"/>.
     /// Called by <see cref="RtsSandboxBuilder"/>; all values that matter for balancing live in the generated
     /// ScriptableObject assets under Assets/Ironfront/Data and can be edited there afterwards.
     /// </summary>
@@ -40,7 +43,6 @@ namespace Ironfront.EditorTools
         private static readonly string PowerPlantPath = $"{BuildingsDataDir}/PowerPlant.asset";
         private static readonly string VehicleFactoryPath = $"{BuildingsDataDir}/VehicleFactory.asset";
         private static readonly string HarvesterPath = $"{UnitsDataDir}/Harvester.asset";
-        private static readonly string TankPath = $"{UnitsDataDir}/Tank.asset";
         private static readonly string MatchSetupPath = $"{RtsSandboxBuilder.DataDir}/MatchSetup.asset";
         private static readonly string DepositPrefabPath = $"{RtsSandboxBuilder.PrefabsDir}/OreDeposit.prefab";
         private static readonly string GhostValidPath = $"{RtsSandboxBuilder.MaterialsDir}/GhostValid.mat";
@@ -51,15 +53,21 @@ namespace Ironfront.EditorTools
             public MatchSetup MatchSetup;
             public BuildingDefinition Headquarters, Refinery, PowerPlant, VehicleFactory;
             public HarvesterDefinition Harvester;
-            public UnitDefinition Tank;
+            public UnitDefinition LightTank, HeavyTank;
+            public BuildingDefinition Outpost;
+            public CombatVisuals CombatVisuals;
+            public CombatContentBuilder.Defs Combat;
             public GameObject DepositPrefab;
             public Material GhostValid, GhostInvalid;
         }
 
-        private class Palette
+        public class Palette
         {
-            public Material Body, Dark, Faction, Ore, HarvesterPaint, TankPaint, Ring;
+            public Material Body, Dark, Faction, Ore, HarvesterPaint, LightTankPaint, HeavyTankPaint, Ring;
         }
+
+        /// <summary>Renderers using this material get tinted with the owner's faction colour.</summary>
+        private static Material s_factionMaterial;
 
         // ---------- Assets ----------
 
@@ -79,9 +87,11 @@ namespace Ironfront.EditorTools
                 Faction = RtsSandboxBuilder.CreateOrUpdateMaterial("FactionBlue", lit, new Color(0.2f, 0.45f, 0.95f)),
                 Ore = RtsSandboxBuilder.CreateOrUpdateMaterial("Ore", lit, new Color(0.95f, 0.75f, 0.15f)),
                 HarvesterPaint = RtsSandboxBuilder.CreateOrUpdateMaterial("HarvesterPaint", lit, new Color(0.85f, 0.65f, 0.2f)),
-                TankPaint = RtsSandboxBuilder.CreateOrUpdateMaterial("TankPaint", lit, new Color(0.35f, 0.42f, 0.28f)),
+                LightTankPaint = RtsSandboxBuilder.CreateOrUpdateMaterial("LightTankPaint", lit, new Color(0.62f, 0.64f, 0.44f)),
+                HeavyTankPaint = RtsSandboxBuilder.CreateOrUpdateMaterial("HeavyTankPaint", lit, new Color(0.24f, 0.28f, 0.22f)),
                 Ring = selectionRing,
             };
+            s_factionMaterial = pal.Faction;
 
             var c = new Content
             {
@@ -95,8 +105,8 @@ namespace Ironfront.EditorTools
             c.PowerPlant = LoadOrCreate<BuildingDefinition>(PowerPlantPath);
             c.VehicleFactory = LoadOrCreate<BuildingDefinition>(VehicleFactoryPath);
             c.Harvester = LoadOrCreate<HarvesterDefinition>(HarvesterPath);
-            c.Tank = LoadOrCreate<UnitDefinition>(TankPath);
             c.MatchSetup = LoadOrCreate<MatchSetup>(MatchSetupPath);
+            var combat = CombatContentBuilder.CreateDefinitions(unlit);
 
             SetBuilding(c.Headquarters, "headquarters", "Headquarters", cost: 0, size: new Vector2(8f, 8f), apron: 3f,
                 powerOut: 20, powerDrain: 0, constructible: false, prereqs: new BuildingDefinition[0], units: new UnitDefinition[0]);
@@ -106,7 +116,11 @@ namespace Ironfront.EditorTools
                 powerOut: 50, powerDrain: 0, constructible: true, prereqs: new[] { c.Headquarters }, units: new UnitDefinition[0]);
             SetBuilding(c.VehicleFactory, "vehicle_factory", "Vehicle Factory", cost: 1300, size: new Vector2(8f, 7f), apron: 5f,
                 powerOut: 0, powerDrain: 30, constructible: true, prereqs: new[] { c.Headquarters },
-                units: new UnitDefinition[] { c.Harvester, c.Tank });
+                units: new UnitDefinition[] { c.Harvester, combat.LightTank, combat.HeavyTank });
+            SetBuildingCombat(c.Headquarters, maxHealth: 2000f, armour: 0.3f);
+            SetBuildingCombat(c.Refinery, maxHealth: 1200f, armour: 0.2f);
+            SetBuildingCombat(c.PowerPlant, maxHealth: 800f, armour: 0.2f);
+            SetBuildingCombat(c.VehicleFactory, maxHealth: 1500f, armour: 0.25f);
 
             SetUnit(c.Harvester, "harvester", "Harvester", cost: 800, buildTime: 10f);
             Set(c.Harvester, so =>
@@ -115,18 +129,17 @@ namespace Ironfront.EditorTools
                 so.FindProperty("harvestRate").floatValue = 50f;
                 so.FindProperty("unloadRate").floatValue = 100f;
             });
-            SetUnit(c.Tank, "tank", "Tank", cost: 400, buildTime: 6f);
+            SetUnitCombat(c.Harvester, maxHealth: 600f, armour: 0.3f, moveSpeed: 6f, weapon: null);
 
             Set(c.MatchSetup, so =>
             {
                 var factions = so.FindProperty("factions");
-                factions.arraySize = 1;
-                var f = factions.GetArrayElementAtIndex(0);
-                f.FindPropertyRelative("id").intValue = MatchController.DefaultPlayerFactionId;
-                f.FindPropertyRelative("displayName").stringValue = "Player";
-                f.FindPropertyRelative("color").colorValue = new Color(0.2f, 0.45f, 0.95f);
-                f.FindPropertyRelative("humanControlled").boolValue = true;
-                f.FindPropertyRelative("startingCredits").intValue = StartingCredits;
+                factions.arraySize = 2;
+                SetFaction(factions.GetArrayElementAtIndex(0), MatchController.DefaultPlayerFactionId, "Player",
+                    new Color(0.2f, 0.45f, 0.95f), human: true, credits: StartingCredits);
+                SetFaction(factions.GetArrayElementAtIndex(1), CombatContentBuilder.EnemyFactionId, "Enemy",
+                    new Color(0.85f, 0.15f, 0.12f), human: false, credits: 0);
+                so.FindProperty("combatVisuals").objectReferenceValue = combat.Visuals;
                 SetList(so.FindProperty("constructionOptions"), c.Refinery, c.PowerPlant, c.VehicleFactory);
                 so.FindProperty("creditsPerOre").intValue = 1;
                 so.FindProperty("lowPowerProductionMultiplier").floatValue = 0.5f;
@@ -139,7 +152,7 @@ namespace Ironfront.EditorTools
             SetPrefab(c.PowerPlant, SavePrefab(BuildPowerPlant(c.PowerPlant, pal), $"{BuildingPrefabsDir}/PowerPlant.prefab"));
             SetPrefab(c.VehicleFactory, SavePrefab(BuildFactory(c.VehicleFactory, pal), $"{BuildingPrefabsDir}/VehicleFactory.prefab"));
             SetPrefab(c.Harvester, SavePrefab(BuildHarvester(c.Harvester, pal), $"{UnitPrefabsDir}/Harvester.prefab"));
-            SetPrefab(c.Tank, SavePrefab(BuildTank(pal), $"{UnitPrefabsDir}/Tank.prefab"));
+            CombatContentBuilder.CreatePrefabs(combat, pal);
             c.DepositPrefab = SavePrefab(BuildDeposit(pal), DepositPrefabPath);
 
             AssetDatabase.SaveAssets();
@@ -159,16 +172,20 @@ namespace Ironfront.EditorTools
                 PowerPlant = Require<BuildingDefinition>(PowerPlantPath),
                 VehicleFactory = Require<BuildingDefinition>(VehicleFactoryPath),
                 Harvester = Require<HarvesterDefinition>(HarvesterPath),
-                Tank = Require<UnitDefinition>(TankPath),
                 MatchSetup = Require<MatchSetup>(MatchSetupPath),
                 DepositPrefab = Require<GameObject>(DepositPrefabPath),
                 GhostValid = Require<Material>(GhostValidPath),
                 GhostInvalid = Require<Material>(GhostInvalidPath),
             };
+            c.Combat = CombatContentBuilder.Load();
+            c.LightTank = c.Combat.LightTank;
+            c.HeavyTank = c.Combat.HeavyTank;
+            c.Outpost = c.Combat.Outpost;
+            c.CombatVisuals = c.Combat.Visuals;
             return c;
         }
 
-        private static T Require<T>(string path) where T : Object
+        internal static T Require<T>(string path) where T : Object
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset == null) throw new InvalidOperationException("Missing generated asset " + path);
@@ -204,7 +221,7 @@ namespace Ironfront.EditorTools
 
         // ---------- Structure prefabs ----------
 
-        private static GameObject NewStructure(string name, BuildingDefinition def, float height, Palette pal,
+        internal static GameObject NewStructure(string name, BuildingDefinition def, float height, Palette pal,
             out Building building)
         {
             var root = new GameObject(name) { layer = RtsSandboxBuilder.StructuresLayerIndex };
@@ -230,6 +247,20 @@ namespace Ironfront.EditorTools
 
             RtsSandboxBuilder.SetRef(building, "definition", def);
             RtsSandboxBuilder.SetRef(building, "selectionIndicator", frame);
+
+            var health = root.AddComponent<Health>();
+            Set(health, so =>
+            {
+                so.FindProperty("aimHeight").floatValue = height * 0.5f;
+                so.FindProperty("explosionSize").floatValue = Mathf.Max(size.x, size.y);
+            });
+            var bar = root.AddComponent<HealthBar>();
+            Set(bar, so =>
+            {
+                so.FindProperty("height").floatValue = height + 1.2f;
+                so.FindProperty("width").floatValue = Mathf.Min(4f, size.x * 0.6f);
+                so.FindProperty("thickness").floatValue = 0.3f;
+            });
 
             if (def.ApronDepth > 0f)
             {
@@ -297,8 +328,8 @@ namespace Ironfront.EditorTools
 
         // ---------- Unit and deposit prefabs ----------
 
-        private static GameObject NewVehicle(string name, Vector3 colliderSize, float agentRadius, float speed, Palette pal,
-            out SelectableUnit selectable)
+        internal static GameObject NewVehicle(string name, UnitDefinition def, Vector3 colliderSize, float agentRadius, float speed,
+            Palette pal, out SelectableUnit selectable)
         {
             var root = new GameObject(name) { layer = RtsSandboxBuilder.UnitsLayerIndex };
             var col = root.AddComponent<BoxCollider>();
@@ -310,12 +341,22 @@ namespace Ironfront.EditorTools
             selectable = root.AddComponent<SelectableUnit>();
             var ring = RtsSandboxBuilder.AddSelectionRing(root.transform, pal.Ring, 0.03f, Mathf.Max(colliderSize.x, colliderSize.z) + 0.6f);
             RtsSandboxBuilder.SetRef(selectable, "selectionIndicator", ring);
+
+            var identity = root.AddComponent<UnitIdentity>();
+            RtsSandboxBuilder.SetRef(identity, "definition", def);
+            var health = root.AddComponent<Health>();
+            Set(health, so =>
+            {
+                so.FindProperty("aimHeight").floatValue = colliderSize.y * 0.6f;
+                so.FindProperty("explosionSize").floatValue = 3f;
+            });
+            root.AddComponent<HealthBar>();
             return root;
         }
 
         private static GameObject BuildHarvester(HarvesterDefinition def, Palette pal)
         {
-            var root = NewVehicle("Harvester", new Vector3(1.6f, 1.6f, 2.6f), 0.8f, 6f, pal, out _);
+            var root = NewVehicle("Harvester", def, new Vector3(1.6f, 1.6f, 2.6f), 0.8f, 6f, pal, out _);
             var t = root.transform;
             Part(t, PrimitiveType.Cube, "Chassis", new Vector3(0f, 0.55f, 0f), new Vector3(1.6f, 0.7f, 2.6f), pal.HarvesterPaint);
             Part(t, PrimitiveType.Cube, "Cab", new Vector3(0f, 1.2f, 0.85f), new Vector3(1.4f, 0.7f, 0.8f), pal.Faction);
@@ -325,18 +366,6 @@ namespace Ironfront.EditorTools
             var harvester = root.AddComponent<Harvester>();
             RtsSandboxBuilder.SetRef(harvester, "definition", def);
             RtsSandboxBuilder.SetRef(harvester, "cargoVisual", cargo.transform);
-            return root;
-        }
-
-        private static GameObject BuildTank(Palette pal)
-        {
-            var root = NewVehicle("Tank", new Vector3(1.8f, 1.2f, 2.4f), 0.8f, 6.5f, pal, out _);
-            var t = root.transform;
-            Part(t, PrimitiveType.Cube, "Hull", new Vector3(0f, 0.5f, 0f), new Vector3(1.6f, 0.6f, 2.3f), pal.TankPaint);
-            Part(t, PrimitiveType.Cube, "TrackL", new Vector3(-0.8f, 0.3f, 0f), new Vector3(0.3f, 0.6f, 2.4f), pal.Dark);
-            Part(t, PrimitiveType.Cube, "TrackR", new Vector3(0.8f, 0.3f, 0f), new Vector3(0.3f, 0.6f, 2.4f), pal.Dark);
-            Part(t, PrimitiveType.Cylinder, "Turret", new Vector3(0f, 0.95f, -0.1f), new Vector3(1.1f, 0.2f, 1.1f), pal.Faction);
-            Part(t, PrimitiveType.Cube, "Barrel", new Vector3(0f, 0.97f, 0.95f), new Vector3(0.18f, 0.18f, 1.4f), pal.Dark);
             return root;
         }
 
@@ -383,7 +412,7 @@ namespace Ironfront.EditorTools
 
         // ---------- Helpers ----------
 
-        private static GameObject Part(Transform parent, PrimitiveType type, string name, Vector3 localPos, Vector3 localScale,
+        internal static GameObject Part(Transform parent, PrimitiveType type, string name, Vector3 localPos, Vector3 localScale,
             Material mat, bool castShadows = true)
         {
             var go = GameObject.CreatePrimitive(type);
@@ -399,15 +428,56 @@ namespace Ironfront.EditorTools
             return go;
         }
 
-        private static GameObject SavePrefab(GameObject root, string path)
+        internal static GameObject SavePrefab(GameObject root, string path)
         {
+            AddFactionColorizer(root);
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, path, out bool ok);
             Object.DestroyImmediate(root);
             if (!ok || prefab == null) throw new IOException("Failed to save prefab " + path);
             return prefab;
         }
 
-        private static T LoadOrCreate<T>(string path) where T : ScriptableObject
+        private static void AddFactionColorizer(GameObject root)
+        {
+            if (root.GetComponent<FactionMember>() == null || s_factionMaterial == null) return;
+            var tinted = new List<Renderer>();
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+                if (r.sharedMaterial == s_factionMaterial) tinted.Add(r);
+            if (tinted.Count == 0) return;
+            var colorizer = root.AddComponent<FactionColorizer>();
+            Set(colorizer, so => SetList(so.FindProperty("renderers"), tinted.ToArray()));
+        }
+
+        private static void SetFaction(SerializedProperty f, int id, string displayName, Color color, bool human, int credits)
+        {
+            f.FindPropertyRelative("id").intValue = id;
+            f.FindPropertyRelative("displayName").stringValue = displayName;
+            f.FindPropertyRelative("color").colorValue = color;
+            f.FindPropertyRelative("humanControlled").boolValue = human;
+            f.FindPropertyRelative("startingCredits").intValue = credits;
+        }
+
+        internal static void SetUnitCombat(UnitDefinition def, float maxHealth, float armour, float moveSpeed, WeaponDefinition weapon)
+        {
+            Set(def, so =>
+            {
+                so.FindProperty("maxHealth").floatValue = maxHealth;
+                so.FindProperty("armour").floatValue = armour;
+                so.FindProperty("moveSpeed").floatValue = moveSpeed;
+                so.FindProperty("weapon").objectReferenceValue = weapon;
+            });
+        }
+
+        internal static void SetBuildingCombat(BuildingDefinition def, float maxHealth, float armour)
+        {
+            Set(def, so =>
+            {
+                so.FindProperty("maxHealth").floatValue = maxHealth;
+                so.FindProperty("armour").floatValue = armour;
+            });
+        }
+
+        internal static T LoadOrCreate<T>(string path) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset != null) return asset;
@@ -416,7 +486,7 @@ namespace Ironfront.EditorTools
             return asset;
         }
 
-        private static void Set(Object target, Action<SerializedObject> edit)
+        internal static void Set(Object target, Action<SerializedObject> edit)
         {
             var so = new SerializedObject(target);
             edit(so);
@@ -424,13 +494,13 @@ namespace Ironfront.EditorTools
             EditorUtility.SetDirty(target);
         }
 
-        private static void SetList(SerializedProperty list, params Object[] items)
+        internal static void SetList(SerializedProperty list, params Object[] items)
         {
             list.arraySize = items.Length;
             for (int i = 0; i < items.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = items[i];
         }
 
-        private static void SetBuilding(BuildingDefinition def, string id, string displayName, int cost, Vector2 size, float apron,
+        internal static void SetBuilding(BuildingDefinition def, string id, string displayName, int cost, Vector2 size, float apron,
             int powerOut, int powerDrain, bool constructible, BuildingDefinition[] prereqs, UnitDefinition[] units)
         {
             Set(def, so =>
@@ -448,7 +518,7 @@ namespace Ironfront.EditorTools
             });
         }
 
-        private static void SetUnit(UnitDefinition def, string id, string displayName, int cost, float buildTime)
+        internal static void SetUnit(UnitDefinition def, string id, string displayName, int cost, float buildTime)
         {
             Set(def, so =>
             {
@@ -459,7 +529,7 @@ namespace Ironfront.EditorTools
             });
         }
 
-        private static void SetPrefab(Object def, GameObject prefab) =>
+        internal static void SetPrefab(Object def, GameObject prefab) =>
             Set(def, so => so.FindProperty("prefab").objectReferenceValue = prefab);
 
         private static Material CreateTransparent(string name, Shader unlit, Color color)

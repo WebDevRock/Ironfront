@@ -17,6 +17,10 @@ MonoBehaviour:
   cost: 800
   buildTime: 10
   prefab: {fileID: 1863706686148026517, guid: d3fcc8015f5bc734499f80d8702d0484, type: 3}
+  maxHealth: 600
+  armour: 0.3
+  moveSpeed: 6
+  weapon: {fileID: 0}
   cargoCapacity: 200
   harvestRate: 50
   unloadRate: 100
