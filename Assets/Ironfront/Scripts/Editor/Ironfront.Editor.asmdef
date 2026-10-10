@@ -1,0 +1,21 @@
+{
+    "name": "Ironfront.Editor",
+    "rootNamespace": "Ironfront.EditorTools",
+    "references": [
+        "Ironfront.Runtime",
+        "Unity.InputSystem",
+        "Unity.AI.Navigation",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
