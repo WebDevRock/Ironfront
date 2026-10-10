@@ -68,6 +68,7 @@ namespace Ironfront.UI
             }
             if (selectionManager != null) selectionManager.StructureSelectionChanged += OnStructureSelected;
             VehicleFactory.FactoriesChanged += BindFactory;
+            Building.AnyRegistrationChanged += OnBuildingRegistration;
             OreDeposit.AnyDepleted += OnDepositDepleted;
 
             BindFactory();
@@ -89,6 +90,7 @@ namespace Ironfront.UI
             }
             if (selectionManager != null) selectionManager.StructureSelectionChanged -= OnStructureSelected;
             VehicleFactory.FactoriesChanged -= BindFactory;
+            Building.AnyRegistrationChanged -= OnBuildingRegistration;
             OreDeposit.AnyDepleted -= OnDepositDepleted;
             if (_factory != null) _factory.Queue.Changed -= RefreshQueue;
         }
@@ -109,6 +111,12 @@ namespace Ironfront.UI
 
         private void OnWalletChanged(int _) => RefreshEconomy();
         private void OnStructureSelected(Building _) => BindFactory();
+
+        // Ownership is final once a building registers with its faction: re-check which factory is ours.
+        private void OnBuildingRegistration(Building b)
+        {
+            if (b != null && b.GetComponent<VehicleFactory>() != null) BindFactory();
+        }
         private void OnDepositDepleted(OreDeposit d) => ShowMessage("An ore deposit has been depleted");
 
         public void ShowMessage(string text)

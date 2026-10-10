@@ -179,3 +179,61 @@ Basic RTS combat integrated with movement, production, construction, economy and
 
 ### Relevant commit hash
 Milestone commit: `7f7f70b` (7f7f70bdbaf9ae5341a957ebfb558034a10dd893)
+
+---
+
+## Milestone 004 — AI Enemy Commander (2026-10-10)
+
+### Feature requested
+An autonomous enemy commander and a complete single-player match:
+- Two factions with independent economies. The enemy harvests, builds (same costs and placement rules), produces Light/Heavy Tanks, defends, assembles and attacks.
+- State-machine strategy with configurable Normal difficulty and no cheats, plus vision-limited knowledge.
+- Victory/defeat/draw with restart, and an optional AI debug panel with bounded logs.
+- EditMode/PlayMode tests and AI-vs-AI simulation.
+
+### Changes implemented
+- **Pure rules**: `Core/AI` (`CommanderModel`, `StrategyRules`, `EconomyPlanner`, `CompositionRules`, `TargetPriorities`, `SiteSearch`, `BoundedLog`) and `Core/Victory/MatchOutcomeRules` (HQ victory, same-frame draw, exhaustion draw).
+- **Commander**: `AI/EnemyCommander` and `AI/AiPerception`, with tuning in `Data/AiDifficulty` (asset `Data/AI/Normal.asset`). It acts only through `BuildingPlacementController.Validate/TryPlace`, `VehicleFactory.Enqueue` and `CombatUnit` orders.
+- **Match**: `MatchFlowController`, `MatchResultView`, `FactionStartLocation`, `FactionSpawner`, `CommanderDebugPanel` (F9), and a new `RTS_Match` scene built by `MatchSceneBuilder` (menu **Ironfront ▸ Build All Scenes**), with a point-symmetric layout and the enemy starting with 2000 credits.
+- **Shared-system changes**:
+  - Buildings can face north/south (footprint, apron, front point, factory exit and rally follow the rotation).
+  - Owners are set before `OnEnable` (`FactionSpawner`).
+  - Computer factions build without HUD messages.
+  - Added `RtsInputMode.ResetAll`, a `UnitMover.PathRequests` counter and the F9 input action.
+  - `RtsSandboxBuilder` steps were made reusable; sandbox output is unchanged.
+- **Tests**: 31 new EditMode and 10 new PlayMode tests (including AI-vs-AI).
+- **Docs**: `Docs/Milestone-004-Report.md`.
+
+### Tests attempted and results
+- EditMode **142/142**, PlayMode **35/35** (all Milestone 001–003 tests included). No console warnings or errors.
+- AI-vs-AI simulations at 10×: with the final code, 7 runs gave 4 faction-1 wins and 3 faction-2 wins, all decisive, in 6–12 game minutes. Path requests stayed at about 0.1 per unit-second.
+- Full match through the real UI in Play Mode: the AI built, assembled, attacked and destroyed the player HQ at 3:57; the Defeat screen appeared; the Restart button gave a fresh match.
+- Windows build succeeded. A player window capture shows correct rendering and no cross-faction HUD binding.
+
+### Problems encountered
+1. **`GetInstanceID()` is a compile error (obsolete) in this Unity version.** Replaced with commander-assigned unit keys.
+2. **Float edge case in the composition rule** (exactly 40 % heavies compared as below 40 % at higher intermediate precision). Fixed with a tolerance; caught by an EditMode test.
+3. **Stalemates in AI-vs-AI** (2/3 early runs reached the time limit): all ore was mined out and both armies waited below the attack threshold forever. Added end-game rules (commit everything, no retreat once no ore is left) and an exhaustion draw for true dead ends. The simulation test now requires an outcome.
+4. **Systematic faction-2 wins** (4/4 decisive runs early on). I found and fixed three asymmetries in my own code:
+   - (a) The enemy dock's distance to its secondary ore sat on the other side of the 25 m "local ore" threshold, so only the enemy expanded.
+   - (b) All buildings faced +Z, so the enemy's docks and exits faced away from the fight. Buildings now face the opponent.
+   - (c) `SiteSearch` broke ties by world x/z, which point reflection doesn't preserve, so the two bases were laid out differently. Ties are now broken relative to the direction.
+
+   Each fix was verified with tests and further simulations.
+5. **Cross-faction ownership bug** (found from a screenshot of the built game): units and buildings had their owner assigned after `Instantiate`, so `OnEnable` handlers saw the default player faction. The player's sidebar bound the enemy's factory, which would have let the player queue units charged to the enemy. Fixed with `FactionSpawner` (owner set before activation) plus a HUD ownership re-check, with a regression test.
+6. **Window capture showed the Editor instead of the player** (screen-region capture of a covered window). Switched to `PrintWindow`.
+7. **Bash heredocs with apostrophes failed again**; patch scripts were written to files.
+
+### Human interventions required
+- None.
+
+### Known limitations
+- Single Normal difficulty with no in-game selector. The AI knows the enemy start location by configuration.
+- Rule-based, predictable waves: no scouting, flanking, harvester harassment or retreat micro. Defence only reacts to armed enemies near its structures.
+- The player's placement tool always builds facing north (no rotate key).
+- Ore runs out around minute 5–6, so matches are short.
+- Balance is backed by 7 final simulations only.
+- No complete human-played victory through the UI yet (victory is covered by an automated test).
+
+### Relevant commit hash
+Milestone commit: see the "Commit" line below (recorded after committing).

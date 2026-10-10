@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf9ff57e43df7694a947db99524734f9, type: 3}
+  m_Name: Normal
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.AiDifficulty
+  displayName: Normal
+  decisionInterval: 1.5
+  strategy:
+    MinStateDuration: 8
+    Aggressiveness: 0.5
+    DefenceAllocation: 0.25
+    AttackArmySize: 6
+    AttackStrengthThreshold: 7
+    RetreatFraction: 0.35
+    HarvestersPerRefinery: 2
+    MaxHarvesters: 4
+    MaxRefineries: 2
+    MaxFactories: 2
+    MaxArmy: 12
+    MaxQueuedUnits: 2
+    CreditReserve: 300
+    PowerMargin: 10
+    ExpansionCredits: 3500
+  visionRange: 22
+  threatMemorySeconds: 20
+  knowsEnemyStartLocation: 1
+  defendRadius: 24
+  rallyDistance: 14
+  stuckDecisions: 3
+  decisionLogCapacity: 20

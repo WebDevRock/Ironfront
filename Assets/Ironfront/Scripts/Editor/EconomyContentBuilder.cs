@@ -138,7 +138,7 @@ namespace Ironfront.EditorTools
                 SetFaction(factions.GetArrayElementAtIndex(0), MatchController.DefaultPlayerFactionId, "Player",
                     new Color(0.2f, 0.45f, 0.95f), human: true, credits: StartingCredits);
                 SetFaction(factions.GetArrayElementAtIndex(1), CombatContentBuilder.EnemyFactionId, "Enemy",
-                    new Color(0.85f, 0.15f, 0.12f), human: false, credits: 0);
+                    new Color(0.85f, 0.15f, 0.12f), human: false, credits: StartingCredits); // equal start for the AI match
                 so.FindProperty("combatVisuals").objectReferenceValue = combat.Visuals;
                 SetList(so.FindProperty("constructionOptions"), c.Refinery, c.PowerPlant, c.VehicleFactory);
                 so.FindProperty("creditsPerOre").intValue = 1;

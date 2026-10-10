@@ -36,7 +36,7 @@ namespace Ironfront.Buildings
         public Building Building => _building != null ? _building : (_building = GetComponent<Building>());
         public int FactionId => Building.FactionId;
         public Vector3 ExitPoint => Building.FrontPoint;
-        public Vector3 RallyPoint => _rallyPoint ?? ExitPoint + Vector3.forward * defaultRallyDistance;
+        public Vector3 RallyPoint => _rallyPoint ?? ExitPoint + Building.FrontDirection * defaultRallyDistance;
 
         /// <summary>Raised with each newly spawned unit.</summary>
         public event Action<GameObject> UnitProduced;
@@ -122,13 +122,11 @@ namespace Ironfront.Buildings
         /// <summary>Spawns a unit at the nearest free spot by the exit and orders it to the rally point.</summary>
         public GameObject Spawn(UnitDefinition unit)
         {
-            SpawnLocator.TryFind(ExitPoint, Vector3.forward, spawnSpacing, 3, IsFree, out var spot);
+            SpawnLocator.TryFind(ExitPoint, Building.FrontDirection, spawnSpacing, 3, IsFree, out var spot);
             if (NavMesh.SamplePosition(spot, out var hit, spawnSpacing, NavMesh.AllAreas)) spot = hit.position;
 
-            var go = Instantiate(unit.Prefab, spot, Quaternion.LookRotation(Vector3.forward));
+            var go = FactionSpawner.Spawn(unit.Prefab, spot, Quaternion.LookRotation(Building.FrontDirection), FactionId);
             go.name = $"{unit.DisplayName}_{++_spawnCounter:00}";
-            var member = go.GetComponent<FactionMember>();
-            if (member != null) member.FactionId = FactionId;
 
             var mover = go.GetComponent<UnitMover>();
             if (mover != null) mover.MoveTo(RallyPoint);

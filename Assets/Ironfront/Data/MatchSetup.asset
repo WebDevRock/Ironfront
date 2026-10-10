@@ -22,7 +22,7 @@ MonoBehaviour:
     displayName: Enemy
     color: {r: 0.85, g: 0.15, b: 0.12, a: 1}
     humanControlled: 0
-    startingCredits: 0
+    startingCredits: 2000
   constructionOptions:
   - {fileID: 11400000, guid: a3461439d6b06fc40ab163071321394c, type: 2}
   - {fileID: 11400000, guid: 4774e8e316b21c048bffd76d5b2db895, type: 2}

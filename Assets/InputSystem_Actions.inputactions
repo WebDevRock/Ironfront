@@ -1084,6 +1084,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleAiDebug",
+                    "type": "Button",
+                    "id": "39179fa1-bc3c-4db2-8f4b-5c503331da00",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1293,6 +1302,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Hold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b41c5bae-6633-4275-ac72-5eb271214182",
+                    "path": "<Keyboard>/f9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToggleAiDebug",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

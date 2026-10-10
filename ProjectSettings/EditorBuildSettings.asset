@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/RTS_Match.unity
+    guid: e3ec895006b9dcc4186ec64ec5ef7e40
+  - enabled: 1
     path: Assets/Scenes/RTS_Sandbox.unity
     guid: a9f481bd988498b44b75397783cd71ad
   - enabled: 1

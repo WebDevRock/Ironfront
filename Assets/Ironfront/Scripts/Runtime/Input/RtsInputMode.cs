@@ -21,6 +21,9 @@ namespace Ironfront.InputBindings
 
         public static bool WorldPointerBlocked => IsPlacingBuilding || IsTargeting || s_consumedFrame == Time.frameCount;
 
+        /// <summary>Clears every input mode (match end, scene restart).</summary>
+        public static void ResetAll() => ResetStatics();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {

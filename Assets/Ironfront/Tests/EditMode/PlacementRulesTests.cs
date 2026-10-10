@@ -37,6 +37,17 @@ namespace Ironfront.Tests
         }
 
         [Test]
+        public void Footprint_FacingSouth_PutsApronOnNegativeZSide()
+        {
+            var f = Footprint.FromCenter(new Vector2(0, 0), new Vector2(6, 6), 4, facesSouth: true);
+            Assert.AreEqual(-7f, f.Apron.yMin);
+            Assert.AreEqual(-3f, f.Apron.yMax);
+            Assert.AreEqual(PlacementResult.OutOfBounds, Eval(Footprint.FromCenter(new Vector2(0, -45), new Vector2(6, 6), 4, true)));
+            Assert.AreEqual(PlacementResult.Valid, Eval(Footprint.FromCenter(new Vector2(0, 45), new Vector2(6, 6), 4, true)),
+                "Facing south near the north edge is fine");
+        }
+
+        [Test]
         public void OutsideMap_IsRejected_IncludingApron()
         {
             Assert.AreEqual(PlacementResult.OutOfBounds, Eval(At(48, 0)));

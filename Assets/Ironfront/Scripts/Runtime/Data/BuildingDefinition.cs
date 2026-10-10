@@ -46,7 +46,10 @@ namespace Ironfront.Data
         public IReadOnlyList<string> PrerequisiteIds =>
             prerequisites.Where(p => p != null).Select(p => p.Id).ToList();
 
-        public Footprint FootprintAt(Vector3 worldCenter) =>
-            Footprint.FromCenter(new Vector2(worldCenter.x, worldCenter.z), footprintSize, apronDepth);
+        public Footprint FootprintAt(Vector3 worldCenter, bool facesSouth = false) =>
+            Footprint.FromCenter(new Vector2(worldCenter.x, worldCenter.z), footprintSize, apronDepth, facesSouth);
+
+        /// <summary>World rotation for a building facing north (+Z, default) or south (−Z).</summary>
+        public static Quaternion Facing(bool facesSouth) => facesSouth ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
     }
 }

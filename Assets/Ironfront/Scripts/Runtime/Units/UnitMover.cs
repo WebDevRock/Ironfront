@@ -12,6 +12,9 @@ namespace Ironfront.Units
         [Tooltip("How far from the requested point to search for a valid NavMesh position.")]
         [SerializeField] private float destinationSearchRadius = 4f;
 
+        /// <summary>Total path requests issued by all units since load (diagnostics for path-spam checks).</summary>
+        public static long PathRequests { get; private set; }
+
         private NavMeshAgent _agent;
         private bool _started;
         private Vector3? _pendingDestination;
@@ -79,8 +82,12 @@ namespace Ironfront.Units
                 return false;
 
             agent.isStopped = false;
+            PathRequests++;
             return agent.SetDestination(hit.position);
         }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => PathRequests = 0;
 
         public void Stop()
         {

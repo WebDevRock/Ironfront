@@ -5,7 +5,8 @@ namespace Ironfront.Core.Construction
 {
     /// <summary>
     /// A structure's ground footprint on the XZ plane (x → Rect.x, z → Rect.y). The apron is a reserved strip
-    /// in front of the building (refinery dock, factory exit) that must stay clear for units.
+    /// in front of the building (refinery dock, factory exit) that must stay clear for units. Buildings face
+    /// either +Z (north, the default) or −Z (south, rotated 180°).
     /// </summary>
     public readonly struct Footprint
     {
@@ -20,13 +21,15 @@ namespace Ironfront.Core.Construction
             Apron = apron;
         }
 
-        /// <summary>Footprint centred on (x, z) with the apron on the +Z side.</summary>
-        public static Footprint FromCenter(Vector2 centerXZ, Vector2 size, float apronDepth)
+        /// <summary>Footprint centred on (x, z) with the apron on the +Z side, or the −Z side when facing south.</summary>
+        public static Footprint FromCenter(Vector2 centerXZ, Vector2 size, float apronDepth, bool facesSouth = false)
         {
             var body = new Rect(centerXZ - size * 0.5f, size);
-            var apron = apronDepth > 0f
-                ? new Rect(body.xMin, body.yMax, size.x, apronDepth)
-                : new Rect(0f, 0f, 0f, 0f);
+            var apron = apronDepth <= 0f
+                ? new Rect(0f, 0f, 0f, 0f)
+                : facesSouth
+                    ? new Rect(body.xMin, body.yMin - apronDepth, size.x, apronDepth)
+                    : new Rect(body.xMin, body.yMax, size.x, apronDepth);
             return new Footprint(body, apron);
         }
     }

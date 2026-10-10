@@ -31,16 +31,22 @@ namespace Ironfront.Buildings
         public BuildingDefinition Definition => definition;
         public int FactionId => Member.FactionId;
         public bool IsSelected { get; private set; }
-        public Footprint Footprint => definition != null ? definition.FootprintAt(transform.position) : default;
+        public Footprint Footprint => definition != null ? definition.FootprintAt(transform.position, FacesSouth) : default;
 
-        /// <summary>Centre of the apron strip in front (+Z) of the building, or the front edge if none.</summary>
+        /// <summary>Buildings face north (+Z) or, rotated 180°, south (−Z).</summary>
+        public bool FacesSouth => transform.forward.z < 0f;
+
+        /// <summary>Unit vector out of the building's front (+Z or −Z).</summary>
+        public Vector3 FrontDirection => FacesSouth ? Vector3.back : Vector3.forward;
+
+        /// <summary>Centre of the apron strip in front of the building, or the front edge if none.</summary>
         public Vector3 FrontPoint
         {
             get
             {
                 if (definition == null) return transform.position;
                 float offset = definition.FootprintSize.y * 0.5f + definition.ApronDepth * 0.5f;
-                var p = transform.position + Vector3.forward * offset;
+                var p = transform.position + FrontDirection * offset;
                 p.y = transform.position.y;
                 return p;
             }

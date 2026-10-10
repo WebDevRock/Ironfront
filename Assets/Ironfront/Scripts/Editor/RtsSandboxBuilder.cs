@@ -32,7 +32,7 @@ namespace Ironfront.EditorTools
         internal const string MaterialsDir = Root + "/Materials";
         internal const string PrefabsDir = Root + "/Prefabs";
         internal const string DataDir = Root + "/Data";
-        private const string NavDir = Root + "/Navigation";
+        internal const string NavDir = Root + "/Navigation";
         public const string UnitPrefabPath = PrefabsDir + "/Unit.prefab";
         private const string NavMeshDataPath = NavDir + "/RTS_Sandbox_NavMesh.asset";
 
@@ -132,7 +132,7 @@ namespace Ironfront.EditorTools
             AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
         }
 
-        private static void EnsureLayers()
+        internal static void EnsureLayers()
         {
             var tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
             var layers = tagManager.FindProperty("layers");
@@ -151,7 +151,7 @@ namespace Ironfront.EditorTools
                 throw new System.InvalidOperationException($"Layer {index} is already used by '{element.stringValue}'.");
         }
 
-        private static Dictionary<string, Material> CreateMaterials()
+        internal static Dictionary<string, Material> CreateMaterials()
         {
             var lit = Shader.Find("Universal Render Pipeline/Lit");
             var unlit = Shader.Find("Universal Render Pipeline/Unlit");
@@ -183,7 +183,7 @@ namespace Ironfront.EditorTools
             return mat;
         }
 
-        private static GameObject CreateUnitPrefab(Material ringMaterial)
+        internal static GameObject CreateUnitPrefab(Material ringMaterial)
         {
             var unit = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             unit.name = "Unit";
@@ -277,7 +277,7 @@ namespace Ironfront.EditorTools
 
         // ---------- Scene content ----------
 
-        private static void CreateLighting()
+        internal static void CreateLighting()
         {
             var lightGo = new GameObject("Directional Light");
             var light = lightGo.AddComponent<Light>();
@@ -292,7 +292,7 @@ namespace Ironfront.EditorTools
             RenderSettings.ambientGroundColor = new Color(0.2f, 0.2f, 0.2f);
         }
 
-        private static void CreateGround(Transform parent, Material material)
+        internal static void CreateGround(Transform parent, Material material)
         {
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane); // 10x10 units at scale 1
             ground.name = "Ground";
@@ -303,11 +303,13 @@ namespace Ironfront.EditorTools
             GameObjectUtility.SetStaticEditorFlags(ground, StaticEditorFlags.BatchingStatic);
         }
 
-        private static void CreateObstacles(Transform parent, Material material)
+        private static void CreateObstacles(Transform parent, Material material) => CreateObstacles(parent, material, Obstacles);
+
+        internal static void CreateObstacles(Transform parent, Material material, (string name, Vector3 center, Vector3 size)[] set)
         {
             var root = new GameObject("Obstacles").transform;
             root.SetParent(parent, false);
-            foreach (var (name, center, size) in Obstacles)
+            foreach (var (name, center, size) in set)
             {
                 var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 go.name = name;
@@ -319,7 +321,7 @@ namespace Ironfront.EditorTools
             }
         }
 
-        private static Camera CreateCameraRig()
+        internal static Camera CreateCameraRig()
         {
             var rig = new GameObject("CameraRig");
             rig.transform.position = new Vector3(-28f, 0f, -33f);
@@ -364,7 +366,7 @@ namespace Ironfront.EditorTools
             return units;
         }
 
-        private static (SelectionManager, UnitCommandController, BuildingPlacementController, OrderInputController) CreateSystems(
+        internal static (SelectionManager, UnitCommandController, BuildingPlacementController, OrderInputController) CreateSystems(
             Camera cam, EconomyContentBuilder.Content economy)
         {
             var matchGo = new GameObject("Match");
@@ -402,7 +404,7 @@ namespace Ironfront.EditorTools
             return (selection, commands, placement, orders);
         }
 
-        private static void CreateUI(SelectionManager selection, BuildingPlacementController placement, OrderInputController orders)
+        internal static GameObject CreateUI(SelectionManager selection, BuildingPlacementController placement, OrderInputController orders)
         {
             var esGo = new GameObject("EventSystem");
             esGo.AddComponent<EventSystem>();
@@ -509,9 +511,10 @@ namespace Ironfront.EditorTools
             SetRef(ordersHud, "orders", orders);
             SetRef(ordersHud, "selectionManager", selection);
             SetRef(ordersHud, "font", font);
+            return canvasGo;
         }
 
-        private static GameObject NewUiObject(string name, Transform parent)
+        internal static GameObject NewUiObject(string name, Transform parent)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.layer = LayerMask.NameToLayer("UI");
@@ -519,7 +522,9 @@ namespace Ironfront.EditorTools
             return go;
         }
 
-        private static NavMeshSurface CreateNavMesh()
+        private static NavMeshSurface CreateNavMesh() => CreateNavMesh(NavMeshDataPath);
+
+        internal static NavMeshSurface CreateNavMesh(string navMeshDataPath)
         {
             var navGo = new GameObject("Navigation");
             var surface = navGo.AddComponent<NavMeshSurface>();
@@ -534,14 +539,14 @@ namespace Ironfront.EditorTools
             surface.BuildNavMesh();
             if (surface.navMeshData == null) throw new System.InvalidOperationException("NavMesh bake produced no data.");
 
-            if (AssetDatabase.LoadAssetAtPath<NavMeshData>(NavMeshDataPath) != null)
-                AssetDatabase.DeleteAsset(NavMeshDataPath);
-            AssetDatabase.CreateAsset(surface.navMeshData, NavMeshDataPath);
+            if (AssetDatabase.LoadAssetAtPath<NavMeshData>(navMeshDataPath) != null)
+                AssetDatabase.DeleteAsset(navMeshDataPath);
+            AssetDatabase.CreateAsset(surface.navMeshData, navMeshDataPath);
             EditorUtility.SetDirty(surface);
             return surface;
         }
 
-        private static void AddSceneToBuildSettingsFirst(string path)
+        internal static void AddSceneToBuildSettingsFirst(string path)
         {
             var scenes = EditorBuildSettings.scenes.Where(s => s.path != path).ToList();
             scenes.Insert(0, new EditorBuildSettingsScene(path, true));

@@ -131,9 +131,9 @@ namespace Ironfront.Construction
         }
 
         /// <summary>Checks the world-space centre for <paramref name="definition"/> against all placement rules.</summary>
-        public PlacementResult Validate(BuildingDefinition definition, Vector3 center)
+        public PlacementResult Validate(BuildingDefinition definition, Vector3 center, bool facesSouth = false)
         {
-            var candidate = definition.FootprintAt(center);
+            var candidate = definition.FootprintAt(center, facesSouth);
 
             var structures = new List<Footprint>();
             foreach (var b in Building.All)
@@ -151,7 +151,7 @@ namespace Ironfront.Construction
             // The site must be on walkable ground (not inside a baked obstacle hole).
             if (!NavMesh.SamplePosition(center, out var hit, 1f, NavMesh.AllAreas)) return PlacementResult.OverlapsObstacle;
             if (candidate.HasApron &&
-                !NavMesh.SamplePosition(definition.FootprintAt(center).Apron.center.ToXZ(), out hit, 1f, NavMesh.AllAreas))
+                !NavMesh.SamplePosition(candidate.Apron.center.ToXZ(), out hit, 1f, NavMesh.AllAreas))
                 return PlacementResult.BlocksAccess;
 
             return PlacementResult.Valid;
@@ -161,7 +161,10 @@ namespace Ironfront.Construction
         /// Validates, charges and spawns a structure for <paramref name="factionId"/>. Credits are only spent
         /// when the structure is actually placed.
         /// </summary>
-        public bool TryPlace(BuildingDefinition definition, Vector3 center, int factionId, out Building placed, out string reason)
+        /// <param name="facesSouth">Rotate the building 180° so its front (dock/exit) faces −Z. The player's
+        /// placement tool always builds facing north; the computer commander faces its buildings towards its opponent.</param>
+        public bool TryPlace(BuildingDefinition definition, Vector3 center, int factionId, out Building placed, out string reason,
+            bool facesSouth = false)
         {
             placed = null;
             var match = MatchController.Current;
@@ -179,7 +182,7 @@ namespace Ironfront.Construction
                 return false;
             }
 
-            var result = Validate(definition, center);
+            var result = Validate(definition, center, facesSouth);
             if (result != PlacementResult.Valid)
             {
                 reason = PlacementRules.Describe(result);
@@ -192,14 +195,12 @@ namespace Ironfront.Construction
                 return false;
             }
 
-            var go = Instantiate(definition.Prefab, new Vector3(center.x, 0f, center.z), Quaternion.identity);
+            var go = FactionSpawner.Spawn(definition.Prefab, new Vector3(center.x, 0f, center.z), BuildingDefinition.Facing(facesSouth), factionId);
             go.name = definition.DisplayName;
-            var member = go.GetComponent<FactionMember>();
-            if (member != null) member.FactionId = factionId;
             placed = go.GetComponent<Building>();
 
             reason = $"{definition.DisplayName} constructed (-{definition.Cost})";
-            Message?.Invoke(reason);
+            if (factionId == PlayerFactionId) Message?.Invoke(reason); // computer factions build silently
             BuildingPlaced?.Invoke(placed);
             return true;
         }
