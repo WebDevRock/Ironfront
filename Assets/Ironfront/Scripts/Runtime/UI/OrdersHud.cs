@@ -17,8 +17,8 @@ namespace Ironfront.UI
         [SerializeField] private Font font;
         [SerializeField] private float statusDuration = 3f;
 
-        private static readonly Color ButtonColor = new Color(0.18f, 0.2f, 0.24f, 0.95f);
-        private static readonly Color ActiveColor = new Color(0.55f, 0.25f, 0.1f, 0.95f);
+        private static Color ButtonColor => UiTheme.Button;
+        private static readonly Color ActiveColor = new Color(0.55f, 0.3f, 0.08f, 1f);
 
         private Image _attackMoveImage;
         private Text _status;
@@ -57,7 +57,7 @@ namespace Ironfront.UI
             _status = statusGo.AddComponent<Text>();
             _status.font = font;
             _status.fontSize = 13;
-            _status.color = new Color(1f, 0.85f, 0.5f);
+            _status.color = UiTheme.Accent;
             _status.alignment = TextAnchor.MiddleCenter;
             _status.raycastTarget = false;
             statusGo.AddComponent<LayoutElement>().preferredHeight = 20f;
@@ -115,8 +115,8 @@ namespace Ironfront.UI
             go.layer = parent.gameObject.layer;
             go.transform.SetParent(parent, false);
             var image = go.AddComponent<Image>();
-            image.color = ButtonColor;
             var button = go.AddComponent<Button>();
+            UiTheme.StyleButton(button, image, ButtonColor);
             button.onClick.AddListener(onClick);
 
             var textGo = new GameObject("Label", typeof(RectTransform));
@@ -129,7 +129,7 @@ namespace Ironfront.UI
             var text = textGo.AddComponent<Text>();
             text.font = font;
             text.fontSize = 14;
-            text.color = Color.white;
+            text.color = UiTheme.Text;
             text.alignment = TextAnchor.MiddleCenter;
             text.raycastTarget = false;
             text.text = label;

@@ -28,6 +28,11 @@ namespace Ironfront.Data
         [Header("Combat")]
         [SerializeField, Min(1f)] private float maxHealth = 1000f;
         [SerializeField, Range(0f, 0.9f)] private float armour = 0.2f;
+        [Header("Presentation")]
+        [Tooltip("Sidebar / selection portrait (generated from the model).")]
+        [SerializeField] private Sprite icon;
+
+        public Sprite Icon => icon;
 
         public string Id => id;
         public string DisplayName => displayName;

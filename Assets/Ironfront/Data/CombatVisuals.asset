@@ -21,3 +21,13 @@ MonoBehaviour:
   moveMarker: {fileID: 2100000, guid: 3dda8999d2fe0a64ea11cbf40cee30f5, type: 2}
   attackMoveMarker: {fileID: 2100000, guid: 15cf5548b390d0f448cc87c9a3848682, type: 2}
   attackMarker: {fileID: 2100000, guid: b2ad58ecbb7c08743aa8140737e865c5, type: 2}
+  fxFlash: {fileID: 2100000, guid: 6e9fcbfa056f83646abdf095b2a7428e, type: 2}
+  fxFire: {fileID: 2100000, guid: efdfca2d5afe39f489031fa41832b7f9, type: 2}
+  fxSpark: {fileID: 2100000, guid: 00bff23eb596bf148b52344f76b2f304, type: 2}
+  fxSmoke: {fileID: 2100000, guid: 0ec5f24367b7ce54fbb45911607cf557, type: 2}
+  fxDust: {fileID: 2100000, guid: b557232dc1af0164aa8267a929758cce, type: 2}
+  fxScorch: {fileID: 2100000, guid: 705fcc8ea19936848b1b2d596f372bfb, type: 2}
+  fxRing: {fileID: 2100000, guid: a54e7784aa2a9d542a8e0728e15ebed5, type: 2}
+  fxTracer: {fileID: 2100000, guid: 32b4dad0e0e4664429f3a0529b2f9036, type: 2}
+  fxGlint: {fileID: 2100000, guid: f2ac0b7a380db5d40b3148341de6a613, type: 2}
+  debris: {fileID: 2100000, guid: a48126f05a237f64b9d265db44c7b9ea, type: 2}

@@ -29,3 +29,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4cbc0d6cada4f6140a63809add473f24, type: 2}
   maxHealth: 1500
   armour: 0.25
+  icon: {fileID: 21300000, guid: edd98e2f8b2966f4890203294d716232, type: 3}

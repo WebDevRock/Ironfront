@@ -38,7 +38,7 @@ namespace Ironfront.Combat
         public int ShotsFired { get; private set; }
         public float CooldownRemaining => _cooldown != null ? _cooldown.Remaining : 0f;
 
-        /// <summary>Raised with the target each time a shot is fired.</summary>
+        /// <summary>Raised with the target each time a shot is fired (muzzle flash, recoil and sound listen to this).</summary>
         public event Action<Health> Fired;
 
         private void Awake()
@@ -164,11 +164,12 @@ namespace Ironfront.Combat
             Vector3 from = MuzzlePosition;
             Projectile.Launch(from, h, Weapon.Damage, _health.FactionId, Weapon.AllowFriendlyFire,
                 Weapon.ProjectileSpeed, Weapon.ProjectileSize, _health);
-            CombatFx.MuzzleFlash(from);
             ShotsFired++;
             Fired?.Invoke(h);
             return true;
         }
+
+        public Transform Muzzle => muzzle;
 
         private Vector3 MuzzlePosition => muzzle != null ? muzzle.position : transform.position + Vector3.up * 1f;
 

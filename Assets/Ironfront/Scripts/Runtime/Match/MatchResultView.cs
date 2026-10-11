@@ -16,6 +16,8 @@ namespace Ironfront.Match
         [SerializeField] private Text statPlayer;
         [SerializeField] private Text statEnemy;
         [SerializeField] private Button restartButton;
+        [Tooltip("Optional: returns to the title screen.")]
+        [SerializeField] private Button menuButton;
         [SerializeField] private MatchFlowController flow;
 
         public bool IsShown => panel != null && panel.activeSelf;
@@ -27,6 +29,7 @@ namespace Ironfront.Match
         {
             if (panel != null) panel.SetActive(false);
             if (restartButton != null) restartButton.onClick.AddListener(OnRestart);
+            if (menuButton != null) menuButton.onClick.AddListener(OnMainMenu);
         }
 
         public void Show(MatchOutcome outcome, int playerFaction, float duration)
@@ -35,7 +38,7 @@ namespace Ironfront.Match
             bool won = outcome.Result == MatchResult.Victory && outcome.WinnerFactionId == playerFaction;
             bool draw = outcome.Result == MatchResult.Draw;
             title.text = draw ? "DRAW" : won ? "VICTORY" : "DEFEAT";
-            title.color = draw ? new Color(1f, 0.85f, 0.4f) : won ? new Color(0.4f, 1f, 0.5f) : new Color(1f, 0.35f, 0.3f);
+            title.color = draw ? new Color(1f, 0.78f, 0.3f) : won ? new Color(0.52f, 0.92f, 0.45f) : new Color(1f, 0.38f, 0.3f);
             string reason = outcome.Reason == EndReason.Exhaustion
                 ? "Stalemate: no ore, credits or forces remain for either side to continue."
                 : draw ? "Both headquarters were destroyed at the same moment."
@@ -86,6 +89,13 @@ namespace Ironfront.Match
         private void OnRestart()
         {
             if (flow != null) flow.Restart();
+        }
+
+        private void OnMainMenu()
+        {
+            Time.timeScale = 1f;
+            InputBindings.RtsInputMode.ResetAll();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UI.GameMenu.MainMenuScene);
         }
     }
 }

@@ -333,3 +333,93 @@ Audit the project, then make it more reliable, responsive and readable, and meas
 
 ### Relevant commit hash
 Milestone commit: `1ad2601` (1ad2601d67dd11fb3971b3636fffef8950c8ec84)
+
+
+## Milestone 006 — Visual Identity, Art Direction, Audio and Presentation (2026-10-11)
+
+### Feature requested
+Turn the functional prototype into a visually coherent game, across eight phases:
+1. Visual audit and art-direction document.
+2. Distinctive models for the Light Tank, Heavy Tank, Harvester, HQ, Refinery, Power Plant and Vehicle Factory, with faction colour variants and gameplay kept separate.
+3. Terrain and environment that don't affect navigation.
+4. Combat effects and animation, pooled and event-driven.
+5. Audio, appropriately licensed, with volume controls and overlap limiting.
+6. UI consistency, including a main menu and the result screens.
+7. Screenshots, before/after comparison and Windows performance against M005.
+8. Full regression, including a complete automated match.
+
+Deliverables: art direction, asset inventory and licences, report, log, commit.
+
+### Changes implemented
+- **Art tooling (Editor/Art):**
+  - `MeshKit` (procedural hard-surface modeller), `ArtLibrary` (procedural textures and materials);
+  - `VehicleModels`, `StructureModels`;
+  - `EnvironmentBuilder` (painted ground, backdrop, styled obstacles with unchanged colliders, collider-free props, lighting and post-processing, shadow distance 100 m);
+  - `UiArtBuilder` (9-slice sprites, glyphs, emblem, model icons rendered in a preview scene), `UiBuild`;
+  - `MainMenuBuilder`, `AudioContentBuilder`, `ArtPreview`.
+- **Runtime visuals (`Visuals/`):**
+  - `FxLibrary`: shared world-space particle systems, Emit-only, with view culling and budgets;
+  - `WeaponFx`, `VehicleMotionFx` (shared moving-tread material), `DamageFx`, `DestructionFx` and `WreckBurner`;
+  - `ConstructionFx`, `StructureAnimator`, `HarvesterFx`, `OreDepositFx`, `StaticTint`;
+  - `VisualFeatures` (command-line A/B switches);
+  - `FactionColorizer` now also tints emissive renderers; projectiles get tracers.
+- **Audio:**
+  - `Core/Audio/SfxSynth` (33 deterministic synthesised clips plus WAV encoder), `VoiceLimiter`, `AudioMix`;
+  - `Audio/GameAudio` (screen-positioned one-shots, aggregated engine loop, ambience), `SoundBank`, `AudioEventRouter`, `UI/UiSound`.
+- **UI:**
+  - `UiTheme` palette, `UiSkin` and `UiSkinProvider`;
+  - EconomyHud icons, glyph rows and power meter; SelectionHud portrait;
+  - `GameMenu` (F10 or MENU button), `AudioOptionsPanel`, `MainMenuController`;
+  - restyled result screen with a Main menu button;
+  - new `GameMenu` input action (F10).
+- **Data:** an `icon` sprite on `UnitDefinition` and `BuildingDefinition`; particle material slots on `CombatVisuals`.
+- **Scenes:** new `MainMenu`, first in Build Settings. Match, Match_Swapped, Sandbox and Benchmark rebuilt by `MatchSceneBuilder.BuildAll()`.
+- **Diagnostics:**
+  - `ShowcaseRunner` (`-ironfrontShowcase`) for reproducible screenshots;
+  - `IronfrontBuild.BuildWindows(path)`, `RtsCameraController.SetDistance`;
+  - the runners force `runInBackground` on command-line runs.
+- **Gameplay code touched:** only `CombatUnit.TryFire`, which dropped its direct muzzle-flash call because `WeaponFx` uses the existing `Fired` event. Rules, values, colliders, NavMesh agents and obstacles are unchanged.
+- **Docs:**
+  - `Docs/Milestone-006-Art-Direction.md`, `Docs/Milestone-006-Asset-Inventory.md`, `Docs/Milestone-006-Report.md`;
+  - `Docs/Screenshots/M006/{before,after,compare}`, `Docs/Performance/M006`.
+
+### Tests attempted and results
+- EditMode **181/181** (+19) and PlayMode **49/49** (+7), on the final assets. One earlier full PlayMode run was 48/49: the unused AI Assistant relay logged an error during a SetUp. Re-run: fixture 12/12, full suite 49/49.
+- **Complete AI-vs-AI matches:** the balance study, seed 37, both layouts, all effects and audio on. Both decisive: 391 s and 502 s of game time, no timeouts.
+- **Release benchmark,** 3 runs each, before (M005 content) vs final:
+  - 200-unit combat 2.28 → 3.00 ms (439 → 333 fps); 25-unit idle 1.04 → 1.25 ms;
+  - p99 under 6 ms everywhere; about +30–50 MB memory;
+  - one isolated 555 ms stall in one run (unconfirmed cause); runs 1–2 had elevated GC counts that did not reproduce;
+  - draw calls lower at 200 units (647 → 530).
+- **NavMesh:** polygon data byte-identical to M005; only 4 tile source hashes differ.
+- **Screenshots:** 10 shots of the final build reviewed visually; 7 before/after pairs.
+
+### Problems encountered
+- **Self-inflicted bugs, fixed:**
+  - `OreDepositFx`'s `[RequireComponent]` added a duplicate `OreDeposit`; caught by 3 PlayMode tests.
+  - `Mathf.SmoothStep` misused as a mask, so the ground masks were empty; caught by reviewing renders.
+  - The emission keyword was lost on material creation.
+  - Faction caps covered the cooling-tower openings.
+  - Turret details read as faces.
+  - The sidebar glyph layout wrapped, and the victory statistics overlapped.
+- **Performance regression, fixed:** per-frame tread property blocks cost about +4.4 ms render thread at 200 tanks. Found with the A/B switches, fixed with a shared scrolled material.
+- **Tooling:**
+  - PlayMode tests must run with `--async_tests`;
+  - `delayCall` from eval never fired;
+  - one baseline benchmark hung because `runInBackground` was off;
+  - Python edits changed line endings in mixed-ending files (restored per file);
+  - one of my own new files was truncated by an encoding error and rewritten.
+
+### Human interventions required
+- **None.** I made the art, audio and tool choices myself. Procedural generation meant no licences or purchases were needed.
+- **Still pending from M005:** approval to remove the unused AI Assistant and Inference packages, which cause the "1 errors" line in every build summary.
+
+### Known limitations
+- Stylised programmer art: no UV-unwrapped textures, normal maps or AO. Factions differ by livery only. Animation is procedural transforms only.
+- Synthesised audio with radio-chirp acknowledgements: no voice acting, no music.
+- Built-in LegacyRuntime font.
+- About 27 MB of text-YAML mesh assets (deterministic).
+- Checked only at 1920×1080 and 1280×720 on one machine. The look, the mix and readability still need human judgement; see the report.
+
+### Relevant commit hash
+Milestone commit: *(see the follow-up "Record Milestone 006 commit hash" commit)*

@@ -18,6 +18,8 @@ namespace Ironfront.UI
     {
         [SerializeField] private SelectionManager selectionManager;
         [SerializeField] private Text label;
+        [Tooltip("Optional portrait of the selected unit or structure type.")]
+        [SerializeField] private Image portrait;
         [Tooltip("Seconds between refreshes while something is selected (health, cargo and orders change continuously).")]
         [SerializeField] private float detailRefreshInterval = 0.25f;
 
@@ -63,6 +65,24 @@ namespace Ironfront.UI
             using var perfScope = Ironfront.Diagnostics.PerfMarkers.Hud.Auto();
             if (label == null) return;
             label.text = $"{Describe()}\n{Help}";
+            UpdatePortrait();
+        }
+
+        private void UpdatePortrait()
+        {
+            if (portrait == null || selectionManager == null) return;
+            Sprite icon = null;
+            var first = selectionManager.Selection.Items.FirstOrDefault(u => u != null);
+            if (first != null)
+            {
+                var identity = first.GetComponent<UnitIdentity>();
+                icon = identity != null && identity.Definition != null ? identity.Definition.Icon : null;
+            }
+            else if (selectionManager.SelectedStructure != null && selectionManager.SelectedStructure.Definition != null)
+                icon = selectionManager.SelectedStructure.Definition.Icon;
+            if (portrait.sprite != icon) portrait.sprite = icon;
+            bool show = icon != null;
+            if (portrait.gameObject.activeSelf != show) portrait.gameObject.SetActive(show);
         }
 
         private string Describe()

@@ -11,13 +11,16 @@ namespace Ironfront.EditorTools
         public const string WindowsOutput = "Builds/Windows/Ironfront.exe";
 
         [MenuItem("Ironfront/Build Windows Player")]
-        public static string BuildWindows()
+        public static string BuildWindows() => BuildWindows(WindowsOutput);
+
+        /// <summary>Release build to <paramref name="output"/> (e.g. Builds/Before/Ironfront.exe for comparisons).</summary>
+        public static string BuildWindows(string output)
         {
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = scenes,
-                locationPathName = WindowsOutput,
+                locationPathName = output,
                 target = BuildTarget.StandaloneWindows64,
                 targetGroup = BuildTargetGroup.Standalone,
                 options = BuildOptions.None,

@@ -4,6 +4,7 @@ using Ironfront.CameraControl;
 using Ironfront.Data;
 using Ironfront.Diagnostics;
 using Ironfront.Economy;
+using Ironfront.EditorTools.Art;
 using Ironfront.Match;
 using Ironfront.UI;
 using UnityEditor;
@@ -85,7 +86,8 @@ namespace Ironfront.EditorTools
             string b = Build();
             string s = Build(swapped: true);
             string c = BuildBenchmark();
-            return a + "\n" + b + "\n" + s + "\n" + c;
+            string m = MainMenuBuilder.Build();
+            return a + "\n" + b + "\n" + s + "\n" + c + "\n" + m;
         }
 
         public const string BenchmarkScenePath = "Assets/Scenes/RTS_Benchmark.unity";
@@ -107,6 +109,7 @@ namespace Ironfront.EditorTools
             var mats = RtsSandboxBuilder.CreateMaterials();
             RtsSandboxBuilder.CreateUnitPrefab(mats["SelectionRing"]);
             EconomyContentBuilder.CreateAssets(mats["SelectionRing"]);
+            RtsSandboxBuilder.GeneratePresentationAssets();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var economy = EconomyContentBuilder.Load();
@@ -114,9 +117,11 @@ namespace Ironfront.EditorTools
 
             RtsSandboxBuilder.CreateLighting();
             var env = new GameObject("Environment");
-            RtsSandboxBuilder.CreateGround(env.transform, ground);
+            var groundGo = RtsSandboxBuilder.CreateGround(env.transform, ground);
+            RtsSandboxBuilder.ApplyEnvironment(env.transform, groundGo, new EnvironmentBuilder.Layout { Name = "Benchmark", Seed = 5 });
 
             var cam = RtsSandboxBuilder.CreateCameraRig();
+            EnvironmentBuilder.Lighting(cam);
             var rig = cam.transform.parent;
             rig.position = new Vector3(0f, 0f, -12f);
             var so = new SerializedObject(rig.GetComponent<RtsCameraController>());
@@ -152,6 +157,7 @@ namespace Ironfront.EditorTools
             var mats = RtsSandboxBuilder.CreateMaterials();
             RtsSandboxBuilder.CreateUnitPrefab(mats["SelectionRing"]);
             EconomyContentBuilder.CreateAssets(mats["SelectionRing"]);
+            RtsSandboxBuilder.GeneratePresentationAssets();
             CreateNormalDifficulty();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -162,10 +168,12 @@ namespace Ironfront.EditorTools
 
             RtsSandboxBuilder.CreateLighting();
             var env = new GameObject("Environment");
-            RtsSandboxBuilder.CreateGround(env.transform, ground);
+            var groundGo = RtsSandboxBuilder.CreateGround(env.transform, ground);
             RtsSandboxBuilder.CreateObstacles(env.transform, obstacle, Obstacles);
+            RtsSandboxBuilder.ApplyEnvironment(env.transform, groundGo, MatchLayout());
 
             var cam = RtsSandboxBuilder.CreateCameraRig();
+            EnvironmentBuilder.Lighting(cam);
             var (selection, _, placement, orders) = RtsSandboxBuilder.CreateSystems(cam, economy);
             var canvas = RtsSandboxBuilder.CreateUI(selection, placement, orders);
 
@@ -215,6 +223,29 @@ namespace Ironfront.EditorTools
             return summary;
         }
 
+        /// <summary>Ground painting / prop layout for RTS_Match: point-symmetric like the map itself.</summary>
+        private static EnvironmentBuilder.Layout MatchLayout()
+        {
+            var l = new EnvironmentBuilder.Layout { Name = "Match", Obstacles = Obstacles, Seed = 7 };
+            l.Bases.Add(PlayerHq);
+            l.Bases.Add(EnemyHq);
+            foreach (var (_, position, _) in OreFields) l.Ore.Add(position);
+            var roads = new[]
+            {
+                new[] { new Vector3(-41f, 0f, -35f), new Vector3(-34f, 0f, -33f), new Vector3(-24f, 0f, -34f), new Vector3(-12f, 0f, -36f) },
+                new[] { new Vector3(-24f, 0f, -34f), new Vector3(-14f, 0f, -27f), new Vector3(-8f, 0f, -20f) },
+                new[] { new Vector3(-34f, 0f, -33f), new Vector3(-36f, 0f, -15f), new Vector3(-34f, 0f, 5f), new Vector3(-28f, 0f, 25f), new Vector3(-14f, 0f, 38f), new Vector3(0f, 0f, 42f) },
+            };
+            foreach (var r in roads)
+            {
+                l.Roads.Add(r);
+                var mirrored = new Vector3[r.Length];
+                for (int i = 0; i < r.Length; i++) mirrored[i] = -r[i];
+                l.Roads.Add(mirrored);
+            }
+            return l;
+        }
+
         private static void CreateNormalDifficulty()
         {
             var normal = EconomyContentBuilder.LoadOrCreate<AiDifficulty>(NormalDifficultyPath);
@@ -259,28 +290,38 @@ namespace Ironfront.EditorTools
             rect.anchorMax = Vector2.one;
             rect.offsetMin = rect.offsetMax = Vector2.zero;
             var bg = panel.AddComponent<Image>();
-            bg.color = new Color(0f, 0f, 0f, 0.75f);
+            bg.color = new Color(0.02f, 0.025f, 0.03f, 0.7f);
             bg.raycastTarget = true; // blocks clicks on the world while shown
+            UiBuild.Panel("Card", panel.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(860f, 600f), UiTheme.PanelStrong, raycast: false);
+            var emblem = UiBuild.Rect("Emblem", panel.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, 255f), new Vector2(84f, 84f));
+            var emblemImage = emblem.gameObject.AddComponent<Image>();
+            emblemImage.sprite = UiTheme.Skin != null ? UiTheme.Skin.Emblem : null;
+            emblemImage.preserveAspect = true;
+            emblemImage.raycastTarget = false;
 
-            var title = Label(panel.transform, "Title", font, 72, FontStyle.Bold, new Vector2(0f, 210f), new Vector2(900f, 110f));
-            var detail = Label(panel.transform, "Detail", font, 22, FontStyle.Normal, new Vector2(0f, 120f), new Vector2(900f, 70f));
+            var title = Label(panel.transform, "Title", font, 72, FontStyle.Bold, new Vector2(0f, 160f), new Vector2(800f, 100f));
+            UiTheme.Shadow(title);
+            var detail = Label(panel.transform, "Detail", font, 22, FontStyle.Normal, new Vector2(0f, 85f), new Vector2(780f, 70f));
+            detail.color = UiTheme.Text;
 
             // Statistics table: row labels plus one column per side.
-            var statLabels = Label(panel.transform, "StatLabels", font, 18, FontStyle.Normal, new Vector2(-110f, -30f), new Vector2(300f, 200f));
+            var statLabels = Label(panel.transform, "StatLabels", font, 18, FontStyle.Normal, new Vector2(-110f, -70f), new Vector2(300f, 200f));
             statLabels.alignment = TextAnchor.UpperLeft;
-            statLabels.color = new Color(0.75f, 0.8f, 0.88f);
-            var statPlayer = Label(panel.transform, "StatPlayer", font, 18, FontStyle.Bold, new Vector2(100f, -30f), new Vector2(100f, 200f));
+            statLabels.color = UiTheme.Muted;
+            var statPlayer = Label(panel.transform, "StatPlayer", font, 18, FontStyle.Bold, new Vector2(100f, -70f), new Vector2(100f, 200f));
             statPlayer.alignment = TextAnchor.UpperRight;
-            var statEnemy = Label(panel.transform, "StatEnemy", font, 18, FontStyle.Bold, new Vector2(210f, -30f), new Vector2(100f, 200f));
+            var statEnemy = Label(panel.transform, "StatEnemy", font, 18, FontStyle.Bold, new Vector2(210f, -70f), new Vector2(100f, 200f));
             statEnemy.alignment = TextAnchor.UpperRight;
 
             var buttonGo = RtsSandboxBuilder.NewUiObject("RestartButton", panel.transform);
             var bRect = (RectTransform)buttonGo.transform;
             bRect.anchorMin = bRect.anchorMax = bRect.pivot = new Vector2(0.5f, 0.5f);
-            bRect.anchoredPosition = new Vector2(0f, -190f);
+            bRect.anchoredPosition = new Vector2(-130f, -220f);
             bRect.sizeDelta = new Vector2(240f, 54f);
-            buttonGo.AddComponent<Image>().color = new Color(0.2f, 0.45f, 0.95f, 1f);
+            var bImage = buttonGo.AddComponent<Image>();
             var button = buttonGo.AddComponent<Button>();
+            UiTheme.StyleButton(button, bImage, new Color(0.24f, 0.4f, 0.22f, 1f));
+            var menuButton = UiBuild.Button("MainMenuButton", panel.transform, "Main menu", new Vector2(130f, -220f), new Vector2(240f, 54f), null, 24);
             var bLabel = Label(buttonGo.transform, "Label", font, 24, FontStyle.Bold, Vector2.zero, new Vector2(240f, 54f));
             bLabel.text = "Restart match";
 
@@ -292,6 +333,7 @@ namespace Ironfront.EditorTools
             RtsSandboxBuilder.SetRef(view, "statPlayer", statPlayer);
             RtsSandboxBuilder.SetRef(view, "statEnemy", statEnemy);
             RtsSandboxBuilder.SetRef(view, "restartButton", button);
+            RtsSandboxBuilder.SetRef(view, "menuButton", menuButton);
             RtsSandboxBuilder.SetRef(view, "flow", flow);
             RtsSandboxBuilder.SetRef(flow, "resultView", view);
             panel.transform.SetAsLastSibling();
@@ -307,7 +349,7 @@ namespace Ironfront.EditorTools
             rect.anchoredPosition = new Vector2(10f, -130f);
             rect.sizeDelta = new Vector2(470f, 470f);
             var bg = panel.AddComponent<Image>();
-            bg.color = new Color(0f, 0f, 0.05f, 0.7f);
+            UiTheme.ApplyPanel(bg, UiTheme.PanelStrong);
             bg.raycastTarget = true;
             var text = Label(panel.transform, "Text", font, 12, FontStyle.Normal, Vector2.zero, Vector2.zero);
             var tRect = (RectTransform)text.transform;

@@ -5,7 +5,9 @@
         "Ironfront.Runtime",
         "Unity.InputSystem",
         "Unity.AI.Navigation",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

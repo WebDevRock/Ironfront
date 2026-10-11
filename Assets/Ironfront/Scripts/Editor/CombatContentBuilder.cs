@@ -1,6 +1,9 @@
 using Ironfront.Combat;
+using Ironfront.Audio;
 using Ironfront.Data;
+using Ironfront.EditorTools.Art;
 using Ironfront.Match;
+using Ironfront.Visuals;
 using Ironfront.Testing;
 using UnityEditor;
 using UnityEngine;
@@ -82,6 +85,17 @@ namespace Ironfront.EditorTools
                 so.FindProperty("moveMarker").objectReferenceValue = M("MarkerMove", new Color(0.3f, 1f, 0.35f));
                 so.FindProperty("attackMoveMarker").objectReferenceValue = M("MarkerAttackMove", new Color(1f, 0.6f, 0.1f));
                 so.FindProperty("attackMarker").objectReferenceValue = M("MarkerAttack", new Color(1f, 0.15f, 0.1f));
+                var art = EconomyContentBuilder.Art;
+                so.FindProperty("fxFlash").objectReferenceValue = art.FxFlash;
+                so.FindProperty("fxFire").objectReferenceValue = art.FxFire;
+                so.FindProperty("fxSpark").objectReferenceValue = art.FxSpark;
+                so.FindProperty("fxSmoke").objectReferenceValue = art.FxSmoke;
+                so.FindProperty("fxDust").objectReferenceValue = art.FxDust;
+                so.FindProperty("fxScorch").objectReferenceValue = art.FxScorch;
+                so.FindProperty("fxRing").objectReferenceValue = art.FxRing;
+                so.FindProperty("fxTracer").objectReferenceValue = art.FxTracer;
+                so.FindProperty("fxGlint").objectReferenceValue = art.FxGlint;
+                so.FindProperty("debris").objectReferenceValue = art.Wreck;
             });
             return d;
         }
@@ -110,50 +124,47 @@ namespace Ironfront.EditorTools
         private static GameObject BuildLightTank(UnitDefinition def, EconomyContentBuilder.Palette pal)
         {
             var root = EconomyContentBuilder.NewVehicle("LightTank", def, new Vector3(1.6f, 1.1f, 2.2f), 0.75f, 8f, pal, out _);
-            var t = root.transform;
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "Hull", new Vector3(0f, 0.45f, 0f), new Vector3(1.5f, 0.5f, 2.1f), pal.LightTankPaint);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "TrackL", new Vector3(-0.75f, 0.28f, 0f), new Vector3(0.28f, 0.5f, 2.2f), pal.Dark);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "TrackR", new Vector3(0.75f, 0.28f, 0f), new Vector3(0.28f, 0.5f, 2.2f), pal.Dark);
-
-            var pivot = new GameObject("TurretPivot").transform;
-            pivot.SetParent(t, false);
-            pivot.localPosition = new Vector3(0f, 0.75f, 0f);
-            EconomyContentBuilder.Part(pivot, PrimitiveType.Cylinder, "Turret", new Vector3(0f, 0.1f, -0.05f), new Vector3(0.9f, 0.18f, 0.9f), pal.Faction);
-            EconomyContentBuilder.Part(pivot, PrimitiveType.Cube, "Barrel", new Vector3(0f, 0.12f, 0.75f), new Vector3(0.14f, 0.14f, 1.2f), pal.Dark);
-            var muzzle = new GameObject("Muzzle").transform;
-            muzzle.SetParent(pivot, false);
-            muzzle.localPosition = new Vector3(0f, 0.12f, 1.4f);
-
-            AddCombat(root, pivot, muzzle);
+            var parts = VehicleModels.LightTank(root.transform, EconomyContentBuilder.Art);
+            AddCombat(root, parts.TurretPivot, parts.Muzzle);
+            AddTankFx(root, parts, recoil: 0.16f, flash: 1f, SoundId.LightCannon);
             return root;
         }
 
         private static GameObject BuildHeavyTank(UnitDefinition def, EconomyContentBuilder.Palette pal)
         {
             var root = EconomyContentBuilder.NewVehicle("HeavyTank", def, new Vector3(2f, 1.4f, 2.8f), 0.9f, 5f, pal, out _);
-            var t = root.transform;
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "Hull", new Vector3(0f, 0.55f, 0f), new Vector3(2f, 0.7f, 2.7f), pal.HeavyTankPaint);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "FrontPlate", new Vector3(0f, 0.6f, 1.3f), new Vector3(1.9f, 0.5f, 0.2f), pal.Dark);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "TrackL", new Vector3(-1f, 0.35f, 0f), new Vector3(0.35f, 0.7f, 2.8f), pal.Dark);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "TrackR", new Vector3(1f, 0.35f, 0f), new Vector3(0.35f, 0.7f, 2.8f), pal.Dark);
-
-            var pivot = new GameObject("TurretPivot").transform;
-            pivot.SetParent(t, false);
-            pivot.localPosition = new Vector3(0f, 0.95f, 0f);
-            EconomyContentBuilder.Part(pivot, PrimitiveType.Cube, "Turret", new Vector3(0f, 0.2f, -0.1f), new Vector3(1.3f, 0.45f, 1.3f), pal.Faction);
-            EconomyContentBuilder.Part(pivot, PrimitiveType.Cube, "BarrelL", new Vector3(-0.18f, 0.25f, 0.95f), new Vector3(0.16f, 0.16f, 1.6f), pal.Dark);
-            EconomyContentBuilder.Part(pivot, PrimitiveType.Cube, "BarrelR", new Vector3(0.18f, 0.25f, 0.95f), new Vector3(0.16f, 0.16f, 1.6f), pal.Dark);
-            var muzzle = new GameObject("Muzzle").transform;
-            muzzle.SetParent(pivot, false);
-            muzzle.localPosition = new Vector3(0f, 0.25f, 1.8f);
-
-            AddCombat(root, pivot, muzzle);
+            var parts = VehicleModels.HeavyTank(root.transform, EconomyContentBuilder.Art);
+            AddCombat(root, parts.TurretPivot, parts.Muzzle);
+            AddTankFx(root, parts, recoil: 0.24f, flash: 1.5f, SoundId.HeavyCannon);
             EconomyContentBuilder.Set(root.GetComponent<HealthBar>(), so =>
             {
                 so.FindProperty("height").floatValue = 2.6f;
                 so.FindProperty("width").floatValue = 2.2f;
             });
             return root;
+        }
+
+        private static void AddTankFx(GameObject root, VehicleModels.TankParts parts, float recoil, float flash, SoundId sound)
+        {
+            var weapon = root.AddComponent<WeaponFx>();
+            EconomyContentBuilder.Set(weapon, so =>
+            {
+                so.FindProperty("barrel").objectReferenceValue = parts.Barrel;
+                so.FindProperty("muzzle").objectReferenceValue = parts.Muzzle;
+                so.FindProperty("recoilDistance").floatValue = recoil;
+                so.FindProperty("flashScale").floatValue = flash;
+                so.FindProperty("fireSound").enumValueIndex = (int)sound;
+            });
+            var motion = root.AddComponent<VehicleMotionFx>();
+            EconomyContentBuilder.Set(motion, so =>
+            {
+                so.FindProperty("hull").objectReferenceValue = parts.Hull;
+                so.FindProperty("tracks").objectReferenceValue = parts.Tracks;
+                EconomyContentBuilder.SetList(so.FindProperty("dustPoints"), parts.TrackDustPoints);
+                EconomyContentBuilder.SetList(so.FindProperty("exhaustPoints"), parts.ExhaustPoints);
+            });
+            EconomyContentBuilder.Set(root.GetComponent<DamageFx>(), so => so.FindProperty("smokeSize").floatValue = flash * 0.7f);
+            EconomyContentBuilder.SetWreck(root, parts.Hull, parts.TurretPivot);
         }
 
         private static void AddCombat(GameObject root, Transform turret, Transform muzzle)
@@ -167,11 +178,8 @@ namespace Ironfront.EditorTools
         private static GameObject BuildOutpost(BuildingDefinition def, EconomyContentBuilder.Palette pal)
         {
             var root = EconomyContentBuilder.NewStructure("EnemyOutpost", def, 3.2f, pal, out _);
-            var t = root.transform;
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "Base", new Vector3(0f, 0.8f, 0f), new Vector3(6f, 1.6f, 6f), pal.Dark);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "Bunker", new Vector3(0f, 2.2f, 0f), new Vector3(4f, 1.2f, 4f), pal.Body);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cube, "Stripe", new Vector3(0f, 2.85f, 0f), new Vector3(4.1f, 0.1f, 4.1f), pal.Faction);
-            EconomyContentBuilder.Part(t, PrimitiveType.Cylinder, "Mast", new Vector3(1.4f, 3.8f, 1.4f), new Vector3(0.15f, 1f, 0.15f), pal.Dark);
+            EconomyContentBuilder.FinishStructure(root, StructureModels.Outpost(root.transform, EconomyContentBuilder.Art),
+                new[] { new Vector3(0f, 2.5f, 0f) });
             return root;
         }
 

@@ -28,14 +28,31 @@ namespace Ironfront.Combat
             return go;
         }
 
-        public static void MuzzleFlash(Vector3 position) =>
-            Burst("MuzzleFlash", position, 0.4f, 0.9f, 0.08f, Visuals != null ? Visuals.MuzzleFlash : null);
+        /// <summary>True when the particle library (Milestone 006) is configured; otherwise the sphere placeholders are used.</summary>
+        private static bool HasParticles => Visuals != null && Visuals.FxSmoke != null;
 
-        public static void Impact(Vector3 position) =>
-            Burst("Impact", position, 0.3f, 1.4f, 0.25f, Visuals != null ? Visuals.Impact : null);
+        public static void MuzzleFlash(Vector3 position) => MuzzleFlash(position, Vector3.forward, 1f);
 
-        public static void Explosion(Vector3 position, float size) =>
-            Burst("Explosion", position, size * 0.3f, size, 0.6f, Visuals != null ? Visuals.Explosion : null);
+        public static void MuzzleFlash(Vector3 position, Vector3 forward, float scale)
+        {
+            if (HasParticles) global::Ironfront.Visuals.FxLibrary.MuzzleFlash(position, forward, scale);
+            else Burst("MuzzleFlash", position, 0.4f, 0.9f, 0.08f, Visuals != null ? Visuals.MuzzleFlash : null);
+        }
+
+        public static void Impact(Vector3 position) => Impact(position, 1f);
+
+        public static void Impact(Vector3 position, float scale)
+        {
+            global::Ironfront.Audio.GameAudio.Play(global::Ironfront.Audio.SoundId.Impact, position);
+            if (HasParticles) global::Ironfront.Visuals.FxLibrary.Impact(position, scale);
+            else Burst("Impact", position, 0.3f, 1.4f, 0.25f, Visuals != null ? Visuals.Impact : null);
+        }
+
+        public static void Explosion(Vector3 position, float size)
+        {
+            if (HasParticles) global::Ironfront.Visuals.FxLibrary.Explosion(position, size * 0.8f);
+            else Burst("Explosion", position, size * 0.3f, size, 0.6f, Visuals != null ? Visuals.Explosion : null);
+        }
 
         /// <summary>A sphere that grows from <paramref name="from"/> to <paramref name="to"/> scale and disappears (pooled).</summary>
         public static void Burst(string name, Vector3 position, float from, float to, float lifetime, Material material)

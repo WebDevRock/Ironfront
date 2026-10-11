@@ -5,6 +5,8 @@ using Ironfront.Buildings;
 using Ironfront.Combat;
 using Ironfront.Data;
 using Ironfront.Economy;
+using Ironfront.EditorTools.Art;
+using Ironfront.Visuals;
 using Ironfront.Match;
 using Ironfront.Units;
 using UnityEditor;
@@ -38,6 +40,8 @@ namespace Ironfront.EditorTools
 
         public static string Summary { get; private set; } = "";
 
+        internal static ArtLibrary Art => s_art ?? (s_art = ArtLibrary.Create());
+
         private static readonly string HeadquartersPath = $"{BuildingsDataDir}/Headquarters.asset";
         private static readonly string RefineryPath = $"{BuildingsDataDir}/Refinery.asset";
         private static readonly string PowerPlantPath = $"{BuildingsDataDir}/PowerPlant.asset";
@@ -68,6 +72,8 @@ namespace Ironfront.EditorTools
 
         /// <summary>Renderers using this material get tinted with the owner's faction colour.</summary>
         private static Material s_factionMaterial;
+        /// <summary>Milestone 006 art: generated textures/materials shared by every model.</summary>
+        private static ArtLibrary s_art;
 
         // ---------- Assets ----------
 
@@ -92,6 +98,7 @@ namespace Ironfront.EditorTools
                 Ring = selectionRing,
             };
             s_factionMaterial = pal.Faction;
+            s_art = ArtLibrary.Create();
 
             var c = new Content
             {
@@ -262,23 +269,16 @@ namespace Ironfront.EditorTools
                 so.FindProperty("thickness").floatValue = 0.3f;
             });
 
-            if (def.ApronDepth > 0f)
-            {
-                Part(root.transform, PrimitiveType.Cube, "ApronPad",
-                    new Vector3(0f, 0.02f, size.y * 0.5f + def.ApronDepth * 0.5f),
-                    new Vector3(size.x, 0.04f, def.ApronDepth), pal.Dark, castShadows: false);
-            }
+            if (def.ApronDepth > 0f) StructureModels.Apron(root.transform, s_art, size, def.ApronDepth);
+            root.AddComponent<DamageFx>();
+            root.AddComponent<DestructionFx>();
             return root;
         }
 
         private static GameObject BuildHeadquarters(BuildingDefinition def, Palette pal)
         {
             var root = NewStructure("Headquarters", def, 4.6f, pal, out _);
-            var t = root.transform;
-            Part(t, PrimitiveType.Cube, "Base", new Vector3(0f, 1.25f, 0f), new Vector3(8f, 2.5f, 8f), pal.Body);
-            Part(t, PrimitiveType.Cube, "Tower", new Vector3(0f, 3.5f, 0f), new Vector3(4f, 2f, 4f), pal.Body);
-            Part(t, PrimitiveType.Cube, "Roof", new Vector3(0f, 4.55f, 0f), new Vector3(4.2f, 0.1f, 4.2f), pal.Faction);
-            Part(t, PrimitiveType.Cylinder, "Antenna", new Vector3(1.2f, 5.5f, 1.2f), new Vector3(0.15f, 1f, 0.15f), pal.Dark);
+            FinishStructure(root, StructureModels.Headquarters(root.transform, s_art), new[] { new Vector3(2f, 2.9f, 1.5f), new Vector3(-0.5f, 4.3f, -1f) });
             return root;
         }
 
@@ -286,23 +286,14 @@ namespace Ironfront.EditorTools
         {
             var root = NewStructure("Refinery", def, 4f, pal, out _);
             root.AddComponent<Refinery>();
-            var t = root.transform;
-            Part(t, PrimitiveType.Cube, "Hall", new Vector3(-1f, 1.25f, 0f), new Vector3(5f, 2.5f, 6f), pal.Body);
-            Part(t, PrimitiveType.Cube, "Stripe", new Vector3(-1f, 2.55f, 0f), new Vector3(5.1f, 0.1f, 6.1f), pal.Faction);
-            Part(t, PrimitiveType.Cylinder, "SiloA", new Vector3(2.5f, 2f, -1.5f), new Vector3(1.6f, 2f, 1.6f), pal.Body);
-            Part(t, PrimitiveType.Cylinder, "SiloB", new Vector3(2.5f, 2f, 1.5f), new Vector3(1.6f, 2f, 1.6f), pal.Body);
-            Part(t, PrimitiveType.Cube, "OreBin", new Vector3(-1f, 2.7f, 0f), new Vector3(2f, 0.3f, 2f), pal.Ore);
+            FinishStructure(root, StructureModels.Refinery(root.transform, s_art), new[] { new Vector3(-1f, 3f, -0.5f), new Vector3(2.3f, 3.9f, 0f) });
             return root;
         }
 
         private static GameObject BuildPowerPlant(BuildingDefinition def, Palette pal)
         {
             var root = NewStructure("PowerPlant", def, 3.75f, pal, out _);
-            var t = root.transform;
-            Part(t, PrimitiveType.Cube, "Base", new Vector3(0f, 0.75f, 0f), new Vector3(5f, 1.5f, 5f), pal.Body);
-            Part(t, PrimitiveType.Cube, "Stripe", new Vector3(0f, 1.55f, 0f), new Vector3(5.1f, 0.1f, 5.1f), pal.Faction);
-            Part(t, PrimitiveType.Cylinder, "CoolingTowerA", new Vector3(-1.2f, 2.25f, 0f), new Vector3(1.8f, 1.5f, 1.8f), pal.Body);
-            Part(t, PrimitiveType.Cylinder, "CoolingTowerB", new Vector3(1.2f, 2.25f, 0f), new Vector3(1.8f, 1.5f, 1.8f), pal.Body);
+            FinishStructure(root, StructureModels.PowerPlant(root.transform, s_art), new[] { new Vector3(0f, 2.2f, 1.5f), new Vector3(1.2f, 3.3f, -0.5f) }, steam: true);
             return root;
         }
 
@@ -310,9 +301,7 @@ namespace Ironfront.EditorTools
         {
             var root = NewStructure("VehicleFactory", def, 3.1f, pal, out _);
             var t = root.transform;
-            Part(t, PrimitiveType.Cube, "Hall", new Vector3(0f, 1.5f, 0f), new Vector3(8f, 3f, 7f), pal.Body);
-            Part(t, PrimitiveType.Cube, "Stripe", new Vector3(0f, 3.05f, 0f), new Vector3(8.1f, 0.1f, 7.1f), pal.Faction);
-            Part(t, PrimitiveType.Cube, "Door", new Vector3(0f, 1.2f, 3.51f), new Vector3(4f, 2.4f, 0.05f), pal.Dark);
+            FinishStructure(root, StructureModels.VehicleFactory(t, s_art), new[] { new Vector3(-1.5f, 3.2f, 0f), new Vector3(2f, 3f, -1.5f) });
 
             var marker = new GameObject("RallyMarker");
             marker.transform.SetParent(t, false);
@@ -324,6 +313,28 @@ namespace Ironfront.EditorTools
             RtsSandboxBuilder.SetRef(factory, "rallyMarker", marker);
             RtsSandboxBuilder.SetInt(factory, "unitLayers", 1 << RtsSandboxBuilder.UnitsLayerIndex);
             return root;
+        }
+
+        /// <summary>Adds the Milestone 006 presentation components for a structure model.</summary>
+        internal static void FinishStructure(GameObject root, StructureModels.Parts parts, Vector3[] damagePoints, bool steam = false)
+        {
+            var anim = root.AddComponent<StructureAnimator>();
+            Set(anim, so =>
+            {
+                SetList(so.FindProperty("spinners"), parts.Spinners.ToArray());
+                SetList(so.FindProperty("blinkers"), parts.Blinkers.ToArray());
+                SetList(so.FindProperty(steam ? "steamPoints" : "smokePoints"), parts.SmokePoints.ToArray());
+            });
+            var construction = root.AddComponent<ConstructionFx>();
+            RtsSandboxBuilder.SetRef(construction, "model", parts.Model);
+            var damage = root.GetComponent<DamageFx>();
+            Set(damage, so =>
+            {
+                so.FindProperty("smokeSize").floatValue = 1.6f;
+                var list = so.FindProperty("localPoints");
+                list.arraySize = damagePoints.Length;
+                for (int i = 0; i < damagePoints.Length; i++) list.GetArrayElementAtIndex(i).vector3Value = damagePoints[i];
+            });
         }
 
         // ---------- Unit and deposit prefabs ----------
@@ -351,22 +362,50 @@ namespace Ironfront.EditorTools
                 so.FindProperty("explosionSize").floatValue = 3f;
             });
             root.AddComponent<HealthBar>();
+            root.AddComponent<DamageFx>();
+            root.AddComponent<DestructionFx>();
             return root;
         }
 
         private static GameObject BuildHarvester(HarvesterDefinition def, Palette pal)
         {
             var root = NewVehicle("Harvester", def, new Vector3(1.6f, 1.6f, 2.6f), 0.8f, 6f, pal, out _);
-            var t = root.transform;
-            Part(t, PrimitiveType.Cube, "Chassis", new Vector3(0f, 0.55f, 0f), new Vector3(1.6f, 0.7f, 2.6f), pal.HarvesterPaint);
-            Part(t, PrimitiveType.Cube, "Cab", new Vector3(0f, 1.2f, 0.85f), new Vector3(1.4f, 0.7f, 0.8f), pal.Faction);
-            Part(t, PrimitiveType.Cube, "Hopper", new Vector3(0f, 1.0f, -0.45f), new Vector3(1.5f, 0.2f, 1.5f), pal.Dark);
-            var cargo = Part(t, PrimitiveType.Cube, "Cargo", new Vector3(0f, 1.35f, -0.45f), new Vector3(1.3f, 0.5f, 1.3f), pal.Ore);
+            var parts = VehicleModels.Harvester(root.transform, s_art);
 
             var harvester = root.AddComponent<Harvester>();
             RtsSandboxBuilder.SetRef(harvester, "definition", def);
-            RtsSandboxBuilder.SetRef(harvester, "cargoVisual", cargo.transform);
+            RtsSandboxBuilder.SetRef(harvester, "cargoVisual", parts.Cargo);
+
+            var fx = root.AddComponent<HarvesterFx>();
+            RtsSandboxBuilder.SetRef(fx, "drum", parts.Drum);
+            RtsSandboxBuilder.SetRef(fx, "beacon", parts.Beacon);
+            RtsSandboxBuilder.SetRef(fx, "scoopPoint", parts.ScoopPoint);
+            RtsSandboxBuilder.SetRef(fx, "cargo", parts.Cargo);
+            var motion = root.AddComponent<VehicleMotionFx>();
+            Set(motion, so =>
+            {
+                so.FindProperty("hull").objectReferenceValue = parts.Body;
+                SetList(so.FindProperty("dustPoints"), parts.DustPoints);
+                so.FindProperty("dustSize").floatValue = 1.1f;
+                so.FindProperty("maxPitch").floatValue = 2f;
+            });
+            SetWreck(root, parts.Body);
             return root;
+        }
+
+        /// <summary>Wreck = the vehicle visible meshes (excluding glow, glass and cargo), copied on death.</summary>
+        internal static void SetWreck(GameObject root, params Transform[] from)
+        {
+            var filters = new List<MeshFilter>();
+            foreach (var t in from)
+                foreach (var f in t.GetComponentsInChildren<MeshFilter>(true))
+                {
+                    var r = f.GetComponent<MeshRenderer>();
+                    if (r == null || r.sharedMaterial == s_art.GlowWarm_ || r.sharedMaterial == s_art.GlowCool_ || r.sharedMaterial == s_art.Glass
+                        || r.sharedMaterial == s_art.OreCrystal || f.name == "Ore" || f.name == "Lamp") continue;
+                    filters.Add(f);
+                }
+            Set(root.GetComponent<DestructionFx>(), so => SetList(so.FindProperty("wreckParts"), filters.ToArray()));
         }
 
         private static GameObject BuildDeposit(Palette pal)
@@ -385,22 +424,36 @@ namespace Ironfront.EditorTools
             obstacle.carving = true;
             obstacle.carveOnlyStationary = true;
 
+            // Ore field: a ring of amber crystal spires on dark mineral rock, over a stained patch of ground.
+            var stain = new MeshKit();
+            stain.Lathe(s_art.OreRock, new[] { new Vector2(3.4f, 0.01f), new Vector2(2.4f, 0.05f), new Vector2(0f, 0.06f) }, 14, Vector3.zero, capTop: false);
+            var stainRenderer = ArtLibrary.Attach(root.transform, "Stain", "Ore_Stain", stain, shadows: false);
+            stainRenderer.receiveShadows = true;
+
+            var crystals = new MeshKit();
+            var rng = new System.Random(1234);
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i * 60f + (float)rng.NextDouble() * 30f;
+                var pos = Quaternion.Euler(0f, a, 0f) * Vector3.forward * (0.6f + (float)rng.NextDouble() * 1.0f);
+                crystals.Block(s_art.OreRock, pos + Vector3.down * 0.05f, new Vector2(0.9f, 0.8f), new Vector2(0.5f, 0.4f), 0.35f + (float)rng.NextDouble() * 0.2f);
+            }
+            for (int i = 0; i < 14; i++)
+            {
+                float a = i * 26f + (float)rng.NextDouble() * 20f;
+                float r = i < 3 ? (float)rng.NextDouble() * 0.5f : 0.5f + (float)rng.NextDouble() * 1.4f;
+                var pos = Quaternion.Euler(0f, a, 0f) * Vector3.forward * r;
+                float h = (i < 3 ? 1.5f : 0.6f) + (float)rng.NextDouble() * 0.7f;
+                var tilt = Quaternion.Euler((float)rng.NextDouble() * 30f - 15f, a, (float)rng.NextDouble() * 30f - 15f + (r > 0.8f ? 12f : 0f));
+                VehicleModels.Crystal(crystals, s_art.OreCrystal, pos, 0.16f + h * 0.08f, h, tilt);
+            }
             var visual = new GameObject("Crystals");
             visual.transform.SetParent(root.transform, false);
             visual.layer = root.layer;
-            var rng = new System.Random(1234);
-            for (int i = 0; i < 9; i++)
-            {
-                float angle = i * 40f + (float)rng.NextDouble() * 20f;
-                float radius = i == 0 ? 0f : 0.7f + (float)rng.NextDouble() * 1.1f;
-                var pos = Quaternion.Euler(0f, angle, 0f) * Vector3.forward * radius;
-                float h = 0.6f + (float)rng.NextDouble() * 1.0f;
-                var crystal = Part(visual.transform, PrimitiveType.Cube, "Crystal_" + i,
-                    new Vector3(pos.x, h * 0.5f, pos.z), new Vector3(0.6f, h, 0.6f), pal.Ore);
-                crystal.transform.localRotation = Quaternion.Euler((float)rng.NextDouble() * 20f, angle, (float)rng.NextDouble() * 20f);
-            }
+            ArtLibrary.Attach(visual.transform, "Spires", "Ore_Crystals", crystals);
 
             var deposit = root.AddComponent<OreDeposit>();
+            root.AddComponent<OreDepositFx>(); // after OreDeposit: its RequireComponent would otherwise add a second one
             Set(deposit, so =>
             {
                 so.FindProperty("initialAmount").intValue = 5000;
@@ -441,11 +494,19 @@ namespace Ironfront.EditorTools
         {
             if (root.GetComponent<FactionMember>() == null || s_factionMaterial == null) return;
             var tinted = new List<Renderer>();
+            var glowing = new List<Renderer>();
             foreach (var r in root.GetComponentsInChildren<Renderer>(true))
-                if (r.sharedMaterial == s_factionMaterial) tinted.Add(r);
-            if (tinted.Count == 0) return;
+            {
+                if (r.sharedMaterial == s_factionMaterial || (s_art != null && r.sharedMaterial == s_art.Faction)) tinted.Add(r);
+                else if (s_art != null && r.sharedMaterial == s_art.FactionGlow) glowing.Add(r);
+            }
+            if (tinted.Count == 0 && glowing.Count == 0) return;
             var colorizer = root.AddComponent<FactionColorizer>();
-            Set(colorizer, so => SetList(so.FindProperty("renderers"), tinted.ToArray()));
+            Set(colorizer, so =>
+            {
+                SetList(so.FindProperty("renderers"), tinted.ToArray());
+                SetList(so.FindProperty("emissiveRenderers"), glowing.ToArray());
+            });
         }
 
         private static void SetFaction(SerializedProperty f, int id, string displayName, Color color, bool human, int credits)

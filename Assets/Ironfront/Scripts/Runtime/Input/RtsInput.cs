@@ -26,6 +26,7 @@ namespace Ironfront.InputBindings
         public static InputAction Hold => Get("Hold");
         public static InputAction ToggleAiDebug => Get("ToggleAiDebug");
         public static InputAction Help => Get("Help");
+        public static InputAction GameMenu => Get("GameMenu");
         public static InputAction JumpToAlert => Get("JumpToAlert");
         public static InputAction GroupModifier => Get("GroupModifier");
         public static bool GroupModifierHeld => GroupModifier != null && GroupModifier.IsPressed();

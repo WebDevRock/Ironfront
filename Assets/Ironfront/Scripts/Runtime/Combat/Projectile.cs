@@ -29,7 +29,17 @@ namespace Ironfront.Combat
             var go = FxPool.Get(PrimitiveType.Sphere, "Projectile", from, Vector3.one * size,
                 visuals != null ? visuals.Projectile : null);
             var p = go.GetComponent<Projectile>();
-            if (p == null) p = go.AddComponent<Projectile>();
+            if (p == null)
+            {
+                p = go.AddComponent<Projectile>();
+                p.AddTracer(visuals);
+            }
+            if (p._trail != null)
+            {
+                p._trail.Clear();
+                p._trail.widthMultiplier = size * 0.9f;
+                p._trail.emitting = true;
+            }
             p._age = 0f;
             p._inFlight = true;
             p._target = target;
@@ -44,6 +54,24 @@ namespace Ironfront.Combat
         }
 
         private bool _inFlight;
+        private TrailRenderer _trail;
+
+        /// <summary>Glowing tracer trail (visual only; pooled with the shell).</summary>
+        private void AddTracer(Data.CombatVisuals visuals)
+        {
+            if (visuals == null || visuals.FxTracer == null || !global::Ironfront.Visuals.VisualFeatures.Trails) return;
+            _trail = gameObject.AddComponent<TrailRenderer>();
+            _trail.sharedMaterial = visuals.FxTracer;
+            _trail.time = 0.12f;
+            _trail.minVertexDistance = 0.3f;
+            _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _trail.receiveShadows = false;
+            _trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0.1f));
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(new Color(1f, 0.9f, 0.6f), 0f), new GradientColorKey(new Color(1f, 0.5f, 0.15f), 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) });
+            _trail.colorGradient = g;
+        }
 
         private void OnDestroy()
         {
@@ -53,6 +81,7 @@ namespace Ironfront.Combat
         private void Finish()
         {
             _inFlight = false;
+            if (_trail != null) _trail.emitting = false;
             _target = null;
             _attacker = null;
             Alive--;
@@ -76,11 +105,13 @@ namespace Ironfront.Combat
                 transform.position = _lastAimPoint;
                 if (_target != null && _target.IsAlive)
                     _target.ApplyDamage(_damage, _attackerFaction, _allowFriendlyFire, _attacker != null && _attacker.IsAlive ? _attacker : null);
-                CombatFx.Impact(_lastAimPoint);
+                CombatFx.Impact(_lastAimPoint, transform.localScale.x * 3.5f);
                 Finish();
                 return;
             }
-            transform.position += toAim.normalized * step;
+            Vector3 dir = toAim.normalized;
+            transform.position += dir * step;
+            transform.rotation = Quaternion.LookRotation(dir);
         }
     }
 }

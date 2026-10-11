@@ -22,6 +22,10 @@ namespace Ironfront.Data
         [Tooltip("Leave empty for unarmed units.")]
         [SerializeField] private WeaponDefinition weapon;
 
+        [Header("Presentation")]
+        [Tooltip("Sidebar / selection portrait (generated from the model).")]
+        [SerializeField] private Sprite icon;
+
         public string Id => id;
         public string DisplayName => displayName;
         public int Cost => cost;
@@ -31,5 +35,6 @@ namespace Ironfront.Data
         public float Armour => armour;
         public float MoveSpeed => moveSpeed;
         public WeaponDefinition Weapon => weapon;
+        public Sprite Icon => icon;
     }
 }

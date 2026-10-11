@@ -1203,6 +1203,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "GameMenu",
+                    "type": "Button",
+                    "id": "6f1e2a40-3c1b-4d8e-9a77-5b2f0c9d1e10",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "JumpToAlert",
                     "type": "Button",
                     "id": "469d0e40-bfbe-4972-bf1f-f4ea6fe6ba12",
@@ -1562,6 +1571,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Help",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2d7c9b51-8e43-4f6a-b1c0-7a9e3d4f5a21",
+                    "path": "<Keyboard>/f10",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "GameMenu",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

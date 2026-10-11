@@ -26,3 +26,4 @@ MonoBehaviour:
   producibleUnits: []
   maxHealth: 800
   armour: 0.2
+  icon: {fileID: 21300000, guid: 4daadfada7a78664181bb0147d1bf4c5, type: 3}

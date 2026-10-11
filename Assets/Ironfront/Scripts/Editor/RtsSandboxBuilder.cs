@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Ironfront.CameraControl;
+using Ironfront.Audio;
 using Ironfront.Combat;
 using Ironfront.Commands;
+using Ironfront.EditorTools.Art;
 using Ironfront.Construction;
 using Ironfront.Match;
 using Ironfront.Selection;
@@ -90,16 +92,24 @@ namespace Ironfront.EditorTools
             var mats = CreateMaterials();
             var unitPrefab = CreateUnitPrefab(mats["SelectionRing"]);
             EconomyContentBuilder.CreateAssets(mats["SelectionRing"]);
+            GeneratePresentationAssets();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var economy = EconomyContentBuilder.Load(); // reload: NewScene unloads unreferenced assets
 
             CreateLighting();
             var env = new GameObject("Environment");
-            CreateGround(env.transform, mats["Ground"]);
+            var ground = CreateGround(env.transform, mats["Ground"]);
             CreateObstacles(env.transform, mats["Obstacle"]);
+            var layout = new EnvironmentBuilder.Layout { Name = "Sandbox", Obstacles = Obstacles, Seed = 3 };
+            layout.Bases.Add(EconomyContentBuilder.HeadquartersPosition);
+            layout.Ore.Add(EconomyContentBuilder.DepositPosition);
+            layout.Roads.Add(new[] { new Vector3(-41f, 0f, -35f), new Vector3(-34f, 0f, -33f), new Vector3(-24f, 0f, -34f), new Vector3(-12f, 0f, -36f) });
+            layout.Roads.Add(new[] { new Vector3(-30f, 0f, -33f), new Vector3(-22f, 0f, -20f), new Vector3(-30f, 0f, 0f), new Vector3(-36f, 0f, 22f) });
+            ApplyEnvironment(env.transform, ground, layout);
 
             var cam = CreateCameraRig();
+            EnvironmentBuilder.Lighting(cam);
             var units = CreateUnits(unitPrefab, mats);
             var (selection, _, placement, orders) = CreateSystems(cam, economy);
             CreateUI(selection, placement, orders);
@@ -123,6 +133,14 @@ namespace Ironfront.EditorTools
         }
 
         // ---------- Assets ----------
+
+        /// <summary>Milestone 006: synthesised audio, interface sprites and model icons (after the prefabs exist).</summary>
+        internal static void GeneratePresentationAssets()
+        {
+            AudioContentBuilder.Generate();
+            UiTheme.Skin = UiArtBuilder.Generate();
+            UiArtBuilder.RenderIcons(EconomyContentBuilder.Load());
+        }
 
         internal static void EnsureFolder(string path)
         {
@@ -292,7 +310,17 @@ namespace Ironfront.EditorTools
             RenderSettings.ambientGroundColor = new Color(0.2f, 0.2f, 0.2f);
         }
 
-        internal static void CreateGround(Transform parent, Material material)
+        /// <summary>Milestone 006: painted ground, backdrop, props and render settings for a layout.</summary>
+        internal static void ApplyEnvironment(Transform env, GameObject ground, EnvironmentBuilder.Layout layout)
+        {
+            var art = EconomyContentBuilder.Art;
+            EnvironmentBuilder.ConfigurePipeline();
+            EnvironmentBuilder.StyleGround(ground, EnvironmentBuilder.GroundMaterial(layout, art));
+            EnvironmentBuilder.Backdrop(env, layout, art);
+            EnvironmentBuilder.Props(env, layout, art);
+        }
+
+        internal static GameObject CreateGround(Transform parent, Material material)
         {
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane); // 10x10 units at scale 1
             ground.name = "Ground";
@@ -301,25 +329,17 @@ namespace Ironfront.EditorTools
             ground.layer = GroundLayerIndex;
             ground.GetComponent<MeshRenderer>().sharedMaterial = material;
             GameObjectUtility.SetStaticEditorFlags(ground, StaticEditorFlags.BatchingStatic);
+            return ground;
         }
 
         private static void CreateObstacles(Transform parent, Material material) => CreateObstacles(parent, material, Obstacles);
 
-        internal static void CreateObstacles(Transform parent, Material material, (string name, Vector3 center, Vector3 size)[] set)
-        {
-            var root = new GameObject("Obstacles").transform;
-            root.SetParent(parent, false);
-            foreach (var (name, center, size) in set)
-            {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.name = name;
-                go.transform.SetParent(root, false);
-                go.transform.localPosition = center;
-                go.transform.localScale = size;
-                go.GetComponent<MeshRenderer>().sharedMaterial = material;
-                GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic);
-            }
-        }
+        /// <summary>
+        /// Obstacles: same names, positions and collider bounds as before (navigation, line of sight, placement and
+        /// minimap are unchanged); Milestone 006 gives each a styled mesh instead of a grey cube.
+        /// </summary>
+        internal static void CreateObstacles(Transform parent, Material material, (string name, Vector3 center, Vector3 size)[] set) =>
+            EnvironmentBuilder.Obstacles(parent, set, EconomyContentBuilder.Art);
 
         internal static Camera CreateCameraRig()
         {
@@ -424,6 +444,8 @@ namespace Ironfront.EditorTools
             scaler.referenceResolution = new Vector2(1600f, 900f);
             scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
+            UiTheme.Skin = UiArtBuilder.Load();
+            SetRef(canvasGo.AddComponent<UiSkinProvider>(), "skin", UiTheme.Skin);
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
@@ -432,10 +454,21 @@ namespace Ironfront.EditorTools
             var panelRect = (RectTransform)panel.transform;
             panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(0f, 1f);
             panelRect.anchoredPosition = new Vector2(10f, -10f);
-            panelRect.sizeDelta = new Vector2(600f, 112f);
+            panelRect.sizeDelta = new Vector2(680f, 112f);
             var panelImage = panel.AddComponent<Image>();
-            panelImage.color = UiTheme.Panel;
+            UiTheme.ApplyPanel(panelImage, UiTheme.Panel);
             panelImage.raycastTarget = true;
+
+            // Portrait of the selected type (left), text to its right.
+            var portraitGo = NewUiObject("Portrait", panel.transform);
+            var portraitRect = (RectTransform)portraitGo.transform;
+            portraitRect.anchorMin = portraitRect.anchorMax = portraitRect.pivot = new Vector2(0f, 0.5f);
+            portraitRect.anchoredPosition = new Vector2(6f, 0f);
+            portraitRect.sizeDelta = new Vector2(100f, 100f);
+            var portrait = portraitGo.AddComponent<Image>();
+            portrait.preserveAspect = true;
+            portrait.raycastTarget = false;
+            portraitGo.SetActive(false);
 
             var labelGo = NewUiObject("Label", panel.transform);
             var labelRect = (RectTransform)labelGo.transform;
@@ -444,9 +477,10 @@ namespace Ironfront.EditorTools
             labelRect.offsetMin = new Vector2(10f, 6f);
             labelRect.offsetMax = new Vector2(-10f, -6f);
             var label = labelGo.AddComponent<Text>();
+            labelRect.offsetMin = new Vector2(112f, 6f);
             label.font = font;
             label.fontSize = 14;
-            label.color = Color.white;
+            label.color = UiTheme.Text;
             label.raycastTarget = false;
             label.text = "Selected units: 0";
 
@@ -454,6 +488,7 @@ namespace Ironfront.EditorTools
             var hudSo = new SerializedObject(hud);
             hudSo.FindProperty("selectionManager").objectReferenceValue = selection;
             hudSo.FindProperty("label").objectReferenceValue = label;
+            hudSo.FindProperty("portrait").objectReferenceValue = portrait;
             hudSo.ApplyModifiedPropertiesWithoutUndo();
 
             // Drag-select rectangle.
@@ -481,7 +516,7 @@ namespace Ironfront.EditorTools
             sidebarRect.anchoredPosition = new Vector2(-10f, -10f);
             sidebarRect.sizeDelta = new Vector2(320f, 580f);
             var sidebarImage = sidebar.AddComponent<Image>();
-            sidebarImage.color = UiTheme.Panel;
+            UiTheme.ApplyPanel(sidebarImage, UiTheme.Panel);
             sidebarImage.raycastTarget = true;
             var layout = sidebar.AddComponent<VerticalLayoutGroup>();
             layout.padding = new RectOffset(10, 10, 10, 10);
@@ -504,7 +539,7 @@ namespace Ironfront.EditorTools
             ordersRect.anchoredPosition = new Vector2(0f, 10f);
             ordersRect.sizeDelta = new Vector2(560f, 76f);
             var ordersImage = ordersPanel.AddComponent<Image>();
-            ordersImage.color = UiTheme.Panel;
+            UiTheme.ApplyPanel(ordersImage, UiTheme.Panel);
             ordersImage.raycastTarget = true;
             var ordersLayout = ordersPanel.AddComponent<VerticalLayoutGroup>();
             ordersLayout.padding = new RectOffset(8, 8, 8, 6);
@@ -520,7 +555,21 @@ namespace Ironfront.EditorTools
             SetRef(ordersHud, "font", font);
 
             CreateFeedbackUI(canvasGo.transform, placement);
+            CreateAudio(selection, placement, canvasGo.GetComponent<NotificationCenter>());
             return canvasGo;
+        }
+
+        /// <summary>Scene audio: the generated sound bank player plus the router from gameplay events to sounds.</summary>
+        internal static void CreateAudio(SelectionManager selection, BuildingPlacementController placement, NotificationCenter notifications)
+        {
+            var go = new GameObject("Audio");
+            var audio = go.AddComponent<GameAudio>();
+            SetRef(audio, "bank", AudioContentBuilder.LoadBank());
+            var router = go.AddComponent<AudioEventRouter>();
+            SetRef(router, "selection", selection);
+            SetRef(router, "commands", Object.FindAnyObjectByType<UnitCommandController>());
+            SetRef(router, "placement", placement);
+            SetRef(router, "notifications", notifications);
         }
 
         /// <summary>Minimap, notification feed, placement hint, tooltip panel and F1 help overlay.</summary>
@@ -535,7 +584,7 @@ namespace Ironfront.EditorTools
             mapRect.anchoredPosition = new Vector2(10f, 10f);
             mapRect.sizeDelta = new Vector2(210f, 210f);
             var frameImage = mapFrame.AddComponent<Image>();
-            frameImage.color = UiTheme.PanelStrong;
+            UiTheme.ApplyPanel(frameImage, UiTheme.PanelStrong);
             frameImage.raycastTarget = true;
             var mapGo = NewUiObject("Map", mapFrame.transform);
             UiTheme.Stretch((RectTransform)mapGo.transform, 5f);
@@ -550,7 +599,7 @@ namespace Ironfront.EditorTools
             var feedGo = NewUiObject("NotificationFeed", canvas);
             var feedRect = (RectTransform)feedGo.transform;
             feedRect.anchorMin = feedRect.anchorMax = feedRect.pivot = new Vector2(0.5f, 1f);
-            feedRect.anchoredPosition = new Vector2(130f, -10f);
+            feedRect.anchoredPosition = new Vector2(165f, -10f);
             feedRect.sizeDelta = new Vector2(560f, 130f);
             var feedLayout = feedGo.AddComponent<VerticalLayoutGroup>();
             feedLayout.childControlHeight = true;
@@ -570,7 +619,7 @@ namespace Ironfront.EditorTools
             hintRect.pivot = new Vector2(0f, 1f);
             hintRect.sizeDelta = new Vector2(300f, 64f);
             var hintImage = hintGo.AddComponent<Image>();
-            hintImage.color = UiTheme.PanelStrong;
+            UiTheme.ApplyPanel(hintImage, UiTheme.PanelStrong);
             hintImage.raycastTarget = false;
             var hintLabel = UiTheme.Label(hintGo.transform, "Label", 13, UiTheme.Text);
             UiTheme.Stretch(hintLabel.rectTransform, 6f);
@@ -586,7 +635,7 @@ namespace Ironfront.EditorTools
             helpRect.anchorMin = helpRect.anchorMax = helpRect.pivot = new Vector2(0.5f, 0.5f);
             helpRect.sizeDelta = new Vector2(820f, 360f);
             var helpImage = helpGo.AddComponent<Image>();
-            helpImage.color = UiTheme.PanelStrong;
+            UiTheme.ApplyPanel(helpImage, UiTheme.PanelStrong);
             helpImage.raycastTarget = true;
             var keysLabel = UiTheme.Label(helpGo.transform, "Keys", 15, UiTheme.Accent);
             UiTheme.Stretch(keysLabel.rectTransform, 18f);
@@ -603,7 +652,8 @@ namespace Ironfront.EditorTools
             helpHint.rectTransform.anchorMin = helpHint.rectTransform.anchorMax = helpHint.rectTransform.pivot = Vector2.zero;
             helpHint.rectTransform.anchoredPosition = new Vector2(12f, 224f);
             helpHint.rectTransform.sizeDelta = new Vector2(240f, 18f);
-            helpHint.text = "F1: controls    Space: last alert";
+            helpHint.text = "F1: controls    Space: last alert    F10: menu";
+            UiTheme.Shadow(helpHint);
 
             // Tooltip panel (last: drawn on top).
             var tipGo = NewUiObject("Tooltip", canvas);
@@ -611,7 +661,7 @@ namespace Ironfront.EditorTools
             tipRect.anchorMin = tipRect.anchorMax = tipRect.pivot = Vector2.zero;
             tipRect.sizeDelta = new Vector2(280f, 60f);
             var tipImage = tipGo.AddComponent<Image>();
-            tipImage.color = UiTheme.PanelStrong;
+            UiTheme.ApplyPanel(tipImage, UiTheme.PanelStrong);
             tipImage.raycastTarget = false;
             var tipOutline = tipGo.AddComponent<Outline>();
             tipOutline.effectColor = UiTheme.Accent;
@@ -620,6 +670,10 @@ namespace Ironfront.EditorTools
             var tooltip = canvas.gameObject.AddComponent<TooltipView>();
             SetRef(tooltip, "panel", tipRect);
             SetRef(tooltip, "label", tipLabel);
+
+            // Pause / options menu (F10 or the MENU button), above everything but the tooltip.
+            UiBuild.GameMenu(canvas);
+            tipGo.transform.SetAsLastSibling();
         }
 
         internal static GameObject NewUiObject(string name, Transform parent)

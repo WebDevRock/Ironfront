@@ -17,6 +17,19 @@ namespace Ironfront.Data
         [SerializeField] private Material attackMoveMarker;
         [SerializeField] private Material attackMarker;
 
+        [Header("Particle effects (Milestone 006)")]
+        [SerializeField] private Material fxFlash;
+        [SerializeField] private Material fxFire;
+        [SerializeField] private Material fxSpark;
+        [SerializeField] private Material fxSmoke;
+        [SerializeField] private Material fxDust;
+        [SerializeField] private Material fxScorch;
+        [SerializeField] private Material fxRing;
+        [SerializeField] private Material fxTracer;
+        [SerializeField] private Material fxGlint;
+        [Tooltip("Lit material for mesh debris particles and wrecks.")]
+        [SerializeField] private Material debris;
+
         public Material Projectile => projectile;
         public Material MuzzleFlash => muzzleFlash;
         public Material Impact => impact;
@@ -26,5 +39,15 @@ namespace Ironfront.Data
         public Material MoveMarker => moveMarker;
         public Material AttackMoveMarker => attackMoveMarker;
         public Material AttackMarker => attackMarker;
+        public Material FxFlash => fxFlash;
+        public Material FxFire => fxFire;
+        public Material FxSpark => fxSpark;
+        public Material FxSmoke => fxSmoke;
+        public Material FxDust => fxDust;
+        public Material FxScorch => fxScorch;
+        public Material FxRing => fxRing;
+        public Material FxTracer => fxTracer;
+        public Material FxGlint => fxGlint;
+        public Material Debris => debris;
     }
 }

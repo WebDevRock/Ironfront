@@ -25,9 +25,9 @@ namespace Ironfront.UI
         [SerializeField] private Font font;
         [SerializeField] private float messageDuration = 4f;
 
-        private static readonly Color ButtonColor = new Color(0.18f, 0.2f, 0.24f, 0.95f);
-        private static readonly Color PlacingColor = new Color(0.15f, 0.45f, 0.2f, 0.95f);
-        private static readonly Color LowPowerColor = new Color(1f, 0.4f, 0.3f);
+        private static Color ButtonColor => UiTheme.Button;
+        private static Color PlacingColor => UiTheme.ButtonActive;
+        private static Color LowPowerColor => UiTheme.Danger;
 
         private class BuildEntry { public BuildingDefinition Def; public Button Button; public Text Label; public Image Image; }
         private class UnitEntry { public UnitDefinition Def; public Button Button; public Text Label; }
@@ -36,6 +36,7 @@ namespace Ironfront.UI
         private FactionState _faction;
         private VehicleFactory _factory;
         private Text _credits, _power, _factoryLabel, _message;
+        private Image _powerFill;
         private RectTransform _unitRoot;
         private readonly List<BuildEntry> _buildEntries = new List<BuildEntry>();
         private readonly List<UnitEntry> _unitEntries = new List<UnitEntry>();
@@ -138,7 +139,13 @@ namespace Ironfront.UI
             _power.text = p.IsLowPower
                 ? $"Power: {p.Consumed} / {p.Produced}  LOW - production slowed"
                 : $"Power: {p.Consumed} / {p.Produced}";
-            _power.color = p.IsLowPower ? LowPowerColor : Color.white;
+            _power.color = p.IsLowPower ? LowPowerColor : UiTheme.Text;
+            if (_powerFill != null)
+            {
+                float load = p.Produced > 0 ? Mathf.Clamp01((float)p.Consumed / p.Produced) : (p.Consumed > 0 ? 1f : 0f);
+                _powerFill.rectTransform.anchorMax = new Vector2(load, 1f);
+                _powerFill.color = p.IsLowPower ? UiTheme.Danger : load > 0.85f ? UiTheme.Warning : UiTheme.Good;
+            }
             RefreshBuildButtons();
             RefreshUnitButtons();
         }
@@ -259,28 +266,34 @@ namespace Ironfront.UI
 
         private void BuildLayout(MatchSetup setup)
         {
-            _credits = CreateText(content, "Credits", 20, FontStyle.Bold, 28);
-            _power = CreateText(content, "Power", 14, FontStyle.Normal, 20);
+            var creditsRow = IconRow(content, "CreditsRow", UiTheme.Skin != null ? UiTheme.Skin.CreditsIcon : null, 30f);
+            _credits = CreateText(creditsRow, "Credits", 20, FontStyle.Bold, 28);
+            FitRowText(_credits, 30f);
+            _credits.color = UiTheme.Accent;
+            UiTheme.Shadow(_credits);
+            var powerRow = IconRow(content, "PowerRow", UiTheme.Skin != null ? UiTheme.Skin.PowerIcon : null, 20f);
+            _power = CreateText(powerRow, "Power", 14, FontStyle.Normal, 20);
+            FitRowText(_power, 20f);
+            _powerFill = PowerMeter(content);
 
-            CreateText(content, "CONSTRUCT", 13, FontStyle.Bold, 22).color = new Color(0.7f, 0.8f, 1f);
+            Header(content, "CONSTRUCT");
             if (setup != null)
             {
                 foreach (var def in setup.ConstructionOptions)
                 {
                     if (def == null || !def.Constructible) continue;
                     var captured = def;
-                    var (button, label, image) = CreateButton(content, def.DisplayName, 30, () => OnBuildClicked(captured));
+                    var (button, label, image) = CreateButton(content, def.DisplayName, 34, () => OnBuildClicked(captured), def.Icon);
                     button.name = "Build_" + def.Id;
                     TooltipTrigger.Attach(button.gameObject, () => BuildTooltip(captured));
                     _buildEntries.Add(new BuildEntry { Def = def, Button = button, Label = label, Image = image });
                 }
             }
 
-            _factoryLabel = CreateText(content, "Production", 13, FontStyle.Bold, 22);
-            _factoryLabel.color = new Color(0.7f, 0.8f, 1f);
+            _factoryLabel = Header(content, "Production");
             _unitRoot = CreateGroup(content, "UnitButtons");
 
-            CreateText(content, "QUEUE", 13, FontStyle.Bold, 22).color = new Color(0.7f, 0.8f, 1f);
+            Header(content, "QUEUE");
             int capacity = setup != null ? setup.ProductionQueueCapacity : 5;
             for (int i = 0; i < capacity; i++)
             {
@@ -295,7 +308,7 @@ namespace Ironfront.UI
             }
 
             _message = CreateText(content, "", 13, FontStyle.Italic, 40);
-            _message.color = new Color(1f, 0.9f, 0.5f);
+            _message.color = UiTheme.Warning;
         }
 
         private void RebuildUnitButtons()
@@ -308,8 +321,8 @@ namespace Ironfront.UI
             {
                 if (def == null) continue;
                 var captured = def;
-                var (button, label, _) = CreateButton(_unitRoot, $"{def.DisplayName}  ${def.Cost}  ({def.BuildTime:0}s)", 30,
-                    () => OnUnitClicked(captured));
+                var (button, label, _) = CreateButton(_unitRoot, $"{def.DisplayName}  ${def.Cost}  ({def.BuildTime:0}s)", 34,
+                    () => OnUnitClicked(captured), def.Icon);
                 button.name = "Produce_" + def.Id;
                 TooltipTrigger.Attach(button.gameObject, () => UnitTooltip(captured));
                 _unitEntries.Add(new UnitEntry { Def = def, Button = button, Label = label });
@@ -358,7 +371,7 @@ namespace Ironfront.UI
             t.font = font;
             t.fontSize = size;
             t.fontStyle = style;
-            t.color = Color.white;
+            t.color = UiTheme.Text;
             t.text = text;
             t.raycastTarget = false;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -381,19 +394,35 @@ namespace Ironfront.UI
             return (RectTransform)go.transform;
         }
 
-        private (Button, Text, Image) CreateButton(Transform parent, string text, float height, UnityEngine.Events.UnityAction onClick)
+        private (Button, Text, Image) CreateButton(Transform parent, string text, float height, UnityEngine.Events.UnityAction onClick,
+            Sprite icon = null)
         {
             var go = new GameObject("Button", typeof(RectTransform));
             go.layer = gameObject.layer;
             go.transform.SetParent(parent, false);
             var image = go.AddComponent<Image>();
-            image.color = ButtonColor;
             var button = go.AddComponent<Button>();
-            var colors = button.colors;
-            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.6f);
-            button.colors = colors;
+            UiTheme.StyleButton(button, image, ButtonColor);
             button.onClick.AddListener(onClick);
             go.AddComponent<LayoutElement>().preferredHeight = height;
+            float textLeft = 8f;
+            if (icon != null)
+            {
+                var iconGo = new GameObject("Icon", typeof(RectTransform));
+                iconGo.layer = gameObject.layer;
+                iconGo.transform.SetParent(go.transform, false);
+                var irt = (RectTransform)iconGo.transform;
+                irt.anchorMin = new Vector2(0f, 0f);
+                irt.anchorMax = new Vector2(0f, 1f);
+                irt.pivot = new Vector2(0f, 0.5f);
+                irt.offsetMin = new Vector2(3f, 2f);
+                irt.offsetMax = new Vector2(3f + height * 1.2f, -2f);
+                var img = iconGo.AddComponent<Image>();
+                img.sprite = icon;
+                img.preserveAspect = true;
+                img.raycastTarget = false;
+                textLeft = height * 1.2f + 10f;
+            }
 
             var labelGo = new GameObject("Label", typeof(RectTransform));
             labelGo.layer = gameObject.layer;
@@ -401,12 +430,12 @@ namespace Ironfront.UI
             var rt = (RectTransform)labelGo.transform;
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
-            rt.offsetMin = new Vector2(8f, 0f);
+            rt.offsetMin = new Vector2(textLeft, 0f);
             rt.offsetMax = new Vector2(-8f, 0f);
             var label = labelGo.AddComponent<Text>();
             label.font = font;
             label.fontSize = 14;
-            label.color = Color.white;
+            label.color = UiTheme.Text;
             label.alignment = TextAnchor.MiddleLeft;
             label.raycastTarget = false;
             label.text = text;
@@ -427,10 +456,92 @@ namespace Ironfront.UI
             rt.anchorMax = Vector2.one;
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.2f, 0.6f, 0.3f, 0.8f);
+            UiTheme.ApplyBar(img, UiTheme.Progress);
             img.raycastTarget = false;
             SetFill(rt, 0f);
             return rt;
+        }
+
+        /// <summary>Section heading: amber caps with a thin rule underneath.</summary>
+        private Text Header(Transform parent, string text)
+        {
+            var t = CreateText(parent, text, 13, FontStyle.Bold, 24);
+            t.color = UiTheme.Accent;
+            t.alignment = TextAnchor.LowerLeft;
+            var rule = new GameObject("Rule", typeof(RectTransform));
+            rule.layer = gameObject.layer;
+            rule.transform.SetParent(t.transform, false);
+            var r = (RectTransform)rule.transform;
+            r.anchorMin = new Vector2(0f, 0f);
+            r.anchorMax = new Vector2(1f, 0f);
+            r.pivot = new Vector2(0.5f, 1f);
+            r.sizeDelta = new Vector2(0f, 1f);
+            r.anchoredPosition = new Vector2(0f, -1f);
+            var img = rule.AddComponent<Image>();
+            img.color = new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.35f);
+            img.raycastTarget = false;
+            return t;
+        }
+
+        /// <summary>
+        /// Row with a glyph on the left; the text created next (as the row's child) is stretched to the right of it
+        /// by <see cref="FitRowText"/>.
+        /// </summary>
+        private Transform IconRow(Transform parent, string name, Sprite icon, float height)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.layer = gameObject.layer;
+            go.transform.SetParent(parent, false);
+            go.AddComponent<LayoutElement>().preferredHeight = height;
+            if (icon != null)
+            {
+                var iconGo = new GameObject("Glyph", typeof(RectTransform));
+                iconGo.layer = gameObject.layer;
+                iconGo.transform.SetParent(go.transform, false);
+                var r = (RectTransform)iconGo.transform;
+                r.anchorMin = new Vector2(0f, 0.5f);
+                r.anchorMax = new Vector2(0f, 0.5f);
+                r.pivot = new Vector2(0f, 0.5f);
+                r.sizeDelta = new Vector2(height * 0.8f, height * 0.8f);
+                var img = iconGo.AddComponent<Image>();
+                img.sprite = icon;
+                img.preserveAspect = true;
+                img.raycastTarget = false;
+            }
+            return go.transform;
+        }
+
+        private static void FitRowText(Text t, float height)
+        {
+            var r = t.rectTransform;
+            r.anchorMin = Vector2.zero;
+            r.anchorMax = Vector2.one;
+            r.offsetMin = new Vector2(height * 0.8f + 8f, 0f);
+            r.offsetMax = Vector2.zero;
+            t.alignment = TextAnchor.MiddleLeft;
+        }
+
+        /// <summary>Power load meter (consumed / produced) under the power text; returns the fill image.</summary>
+        private Image PowerMeter(Transform parent)
+        {
+            var go = new GameObject("PowerMeter", typeof(RectTransform));
+            go.layer = gameObject.layer;
+            go.transform.SetParent(parent, false);
+            go.AddComponent<LayoutElement>().preferredHeight = 6f;
+            var bg = go.AddComponent<Image>();
+            UiTheme.ApplyBar(bg, new Color(0f, 0f, 0f, 0.55f));
+            bg.raycastTarget = false;
+            var fillGo = new GameObject("Fill", typeof(RectTransform));
+            fillGo.layer = gameObject.layer;
+            fillGo.transform.SetParent(go.transform, false);
+            var rt = (RectTransform)fillGo.transform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            var fill = fillGo.AddComponent<Image>();
+            UiTheme.ApplyBar(fill, UiTheme.Good);
+            fill.raycastTarget = false;
+            return fill;
         }
     }
 }

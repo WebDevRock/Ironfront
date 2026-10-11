@@ -94,6 +94,14 @@ namespace Ironfront.CameraControl
             _targetDistance = CameraMath.ApplyZoom(_targetDistance, scroll, zoomStep, minDistance, maxDistance);
         }
 
+        /// <summary>Sets the zoom distance (clamped to the limits), optionally without smoothing (showcase capture).</summary>
+        public void SetDistance(float distance, bool immediate)
+        {
+            _targetDistance = Mathf.Clamp(distance, minDistance, maxDistance);
+            if (immediate) _distance = _targetDistance;
+            ApplyCameraTransform();
+        }
+
         private void ApplyCameraTransform()
         {
             if (controlledCamera == null) return;

@@ -48,6 +48,7 @@ namespace Ironfront.Diagnostics
         public class PhaseResult
         {
             public string build;
+            public string features;
             public int armySize;
             public string phase;
             public int frames;
@@ -85,6 +86,8 @@ namespace Ironfront.Diagnostics
         {
             if (IsRunning) yield break;
             IsRunning = true;
+            // A command-line run must not stall when its window loses focus (one M006 baseline run hung that way).
+            if (!Application.isEditor) Application.runInBackground = true;
             int vsync = QualitySettings.vSyncCount;
             int previousFrameRate = Application.targetFrameRate;
             QualitySettings.vSyncCount = 0;
@@ -203,6 +206,7 @@ namespace Ironfront.Diagnostics
             var r = new PhaseResult
             {
                 build = Application.isEditor ? "editor" : Debug.isDebugBuild ? "development player" : "release player",
+                features = global::Ironfront.Visuals.VisualFeatures.Describe(),
                 armySize = size,
                 phase = phase,
                 frames = frameMs.Count,
