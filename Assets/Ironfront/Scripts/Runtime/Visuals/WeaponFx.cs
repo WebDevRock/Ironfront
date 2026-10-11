@@ -8,7 +8,6 @@ namespace Ironfront.Visuals
     /// Presentation of a unit's shots: barrel recoil, muzzle flash/smoke and the firing sound. Driven only by
     /// <see cref="CombatUnit.Fired"/>; never touches cooldowns, damage or targeting.
     /// </summary>
-    [RequireComponent(typeof(CombatUnit))]
     public class WeaponFx : MonoBehaviour
     {
         [SerializeField] private Transform barrel;
@@ -18,13 +17,13 @@ namespace Ironfront.Visuals
         [SerializeField] private float flashScale = 1f;
         [SerializeField] private SoundId fireSound = SoundId.LightCannon;
 
-        private CombatUnit _unit;
+        private IFiringWeapon _unit;
         private Vector3 _barrelRest;
         private float _recoil; // 1 = fully back, decays to 0
 
         private void Awake()
         {
-            _unit = GetComponent<CombatUnit>();
+            _unit = GetComponent<IFiringWeapon>();
             if (barrel != null) _barrelRest = barrel.localPosition;
         }
 
@@ -40,7 +39,8 @@ namespace Ironfront.Visuals
 
         private void OnFired(Health target)
         {
-            var m = muzzle != null ? muzzle : _unit.Muzzle;
+            var m = muzzle != null ? muzzle : _unit?.Muzzle;
+            if (m != null && !Ironfront.Vision.VisionSystem.PlayerCanSee(m.position)) { _recoil = 1f; return; }
             Vector3 pos = m != null ? m.position : transform.position + Vector3.up;
             Vector3 fwd = m != null ? m.forward : transform.forward;
             CombatFx.MuzzleFlash(pos, fwd, flashScale);

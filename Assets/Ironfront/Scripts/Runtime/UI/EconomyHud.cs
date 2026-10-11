@@ -3,6 +3,7 @@ using Ironfront.Buildings;
 using Ironfront.Construction;
 using Ironfront.Core.Economy;
 using Ironfront.Core.Production;
+using Ironfront.Core.Research;
 using Ironfront.Data;
 using Ironfront.Economy;
 using Ironfront.Match;
@@ -32,6 +33,9 @@ namespace Ironfront.UI
         private class BuildEntry { public BuildingDefinition Def; public Button Button; public Text Label; public Image Image; }
         private class UnitEntry { public UnitDefinition Def; public Button Button; public Text Label; }
         private class QueueSlot { public Button Button; public Text Label; public RectTransform Fill; }
+        private class ResearchEntry { public ResearchDefinition Def; public Button Button; public Text Label; public RectTransform Fill; public Image Image; }
+        private readonly List<ResearchEntry> _researchEntries = new List<ResearchEntry>();
+        private Text _researchHint;
 
         private FactionState _faction;
         private VehicleFactory _factory;
@@ -62,6 +66,7 @@ namespace Ironfront.UI
             _faction.Wallet.Changed += OnWalletChanged;
             _faction.Power.Changed += RefreshEconomy;
             _faction.Structures.Changed += RefreshEconomy;
+            _faction.Research.Changed += RefreshResearch;
             if (placement != null)
             {
                 placement.Message += ShowMessage;
@@ -83,6 +88,7 @@ namespace Ironfront.UI
                 _faction.Wallet.Changed -= OnWalletChanged;
                 _faction.Power.Changed -= RefreshEconomy;
                 _faction.Structures.Changed -= RefreshEconomy;
+                _faction.Research.Changed -= RefreshResearch;
             }
             if (placement != null)
             {
@@ -99,6 +105,7 @@ namespace Ironfront.UI
         private void Update()
         {
             using var perfScope = Ironfront.Diagnostics.PerfMarkers.Hud.Auto();
+            UpdateResearchProgress();
             if (_factory != null && _factory.Queue.Count > 0 && _queueSlots.Count > 0)
             {
                 SetFill(_queueSlots[0].Fill, _factory.Queue.HeadProgress01);
@@ -148,6 +155,7 @@ namespace Ironfront.UI
             }
             RefreshBuildButtons();
             RefreshUnitButtons();
+            RefreshResearch();
         }
 
         private void RefreshBuildButtons()
@@ -156,8 +164,8 @@ namespace Ironfront.UI
             {
                 var check = ConstructionRules.Check(e.Def, _faction);
                 e.Button.interactable = check == BuildCheck.Ok;
-                string suffix = check == BuildCheck.MissingPrerequisite ? "  (locked)" : "";
-                e.Label.text = $"{e.Def.DisplayName}  ${e.Def.Cost}{suffix}";
+                string suffix = check == BuildCheck.MissingPrerequisite ? "  locked" : "";
+                e.Label.text = $"{e.Def.DisplayName}\n<color=#FFB848>${e.Def.Cost}</color>{suffix}";
                 bool placingThis = placement != null && placement.Pending == e.Def;
                 e.Image.color = placingThis ? PlacingColor : ButtonColor;
             }
@@ -168,7 +176,9 @@ namespace Ironfront.UI
             foreach (var e in _unitEntries)
             {
                 bool full = _factory == null || _factory.Queue.Count >= _factory.Queue.Capacity;
-                e.Button.interactable = _factory != null && !full && _faction.Wallet.CanAfford(e.Def.Cost);
+                bool unlocked = _factory != null && _factory.IsUnlocked(e.Def);
+                e.Button.interactable = _factory != null && !full && unlocked && _faction.Wallet.CanAfford(e.Def.Cost);
+                e.Label.text = $"{e.Def.DisplayName}\n<color=#FFB848>${e.Def.Cost}</color> {e.Def.BuildTime:0}s" + (unlocked ? "" : "  locked");
             }
         }
 
@@ -233,7 +243,11 @@ namespace Ironfront.UI
                 : check == BuildCheck.MissingPrerequisite ? "Locked: requires " + Prerequisites(def)
                 : check == BuildCheck.InsufficientFunds ? $"Need ${def.Cost - _faction.Wallet.Credits} more credits"
                 : check.ToString();
-            return $"{def.DisplayName.ToUpperInvariant()}   ${def.Cost}\nHealth {def.MaxHealth:0}  Armour {def.Armour:0}\n{power}\n{status}";
+            string weapon = def.Weapon != null
+                ? $"\nWeapon: {def.Weapon.DisplayName}, range {def.Weapon.Range:0} m - {def.Weapon.Role}" + (def.NeedsPower ? " (needs power)" : "")
+                : "";
+            string about = string.IsNullOrEmpty(def.Description) ? "" : "\n" + def.Description;
+            return $"{def.DisplayName.ToUpperInvariant()}   ${def.Cost}{about}\nHealth {def.MaxHealth:0}  Armour {def.Armour * 100f:0}%  Sight {def.SightRange:0} m\n{power}{weapon}\n{status}";
         }
 
         private static string Prerequisites(BuildingDefinition def)
@@ -246,13 +260,17 @@ namespace Ironfront.UI
         private string UnitTooltip(UnitDefinition def)
         {
             string status = _factory == null ? "No factory"
+                : !_factory.IsUnlocked(def) ? $"Locked: requires a {def.RequiredStructure.DisplayName}"
                 : _factory.Queue.Count >= _factory.Queue.Capacity ? "Queue full"
                 : !_faction.Wallet.CanAfford(def.Cost) ? $"Need ${def.Cost - _faction.Wallet.Credits} more credits"
                 : "Click to queue (cost is paid now, refunded on cancel)";
             var w = def.Weapon;
-            string stats = $"Health {def.MaxHealth:0}  Armour {def.Armour:0}  Speed {def.MoveSpeed:0.#}" +
-                           (w != null ? $"\nWeapon: {w.Damage:0} dmg / {w.Cooldown:0.#}s, range {w.Range:0}" : "\nUnarmed");
-            return $"{def.DisplayName.ToUpperInvariant()}   ${def.Cost}   {def.BuildTime:0}s\n{stats}\n{status}";
+            string stats = $"Health {def.MaxHealth:0}  Armour {def.Armour * 100f:0}%  Speed {def.MoveSpeed:0.#}  Sight {def.SightRange:0} m" +
+                           (w != null ? $"\nWeapon: {w.Damage:0} dmg / {w.Cooldown:0.#}s, range " +
+                                        (w.MinRange > 0f ? $"{w.MinRange:0}-{w.Range:0} m" : $"{w.Range:0} m") +
+                                        (string.IsNullOrEmpty(w.Role) ? "" : $"\n{w.Role}") : "\nUnarmed");
+            string about = string.IsNullOrEmpty(def.Description) ? "" : "\n" + def.Description;
+            return $"{def.DisplayName.ToUpperInvariant()}   ${def.Cost}   {def.BuildTime:0}s{about}\n{stats}\n{status}";
         }
 
         private string QueueTooltip(int index)
@@ -277,13 +295,15 @@ namespace Ironfront.UI
             _powerFill = PowerMeter(content);
 
             Header(content, "CONSTRUCT");
+            var buildGrid = CreateGrid(content, "BuildButtons");
             if (setup != null)
             {
                 foreach (var def in setup.ConstructionOptions)
                 {
                     if (def == null || !def.Constructible) continue;
                     var captured = def;
-                    var (button, label, image) = CreateButton(content, def.DisplayName, 34, () => OnBuildClicked(captured), def.Icon);
+                    var (button, label, image) = CreateButton(buildGrid, def.DisplayName, 40, () => OnBuildClicked(captured), def.Icon);
+                    label.fontSize = 12;
                     button.name = "Build_" + def.Id;
                     TooltipTrigger.Attach(button.gameObject, () => BuildTooltip(captured));
                     _buildEntries.Add(new BuildEntry { Def = def, Button = button, Label = label, Image = image });
@@ -291,7 +311,7 @@ namespace Ironfront.UI
             }
 
             _factoryLabel = Header(content, "Production");
-            _unitRoot = CreateGroup(content, "UnitButtons");
+            _unitRoot = CreateGrid(content, "UnitButtons");
 
             Header(content, "QUEUE");
             int capacity = setup != null ? setup.ProductionQueueCapacity : 5;
@@ -307,8 +327,115 @@ namespace Ironfront.UI
                 button.gameObject.SetActive(false);
             }
 
+            Header(content, "RESEARCH");
+            _researchHint = CreateText(content, "", 12, FontStyle.Italic, 18);
+            _researchHint.color = UiTheme.Muted;
+            if (setup != null)
+            {
+                foreach (var topic in setup.Research)
+                {
+                    if (topic == null) continue;
+                    var captured = topic;
+                    var (button, label, image) = CreateButton(content, topic.DisplayName, 26, () => OnResearchClicked(captured));
+                    button.name = "Research_" + topic.Id;
+                    label.fontSize = 12;
+                    var fill = CreateFill(button.transform);
+                    TooltipTrigger.Attach(button.gameObject, () => ResearchTooltip(captured));
+                    _researchEntries.Add(new ResearchEntry { Def = topic, Button = button, Label = label, Fill = fill, Image = image });
+                }
+            }
+
             _message = CreateText(content, "", 13, FontStyle.Italic, 40);
             _message.color = UiTheme.Warning;
+            RefreshResearch();
+        }
+
+        // ---------- Research ----------
+
+        private void RefreshResearch()
+        {
+            if (_faction == null) return;
+            var research = _faction.Research;
+            bool facility = ResearchCentre.HasFacility(_faction.Id);
+            if (_researchHint != null)
+                _researchHint.text = facility ? (research.Current != null ? $"Researching {research.Current.DisplayName}" : "Choose an upgrade")
+                    : "Build a Research Centre to research upgrades";
+            foreach (var e in _researchEntries)
+            {
+                var check = research.Check(e.Def, facility, _faction.Wallet);
+                bool done = research.IsResearched(e.Def.Id);
+                bool running = research.IsInProgress(e.Def.Id);
+                e.Button.interactable = check == ResearchCheck.Ok || running;
+                string state = done ? "<color=#85E673>done</color>"
+                    : running ? $"{research.Progress01 * 100f:0}%"
+                    : check == ResearchCheck.MissingPrerequisite ? "locked"
+                    : $"<color=#FFB848>${e.Def.Cost}</color> {e.Def.ResearchTime:0}s";
+                e.Label.text = $"{e.Def.DisplayName}   {state}";
+                SetFill(e.Fill, running ? research.Progress01 : done ? 1f : 0f);
+                e.Image.color = done ? UiTheme.ButtonActive : ButtonColor;
+            }
+        }
+
+        private void UpdateResearchProgress()
+        {
+            if (_faction == null || _faction.Research.Current == null) return;
+            foreach (var e in _researchEntries)
+                if (_faction.Research.IsInProgress(e.Def.Id))
+                {
+                    SetFill(e.Fill, _faction.Research.Progress01);
+                    string text = $"{e.Def.DisplayName}   {_faction.Research.Progress01 * 100f:0}%";
+                    if (e.Label.text != text) e.Label.text = text;
+                }
+        }
+
+        private void OnResearchClicked(ResearchDefinition topic)
+        {
+            var research = _faction.Research;
+            if (research.IsInProgress(topic.Id))
+            {
+                if (research.Cancel(_faction.Wallet)) ShowMessage($"{topic.DisplayName} cancelled (+{topic.Cost})");
+                return;
+            }
+            var result = ResearchCentre.TryStart(_faction.Id, topic);
+            switch (result)
+            {
+                case ResearchCheck.Ok: ShowMessage($"Researching {topic.DisplayName} (-{topic.Cost})"); break;
+                case ResearchCheck.Busy: ShowMessage("Already researching another topic"); break;
+                case ResearchCheck.MissingFacility: ShowMessage("Build a Research Centre first"); break;
+                case ResearchCheck.MissingPrerequisite: ShowMessage($"{topic.DisplayName} needs earlier research"); break;
+                case ResearchCheck.InsufficientFunds: ShowMessage($"Insufficient credits for {topic.DisplayName}"); break;
+                case ResearchCheck.AlreadyResearched: ShowMessage($"{topic.DisplayName} is already researched"); break;
+            }
+            Ironfront.Audio.GameAudio.PlayFlat(result == ResearchCheck.Ok ? Ironfront.Audio.SoundId.UiClick : Ironfront.Audio.SoundId.UiError);
+        }
+
+        private string ResearchTooltip(ResearchDefinition topic)
+        {
+            var check = ResearchCentre.Check(_faction.Id, topic);
+            var research = _faction.Research;
+            string needs = topic.Requires.Count > 0 ? "\nRequires: " + string.Join(", ", System.Linq.Enumerable.Select(topic.Requires, r => r.DisplayName)) : "";
+            string status = research.IsResearched(topic.Id) ? "Researched"
+                : research.IsInProgress(topic.Id) ? $"In progress {research.Progress01 * 100f:0}% - click to cancel (refund ${topic.Cost})"
+                : check == ResearchCheck.MissingFacility ? "Locked: build a Research Centre"
+                : check == ResearchCheck.MissingPrerequisite ? "Locked: research the requirement first"
+                : check == ResearchCheck.Busy ? "Another topic is being researched"
+                : check == ResearchCheck.InsufficientFunds ? $"Need ${topic.Cost - _faction.Wallet.Credits} more credits"
+                : "Click to research (paid now, refunded on cancel)";
+            return $"{topic.DisplayName.ToUpperInvariant()}   ${topic.Cost}   {topic.ResearchTime:0}s\n{topic.Description}{needs}\n{status}";
+        }
+
+        private RectTransform CreateGrid(Transform parent, string name)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.layer = gameObject.layer;
+            go.transform.SetParent(parent, false);
+            var grid = go.AddComponent<GridLayoutGroup>();
+            grid.cellSize = new Vector2(146f, 40f);
+            grid.spacing = new Vector2(4f, 4f);
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = 2;
+            go.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            return (RectTransform)go.transform;
         }
 
         private void RebuildUnitButtons()
@@ -321,8 +448,9 @@ namespace Ironfront.UI
             {
                 if (def == null) continue;
                 var captured = def;
-                var (button, label, _) = CreateButton(_unitRoot, $"{def.DisplayName}  ${def.Cost}  ({def.BuildTime:0}s)", 34,
+                var (button, label, _) = CreateButton(_unitRoot, $"{def.DisplayName}\n${def.Cost} {def.BuildTime:0}s", 40,
                     () => OnUnitClicked(captured), def.Icon);
+                label.fontSize = 12;
                 button.name = "Produce_" + def.Id;
                 TooltipTrigger.Attach(button.gameObject, () => UnitTooltip(captured));
                 _unitEntries.Add(new UnitEntry { Def = def, Button = button, Label = label });
@@ -345,6 +473,7 @@ namespace Ironfront.UI
             {
                 case EnqueueResult.Ok: ShowMessage($"{def.DisplayName} queued (-{def.Cost})"); break;
                 case EnqueueResult.QueueFull: ShowMessage("Production queue is full"); break;
+                case EnqueueResult.Locked: ShowMessage($"{def.DisplayName} requires a {def.RequiredStructure?.DisplayName}"); break;
                 case EnqueueResult.InsufficientFunds:
                     ShowMessage($"Insufficient credits for {def.DisplayName}");
                     if (NotificationCenter.Current != null)

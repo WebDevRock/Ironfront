@@ -1,0 +1,13 @@
+M007 release benchmark, 1280x720 windowed, same session, interleaved runs.
+M006 = control build of commit 9f7dcd9 (3 runs); M007 fog on (6 runs); M007 -fxNoFog (3 runs). Mean of runs.
+army/phase     | M006 avg/p99/max       | M007 fog avg/p99/max   | M007 nofog avg/p99/max | draw calls M006/M007, MB M006/M007
+25 combat      |  1.65  5.96  94.06     |  1.68  6.00 114.33     |  1.68  5.96  10.63     | 270/277, 349/350
+25 idle        |  1.30  5.95   6.55     |  1.33  5.97  20.98     |  1.34  5.96   6.52     | 257/241, 345/343
+50 combat      |  1.87  5.95   7.99     |  1.98  5.98   6.47     |  1.93  6.01   6.26     | 322/342, 362/362
+50 idle        |  1.60  6.03   6.42     |  1.62  6.00   6.23     |  1.68  6.00   6.43     | 356/342, 362/353
+100 combat     |  2.30  5.81   6.39     |  2.39  5.80   7.72     |  2.44  5.81   6.29     | 404/445, 380/370
+100 idle       |  1.89  5.96   6.28     |  1.92  5.97   6.37     |  2.05  5.95   6.54     | 433/434, 379/366
+200 combat     |  3.14  5.69  18.27     |  3.32  5.61   7.71     |  3.34  5.83  14.79     | 534/626, 393/389
+200 idle       |  2.54  5.97   7.35     |  2.52  5.74   7.01     |  2.57  5.93   6.33     | 544/621, 389/383
+
+Development build (markers, ms/frame), 200 units combat: see m007dev_fog.json / m007dev_nofog.json; Ironfront.Vision.Tick 0.047 (fog) / 0.037 (no fog).

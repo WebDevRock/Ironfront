@@ -30,6 +30,16 @@ namespace Ironfront.Core.Combat
         bool TryFire(ICombatTarget target);
     }
 
+    /// <summary>
+    /// Optional body capability (Milestone 007 fog of war): whether the unit's faction can currently see a target.
+    /// A target that stays unseen longer than <see cref="CombatSettings.LoseSightGrace"/> is dropped, so units
+    /// cannot keep tracking enemies hidden by the fog. Bodies without it (tests, tools) see everything.
+    /// </summary>
+    public interface ITargetAwareness
+    {
+        bool CanSee(ICombatTarget target);
+    }
+
     public enum CombatOrderType
     {
         /// <summary>No order: engages enemies already in range without moving.</summary>
@@ -76,6 +86,10 @@ namespace Ironfront.Core.Combat
         public float LeashFactor;
         /// <summary>An unreachable target is not re-acquired automatically for this long.</summary>
         public float IgnoreUnreachableFor;
+        /// <summary>Targets closer than this cannot be fired upon (artillery); 0 = none.</summary>
+        public float MinRange;
+        /// <summary>A target out of sight for longer than this is dropped (only with <see cref="ITargetAwareness"/>).</summary>
+        public float LoseSightGrace;
 
         public static CombatSettings ForWeapon(float range, float acquisitionRange, bool requiresLineOfSight) => new CombatSettings
         {
@@ -91,7 +105,17 @@ namespace Ironfront.Core.Combat
             ScanInterval = 0.25f,
             LeashFactor = 1.5f,
             IgnoreUnreachableFor = 6f,
+            MinRange = 0f,
+            LoseSightGrace = 1.5f,
         };
+
+        /// <summary>Same as <see cref="ForWeapon(float, float, bool)"/> with a minimum range.</summary>
+        public static CombatSettings ForWeapon(float range, float acquisitionRange, bool requiresLineOfSight, float minRange)
+        {
+            var s = ForWeapon(range, acquisitionRange, requiresLineOfSight);
+            s.MinRange = Math.Max(0f, Math.Min(minRange, range * 0.9f));
+            return s;
+        }
     }
 
     /// <summary>
@@ -110,6 +134,12 @@ namespace Ironfront.Core.Combat
         private float _stuckTimer;
         private ICombatTarget _ignored;
         private float _ignoreTimer;
+        private float _unseenTimer;
+        private Vector3 _lastSeen;
+        private bool _seeking;
+
+        /// <summary>True while an explicit attack heads for the target's last known position (target out of sight).</summary>
+        public bool IsSeeking => _seeking;
 
         public CombatOrderType Order { get; private set; } = CombatOrderType.Idle;
         public CombatActivity Activity { get; private set; } = CombatActivity.Idle;
@@ -224,6 +254,8 @@ namespace Ironfront.Core.Combat
                 if (_ignoreTimer <= 0f) _ignored = null;
             }
 
+            if (LostFromSight(body)) return;
+
             switch (Order)
             {
                 case CombatOrderType.Move:
@@ -267,16 +299,77 @@ namespace Ironfront.Core.Combat
             }
         }
 
+        /// <summary>
+        /// Fog of war. A target the faction cannot see is kept for <see cref="CombatSettings.LoseSightGrace"/>;
+        /// after that an explicit Attack order heads for the target's last known position (re-engaging if it is
+        /// seen again, giving up on arrival), while auto-acquired targets are simply dropped. The machine never
+        /// tracks the hidden target's real position. Returns true if the tick is finished.
+        /// </summary>
+        private bool LostFromSight(ICombatBody body)
+        {
+            if (!(body is ITargetAwareness aware) || Target == null || !Target.IsAlive)
+            {
+                _unseenTimer = 0f;
+                _seeking = false;
+                return false;
+            }
+            if (aware.CanSee(Target))
+            {
+                _unseenTimer = 0f;
+                _lastSeen = Target.Position;
+                if (_seeking)
+                {
+                    _seeking = false;
+                    _hasChasePoint = false; // resume a normal chase from here
+                }
+                return false;
+            }
+            _unseenTimer += _dt;
+            if (_seeking)
+            {
+                if (!body.HasArrived) return true;
+                _seeking = false;
+                ClearTarget();
+                SetOrder(CombatOrderType.Idle);
+                LastResult = "target lost from sight";
+                Activity = CombatActivity.Idle;
+                body.Halt();
+                return true;
+            }
+            if (_unseenTimer < _s.LoseSightGrace) return false;
+            _unseenTimer = 0f;
+            if (Order == CombatOrderType.Attack && !IsRetaliating)
+            {
+                _seeking = true;
+                body.MoveTo(_lastSeen);
+                Activity = CombatActivity.Chasing;
+                return true;
+            }
+            ClearTarget();
+            LastResult = "target lost from sight";
+            if (Order == CombatOrderType.Attack)
+            {
+                SetOrder(CombatOrderType.Idle);
+                LastResult = "target lost from sight";
+                Activity = CombatActivity.Idle;
+                body.Halt();
+                return true;
+            }
+            if (Order == CombatOrderType.AttackMove) ResumeAttackMove(body);
+            return false;
+        }
+
         /// <summary>Idle and Hold: fire at whatever is in range, never move.</summary>
         private void TickStationary(ICombatBody body)
         {
-            if (Target != null && (!IsValid(Target) || body.DistanceTo(Target) > _s.Range || !HasSight(body, Target)))
+            if (Target != null && (!IsValid(Target) || body.DistanceTo(Target) > _s.Range || body.DistanceTo(Target) < _s.MinRange
+                                   || !HasSight(body, Target)))
                 ClearTarget();
 
             if (Target == null && ScanDue())
             {
                 var t = body.FindTarget(_s.Range, _ignored);
-                if (t != null && HasSight(body, t)) SetTarget(t, auto: true, body);
+                if (t != null && HasSight(body, t) && body.DistanceTo(t) >= _s.MinRange) SetTarget(t, auto: true, body);
             }
 
             if (Target != null)
@@ -338,6 +431,12 @@ namespace Ironfront.Core.Combat
             // Hysteresis: once engaging, keep firing up to max range; when closing in, stop a little inside it.
             float threshold = Activity == CombatActivity.Engaging ? _s.Range : _s.Range - _s.ChaseStopMargin;
 
+            if (_s.MinRange > 0f && distance < _s.MinRange)
+            {
+                BackOff(body, target, distance);
+                return;
+            }
+
             if (distance <= threshold && HasSight(body, target))
             {
                 if (Activity != CombatActivity.Engaging)
@@ -389,6 +488,28 @@ namespace Ironfront.Core.Combat
             }
         }
 
+        /// <summary>Too close to fire (minimum range): move straight away from the target to regain distance.</summary>
+        private void BackOff(ICombatBody body, ICombatTarget target, float distance)
+        {
+            if (Order == CombatOrderType.Hold)
+            {
+                ClearTarget();
+                return;
+            }
+            Vector3 away = body.Position - target.Position;
+            away.y = 0f;
+            if (away.sqrMagnitude < 1e-4f) away = Vector3.forward;
+            if (Activity != CombatActivity.Chasing || _timeSinceRepath >= _s.RepathInterval)
+            {
+                body.MoveTo(body.Position + away.normalized * (_s.MinRange - distance + 3f));
+                _timeSinceRepath = 0f;
+                _hasChasePoint = false;
+            }
+            Activity = CombatActivity.Chasing;
+            _stuckTimer = 0f;
+            _progressPosition = body.Position;
+        }
+
         private void GiveUp(ICombatBody body, ICombatTarget target)
         {
             LastResult = "target unreachable";
@@ -423,6 +544,9 @@ namespace Ironfront.Core.Combat
 
         private void SetTarget(ICombatTarget target, bool auto, ICombatBody body)
         {
+            _unseenTimer = 0f;
+            _seeking = false;
+            if (target != null) _lastSeen = target.Position;
             Target = target;
             IsAutoTarget = auto;
             _hasChasePoint = false;

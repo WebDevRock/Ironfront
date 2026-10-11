@@ -276,6 +276,10 @@ namespace Ironfront.Construction
 
             _ghostRenderers = _ghost.GetComponentsInChildren<Renderer>();
             foreach (var r in _ghostRenderers) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            // Defences show their reach while being placed (Milestone 007).
+            if (def.Weapon != null)
+                Ironfront.Visuals.RangeIndicator.CreateRing(_ghost.transform, def.Weapon.Range + Mathf.Max(def.FootprintSize.x, def.FootprintSize.y) * 0.5f,
+                    Ironfront.Visuals.RangeIndicator.MaxColor);
             _ghost.SetActive(false);
         }
 

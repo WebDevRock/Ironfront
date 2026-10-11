@@ -108,7 +108,7 @@ namespace Ironfront.Tests
                 Assert.AreEqual(2000, _match.GetFaction(f).Wallet.Credits);
             }
             Assert.AreNotEqual(_match.Setup.ColorOf(Player), _match.Setup.ColorOf(Enemy));
-            Assert.AreEqual(4, OreDeposit.All.Count);
+            Assert.AreEqual(6, OreDeposit.All.Count, "two fields per side plus the contested central pair (Milestone 007)");
 
             // Point-symmetric: each faction's HQ is the same distance from its nearest ore fields.
             var playerHq = Structures(Player, "headquarters")[0].transform.position;
@@ -117,6 +117,12 @@ namespace Ironfront.Tests
             var ed = OreDeposit.All.Select(d => Vector3.Distance(d.transform.position, enemyHq)).OrderBy(x => x).Take(2).ToArray();
             Assert.AreEqual(pd[0], ed[0], 0.01f);
             Assert.AreEqual(pd[1], ed[1], 0.01f);
+
+            // Contested pair: point-symmetric, so the sum of distances to both HQs matches for the two fields.
+            var centre = OreDeposit.All.Where(d => Mathf.Abs(d.transform.position.x) < 1f).ToList();
+            Assert.AreEqual(2, centre.Count);
+            Assert.AreEqual(Vector3.Distance(centre[0].transform.position, playerHq) + Vector3.Distance(centre[1].transform.position, playerHq),
+                Vector3.Distance(centre[0].transform.position, enemyHq) + Vector3.Distance(centre[1].transform.position, enemyHq), 0.1f);
 
             // Refinery docks (where harvesters unload) are equally far from each faction's ore fields.
             var playerDock = Structures(Player, "refinery")[0].FrontPoint;

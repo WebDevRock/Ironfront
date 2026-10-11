@@ -27,7 +27,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a3461439d6b06fc40ab163071321394c, type: 2}
   - {fileID: 11400000, guid: 4774e8e316b21c048bffd76d5b2db895, type: 2}
   - {fileID: 11400000, guid: 8e1d567c3aad37f49af0caf2c9df4142, type: 2}
+  - {fileID: 11400000, guid: cbc05e4140efa3e4197b3588f48e1b49, type: 2}
+  - {fileID: 11400000, guid: 15e957c2776fae64fa32f4c8ca29d3e5, type: 2}
+  - {fileID: 11400000, guid: de60f77a775d20940a490c46b85ae639, type: 2}
   creditsPerOre: 1
   lowPowerProductionMultiplier: 0.5
   productionQueueCapacity: 5
   combatVisuals: {fileID: 11400000, guid: 5658449447f8c6e409e889a7bbc98bcb, type: 2}
+  research:
+  - {fileID: 11400000, guid: d00d0604cbd4e5445af48364352d7ffe, type: 2}
+  - {fileID: 11400000, guid: 7c0b304b6174be84295965a3b3ae92e5, type: 2}
+  - {fileID: 11400000, guid: 0fac82817e46b5949b61954eb6872f8a, type: 2}
+  fogOfWar: 1

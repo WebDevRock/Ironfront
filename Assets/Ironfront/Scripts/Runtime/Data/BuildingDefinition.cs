@@ -31,8 +31,20 @@ namespace Ironfront.Data
         [Header("Presentation")]
         [Tooltip("Sidebar / selection portrait (generated from the model).")]
         [SerializeField] private Sprite icon;
+        [TextArea] [SerializeField] private string description = "";
+        [Header("Milestone 007")]
+        [Tooltip("How far the structure reveals the fog of war (metres).")]
+        [SerializeField, Min(1f)] private float sightRange = 10f;
+        [Tooltip("Defences: the weapon, for range indicators and tooltips.")]
+        [SerializeField] private WeaponDefinition weapon;
+        [Tooltip("Defences: stops firing while the owner is low on power.")]
+        [SerializeField] private bool needsPower;
 
         public Sprite Icon => icon;
+        public string Description => description;
+        public float SightRange => sightRange;
+        public WeaponDefinition Weapon => weapon;
+        public bool NeedsPower => needsPower;
 
         public string Id => id;
         public string DisplayName => displayName;

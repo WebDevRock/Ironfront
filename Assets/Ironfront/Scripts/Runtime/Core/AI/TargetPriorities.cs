@@ -16,6 +16,10 @@ namespace Ironfront.Core.AI
                 case "headquarters": return 2.6f;
                 case "refinery": return 2f;
                 case "power_plant": return 1.5f;
+                case "research_centre": return 1.8f;
+                // Defences protect everything else: take them out first when they are near.
+                case "at_turret": return 2.2f;
+                case "guard_tower": return 1.6f;
                 default: return 1f;
             }
         }

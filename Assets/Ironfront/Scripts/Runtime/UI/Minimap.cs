@@ -108,11 +108,12 @@ namespace Ironfront.UI
             var setup = MatchController.Current != null ? MatchController.Current.Setup : null;
 
             // Indexed loops: foreach over the IReadOnlyList registries would box an enumerator per redraw.
+            int player = Ironfront.Vision.VisionSystem.LocalFaction;
             var deposits = OreDeposit.All;
             for (int i = 0; i < deposits.Count; i++)
             {
                 var d = deposits[i];
-                if (d.IsDepleted) continue;
+                if (d.IsDepleted || !Ironfront.Vision.VisionSystem.IsExplored(player, d.transform.position)) continue;
                 var r = d.HarvestRadius * 0.8f;
                 FillRect(_pixels, d.transform.position - new Vector3(r, 0f, r), d.transform.position + new Vector3(r, 0f, r), Ore);
             }
@@ -121,7 +122,7 @@ namespace Ironfront.UI
             for (int i = 0; i < buildings.Count; i++)
             {
                 var b = buildings[i];
-                if (b.Definition == null) continue;
+                if (b.Definition == null || !Ironfront.Vision.VisionEntity.IsDrawn(b)) continue; // enemy structures once seen
                 var f = b.Footprint.Body;
                 Color32 c = setup != null ? (Color32)setup.ColorOf(b.FactionId) : (Color32)Color.gray;
                 FillRect(_pixels, new Vector3(f.xMin, 0f, f.yMin), new Vector3(f.xMax, 0f, f.yMax), c);
@@ -132,6 +133,7 @@ namespace Ironfront.UI
             for (int i = 0; i < units.Count; i++)
             {
                 var u = units[i];
+                if (!Ironfront.Vision.VisionEntity.IsDrawn(u)) continue; // enemy units only while in sight
                 var p = MinimapMath.WorldToPixel(u.transform.position, _world, resolution);
                 Color32 c = u.IsSelected ? Selected : setup != null ? (Color32)setup.ColorOf(FactionMember.Of(u)) : (Color32)Color.gray;
                 Plot(p.x, p.y, c);
@@ -140,12 +142,35 @@ namespace Ironfront.UI
                 Plot(p.x + 1, p.y + 1, c);
             }
 
+            ApplyFog(player);
             DrawCameraView();
             DrawAlert();
 
             _texture.SetPixels32(_pixels);
             _texture.Apply(false);
             Redraws++;
+        }
+
+        /// <summary>Fog of war on the minimap: unexplored nearly black, explored but not in sight dimmed.</summary>
+        private void ApplyFog(int faction)
+        {
+            var sys = Ironfront.Vision.VisionSystem.Current;
+            if (sys == null || !sys.FogEnabled) return;
+            var grid = sys.Grid;
+            float sx = _world.width / resolution, sz = _world.height / resolution;
+            for (int y = 0; y < resolution; y++)
+            {
+                float wz = _world.yMin + (y + 0.5f) * sz;
+                for (int x = 0; x < resolution; x++)
+                {
+                    byte state = grid.StateAt(faction, _world.xMin + (x + 0.5f) * sx, wz);
+                    if (state == Ironfront.Core.Vision.VisibilityGrid.Visible) continue;
+                    int i = y * resolution + x;
+                    var c = _pixels[i];
+                    if (state == Ironfront.Core.Vision.VisibilityGrid.Unexplored) _pixels[i] = new Color32(8, 10, 12, 255);
+                    else _pixels[i] = new Color32((byte)(c.r * 0.5f), (byte)(c.g * 0.5f), (byte)(c.b * 0.55f), 255);
+                }
+            }
         }
 
         private void DrawCameraView()

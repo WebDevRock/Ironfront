@@ -42,6 +42,14 @@ namespace Ironfront.Core.AI
         public int PowerMargin;
         /// <summary>Credits above which a second factory is considered.</summary>
         public int ExpansionCredits;
+        /// <summary>Milestone 007: scouts kept alive.</summary>
+        public int ReconCount;
+        public int MaxGuardTowers;
+        public int MaxAtTurrets;
+        /// <summary>Army size before a Research Centre is worth its cost.</summary>
+        public int ResearchArmyThreshold;
+        /// <summary>Target fraction of the army that is artillery once it is available and useful.</summary>
+        public float ArtilleryShare;
 
         public int EffectiveAttackSize =>
             Math.Max(2, (int)Math.Round(AttackArmySize * (1.5 - Math.Max(0f, Math.Min(1f, Aggressiveness)))));
@@ -63,6 +71,11 @@ namespace Ironfront.Core.AI
             CreditReserve = 300,
             PowerMargin = 10,
             ExpansionCredits = 3500,
+            ReconCount = 1,
+            MaxGuardTowers = 2,
+            MaxAtTurrets = 2,
+            ResearchArmyThreshold = 5,
+            ArtilleryShare = 0.25f,
         };
     }
 
@@ -72,6 +85,8 @@ namespace Ironfront.Core.AI
     {
         public int Refinery, PowerPlant, Factory, Harvester, LightTank, HeavyTank;
         public int RefineryDrain, FactoryDrain, PowerPlantOutput;
+        /// <summary>Milestone 007 content (0 = not available, which disables the related decisions).</summary>
+        public int Recon, Artillery, ResearchCentre, GuardTower, AtTurret;
     }
 
     /// <summary>What the commander knows at a decision point (its own state plus what it has seen).</summary>
@@ -96,8 +111,20 @@ namespace Ironfront.Core.AI
         public int AttackersAlive;
         public float AttackStrength, AttackStartStrength;
 
-        public int ArmyCount => LightTanks + HeavyTanks;
-        public int ArmyIncludingQueued => ArmyCount + QueuedLight + QueuedHeavy;
+        // ---- Milestone 007 ----
+        public int Recon, QueuedRecon, Artillery, QueuedArtillery;
+        public int ResearchCentres, GuardTowers, AtTurrets;
+        /// <summary>Enemy artillery seen recently, and enemy defences / structures known (remembered).</summary>
+        public int KnownEnemyArtillery, KnownEnemyDefences, KnownEnemyStructures;
+        /// <summary>The base was threatened within the last minute.</summary>
+        public bool RecentlyAttacked;
+        public bool ResearchBusy;
+        /// <summary>Next research topic the commander would like (null = none) and its cost.</summary>
+        public string WantedResearch;
+        public int WantedResearchCost;
+
+        public int ArmyCount => LightTanks + HeavyTanks + Artillery;
+        public int ArmyIncludingQueued => ArmyCount + QueuedLight + QueuedHeavy + QueuedArtillery;
         public int HarvestersIncludingQueued => Harvesters + QueuedHarvesters;
         public int SparePower => PowerProduced - PowerConsumed;
         public bool EconomyBroken => Refineries == 0 || HarvestersIncludingQueued == 0;
@@ -108,6 +135,10 @@ namespace Ironfront.Core.AI
     {
         public const float LightValue = 1f;
         public const float HeavyValue = 2f;
+        public const float ArtilleryValue = 1.5f;
+        public const float ReconValue = 0.4f;
+
+        public static float Strength(float value, float healthFraction) => value * Math.Max(0f, Math.Min(1f, healthFraction));
 
         public static float Strength(bool heavy, float healthFraction) =>
             (heavy ? HeavyValue : LightValue) * Math.Max(0f, Math.Min(1f, healthFraction));

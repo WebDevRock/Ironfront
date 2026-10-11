@@ -25,8 +25,14 @@ MonoBehaviour:
   prefab: {fileID: 1195869673595706449, guid: 0a53ec16713156a45b70772604a39a7d, type: 3}
   producibleUnits:
   - {fileID: 11400000, guid: c61b3c9f4ce81c442a26c17804a92147, type: 2}
+  - {fileID: 11400000, guid: 9f11e723a83206a41b29d60a2162da7c, type: 2}
   - {fileID: 11400000, guid: ab96ec117fef16d47ba6e9fc6afffa4d, type: 2}
   - {fileID: 11400000, guid: 4cbc0d6cada4f6140a63809add473f24, type: 2}
+  - {fileID: 11400000, guid: 07b2189aa33eb434c803793ea4bd1f4a, type: 2}
   maxHealth: 1500
   armour: 0.25
   icon: {fileID: 21300000, guid: edd98e2f8b2966f4890203294d716232, type: 3}
+  description: Builds harvesters and combat vehicles.
+  sightRange: 11
+  weapon: {fileID: 0}
+  needsPower: 0

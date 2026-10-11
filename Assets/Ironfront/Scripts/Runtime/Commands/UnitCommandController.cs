@@ -99,6 +99,7 @@ namespace Ironfront.Commands
                 return null;
             var health = hit.collider.GetComponentInParent<Health>();
             if (health == null || !health.IsAlive) return null;
+            if (!Ironfront.Vision.VisionSystem.CanSee(PlayerFactionId, health)) return null; // hidden or only remembered
             return DamageRules.AreHostile(PlayerFactionId, health.FactionId) ? health : null;
         }
 

@@ -78,10 +78,11 @@ namespace Ironfront.Tests
         [UnityTest]
         public IEnumerator VehicleDeath_LeavesColliderFreeWreck_ThatRemovesItself()
         {
-            var tank = Tank(new Vector3(35f, 0f, -5f), Enemy);
+            // Player-owned, so the death happens in the player's sight (deaths inside the fog leave no visible wreck).
+            var tank = Tank(new Vector3(-30f, 0f, -30f), Player);
             yield return null;
             var health = tank.GetComponent<Health>();
-            health.ApplyDamage(health.Max * 10f, Player);
+            health.ApplyDamage(health.Max * 10f, Enemy);
             yield return null;
             var wreck = Object.FindObjectsByType<WreckBurner>().SingleOrDefault();
             Assert.IsNotNull(wreck, "a wreck replaces the destroyed tank");

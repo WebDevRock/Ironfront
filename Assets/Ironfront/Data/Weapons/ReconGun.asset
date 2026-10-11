@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1a86bace8c017e409e3558254c23dd8, type: 3}
+  m_Name: ReconGun
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.WeaponDefinition
+  displayName: Recon Machine Gun
+  damage: 9
+  range: 9
+  acquisitionRange: 12
+  cooldown: 0.5
+  projectileSpeed: 60
+  requiresLineOfSight: 1
+  allowFriendlyFire: 0
+  projectileSize: 0.12
+  minRange: 0
+  splashRadius: 0
+  salvo: 1
+  ballistic: 0
+  effectiveness:
+    VsLight: 1
+    VsHeavy: 0.35
+    VsStructure: 0.25
+  role: 'Light gun: harasses light vehicles, weak vs armour'

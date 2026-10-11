@@ -19,6 +19,8 @@ namespace Ironfront.Core.Production
         Ok,
         QueueFull,
         InsufficientFunds,
+        /// <summary>A required structure is missing (e.g. Research Centre for artillery).</summary>
+        Locked,
     }
 
     /// <summary>

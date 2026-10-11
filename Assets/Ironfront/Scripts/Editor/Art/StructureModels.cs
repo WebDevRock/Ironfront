@@ -20,7 +20,7 @@ namespace Ironfront.EditorTools.Art
             public readonly List<Transform> Blinkers = new List<Transform>();   // beacon lights
         }
 
-        private static Parts Begin(Transform root)
+        internal static Parts Begin(Transform root)
         {
             var p = new Parts { Model = VehicleModels.Node(root, "Model", Vector3.zero) };
             return p;

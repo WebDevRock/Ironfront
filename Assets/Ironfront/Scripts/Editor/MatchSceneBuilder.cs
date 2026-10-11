@@ -45,10 +45,16 @@ namespace Ironfront.EditorTools
 
         private static readonly (string name, Vector3 position, int amount)[] OreFields =
         {
-            ("Ore_PlayerMain", new Vector3(-12f, 0f, -36f), 6000),
-            ("Ore_EnemyMain", new Vector3(12f, 0f, 36f), 6000),
-            ("Ore_PlayerSecondary", new Vector3(-8f, 0f, -20f), 4000),
-            ("Ore_EnemySecondary", new Vector3(8f, 0f, 20f), 4000),
+            // Milestone 007: 9000 + 6000 per side (was 6000 + 4000) so the technology tier is affordable;
+            // see Docs/Milestone-007-Report.md (balance).
+            ("Ore_PlayerMain", new Vector3(-12f, 0f, -36f), 9000),
+            ("Ore_EnemyMain", new Vector3(12f, 0f, 36f), 9000),
+            ("Ore_PlayerSecondary", new Vector3(-8f, 0f, -20f), 6000),
+            ("Ore_EnemySecondary", new Vector3(8f, 0f, 20f), 6000),
+            // Contested fields either side of the central wall: once the home fields run dry the late game is
+            // fought over these, so a mirrored match does not simply exhaust into a draw.
+            ("Ore_CentreSouth", new Vector3(0f, 0f, -7f), 5000),
+            ("Ore_CentreNorth", new Vector3(0f, 0f, 7f), 5000),
         };
 
         /// <summary>The sandbox obstacles made point-symmetric so neither side has a terrain advantage.</summary>

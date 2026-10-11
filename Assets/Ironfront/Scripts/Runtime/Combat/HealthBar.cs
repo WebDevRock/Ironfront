@@ -82,7 +82,9 @@ namespace Ironfront.Combat
             if (_root == null || _health == null || _health.Model == null) return;
 
             bool selected = (_unit != null && _unit.IsSelected) || (_building != null && _building.IsSelected);
-            bool show = _health.IsAlive && (_health.Model.IsDamaged || selected);
+            // Fog of war: enemy health is only shown while the enemy is actually in sight (no stale readings).
+            bool show = _health.IsAlive && (_health.Model.IsDamaged || selected)
+                        && Ironfront.Vision.VisionSystem.CanSee(Ironfront.Vision.VisionSystem.LocalFaction, _health);
             if (_root.gameObject.activeSelf != show) _root.gameObject.SetActive(show);
             if (!show) return;
 

@@ -1,3 +1,5 @@
+using Ironfront.Core.Research;
+
 namespace Ironfront.Core.Economy
 {
     /// <summary>
@@ -13,6 +15,8 @@ namespace Ironfront.Core.Economy
         public ResourceWallet Wallet { get; }
         public PowerGrid Power { get; } = new PowerGrid();
         public StructureRoster Structures { get; } = new StructureRoster();
+        /// <summary>Technology for this match only (Milestone 007).</summary>
+        public ResearchState Research { get; } = new ResearchState();
 
         public FactionState(int id, string displayName, bool isHumanControlled, int startingCredits)
         {

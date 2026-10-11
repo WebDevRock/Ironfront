@@ -22,3 +22,7 @@ MonoBehaviour:
   moveSpeed: 5
   weapon: {fileID: 11400000, guid: feb4eede2f7011b45a4120bfd433975b, type: 2}
   icon: {fileID: 21300000, guid: c88ef15c2df428743b5946ecf4d57f9f, type: 3}
+  description: Slow, heavily armoured twin-gun tank. Wins head-on fights; vulnerable to anti-armour turrets and artillery.
+  sightRange: 14
+  armourClass: 1
+  requiredStructure: {fileID: 0}

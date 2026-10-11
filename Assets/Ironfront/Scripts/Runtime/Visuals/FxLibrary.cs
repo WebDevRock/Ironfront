@@ -78,7 +78,7 @@ namespace Ironfront.Visuals
         {
             var fx = Instance;
             if (fx == null) return null;
-            if (!fx.InView(p, radius)) { Skipped++; return null; }
+            if (!fx.InView(p, radius) || !Ironfront.Vision.VisionSystem.PlayerCanSee(p)) { Skipped++; return null; }
             var ps = budgetSystem ?? fx._smoke;
             if (budget < 1f && ps != null && ps.particleCount > ps.main.maxParticles * budget) { Skipped++; return null; }
             return fx;
@@ -386,6 +386,7 @@ namespace Ironfront.Visuals
             var fx = Instance;
             if (fx == null) return;
             if (fx._dust.particleCount > fx._dust.main.maxParticles * 0.5f) { Skipped++; return; } // movement dust is lowest priority
+            if (!Ironfront.Vision.VisionSystem.PlayerCanSee(position)) { Skipped++; return; }
             fx.Emit(fx._dust, position, velocity, size * Random.Range(0.8f, 1.2f), Random.Range(1f, 1.6f), new Color(0.56f, 0.49f, 0.37f, alpha));
         }
 

@@ -185,6 +185,11 @@ namespace Ironfront.EditorTools.Art
                 (c.Harvester, "Icon_Harvester", t => VehicleModels.Harvester(t, a)),
                 (c.LightTank, "Icon_LightTank", t => VehicleModels.LightTank(t, a)),
                 (c.HeavyTank, "Icon_HeavyTank", t => VehicleModels.HeavyTank(t, a)),
+                (c.Expansion.Recon, "Icon_Recon", t => ExpansionModels.Recon(t, a)),
+                (c.Expansion.Artillery, "Icon_RocketArtillery", t => ExpansionModels.RocketArtillery(t, a)),
+                (c.Expansion.GuardTower, "Icon_GuardTower", t => ExpansionModels.GuardTower(t, a)),
+                (c.Expansion.AtTurret, "Icon_AntiArmourTurret", t => ExpansionModels.AntiArmourTurret(t, a)),
+                (c.Expansion.ResearchCentre, "Icon_ResearchCentre", t => ExpansionModels.ResearchCentre(t, a)),
             };
             foreach (var (def, name, build) in jobs)
             {

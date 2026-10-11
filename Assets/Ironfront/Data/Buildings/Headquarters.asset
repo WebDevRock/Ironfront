@@ -26,3 +26,7 @@ MonoBehaviour:
   maxHealth: 2000
   armour: 0.3
   icon: {fileID: 21300000, guid: b3c2f4700ff06294181ae44a14f9aa15, type: 3}
+  description: Command centre. Lose it and you lose the match.
+  sightRange: 18
+  weapon: {fileID: 0}
+  needsPower: 0

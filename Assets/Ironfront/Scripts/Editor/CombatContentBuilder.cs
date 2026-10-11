@@ -144,7 +144,7 @@ namespace Ironfront.EditorTools
             return root;
         }
 
-        private static void AddTankFx(GameObject root, VehicleModels.TankParts parts, float recoil, float flash, SoundId sound)
+        internal static void AddTankFx(GameObject root, VehicleModels.TankParts parts, float recoil, float flash, SoundId sound)
         {
             var weapon = root.AddComponent<WeaponFx>();
             EconomyContentBuilder.Set(weapon, so =>
@@ -165,7 +165,10 @@ namespace Ironfront.EditorTools
             });
             EconomyContentBuilder.Set(root.GetComponent<DamageFx>(), so => so.FindProperty("smokeSize").floatValue = flash * 0.7f);
             EconomyContentBuilder.SetWreck(root, parts.Hull, parts.TurretPivot);
+            if (root.GetComponent<RangeIndicator>() == null) root.AddComponent<RangeIndicator>();
         }
+
+        internal static void AddCombatUnit(GameObject root, Transform turret, Transform muzzle) => AddCombat(root, turret, muzzle);
 
         private static void AddCombat(GameObject root, Transform turret, Transform muzzle)
         {

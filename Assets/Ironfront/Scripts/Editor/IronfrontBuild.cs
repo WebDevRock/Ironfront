@@ -14,7 +14,10 @@ namespace Ironfront.EditorTools
         public static string BuildWindows() => BuildWindows(WindowsOutput);
 
         /// <summary>Release build to <paramref name="output"/> (e.g. Builds/Before/Ironfront.exe for comparisons).</summary>
-        public static string BuildWindows(string output)
+        public static string BuildWindows(string output) => BuildWindows(output, development: false);
+
+        /// <summary>Development builds record the PerfMarkers per-system timings in the benchmark (profiling only).</summary>
+        public static string BuildWindows(string output, bool development)
         {
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
@@ -23,7 +26,7 @@ namespace Ironfront.EditorTools
                 locationPathName = output,
                 target = BuildTarget.StandaloneWindows64,
                 targetGroup = BuildTargetGroup.Standalone,
-                options = BuildOptions.None,
+                options = development ? BuildOptions.Development : BuildOptions.None,
             });
             var s = report.summary;
             string result = $"{s.result}: {s.totalErrors} errors, {s.totalWarnings} warnings, {s.totalSize / (1024 * 1024)} MB -> {s.outputPath}";

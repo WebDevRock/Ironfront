@@ -1,3 +1,4 @@
+using Ironfront.Core.Combat;
 using Ironfront.Core.Production;
 using UnityEngine;
 
@@ -25,6 +26,14 @@ namespace Ironfront.Data
         [Header("Presentation")]
         [Tooltip("Sidebar / selection portrait (generated from the model).")]
         [SerializeField] private Sprite icon;
+        [TextArea] [SerializeField] private string description = "";
+
+        [Header("Milestone 007")]
+        [Tooltip("How far the unit reveals the fog of war (metres).")]
+        [SerializeField, Min(1f)] private float sightRange = 14f;
+        [SerializeField] private ArmourClass armourClass = ArmourClass.Light;
+        [Tooltip("A structure the faction must own before this unit can be queued (e.g. a Research Centre).")]
+        [SerializeField] private BuildingDefinition requiredStructure;
 
         public string Id => id;
         public string DisplayName => displayName;
@@ -36,5 +45,9 @@ namespace Ironfront.Data
         public float MoveSpeed => moveSpeed;
         public WeaponDefinition Weapon => weapon;
         public Sprite Icon => icon;
+        public string Description => description;
+        public float SightRange => sightRange;
+        public ArmourClass ArmourClass => armourClass;
+        public BuildingDefinition RequiredStructure => requiredStructure;
     }
 }

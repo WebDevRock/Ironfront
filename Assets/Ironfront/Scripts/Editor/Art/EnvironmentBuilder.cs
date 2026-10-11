@@ -510,9 +510,72 @@ namespace Ironfront.EditorTools.Art
             return profile;
         }
 
+        public const string FogShaderPath = ArtLibrary.Root + "/Shaders/FogOfWar.shader";
+        public const string FogFeatureName = "IronfrontFogOfWar";
+
+        /// <summary>
+        /// Milestone 007: adds the fog-of-war full-screen pass to every URP renderer used by the project (idempotent).
+        /// The pass reads the depth buffer and the global fog texture published by FogOfWarView; it does nothing
+        /// unless a match has enabled fog.
+        /// </summary>
+        public static void EnsureFogPass()
+        {
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(FogShaderPath);
+            if (shader == null) throw new System.InvalidOperationException("Missing " + FogShaderPath);
+            string matPath = ArtLibrary.MaterialsDir + "/FogOfWar.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, matPath);
+            }
+            mat.shader = shader;
+            EditorUtility.SetDirty(mat);
+
+            foreach (var asset in new[] { GraphicsSettings.defaultRenderPipeline, QualitySettings.renderPipeline })
+            {
+                if (!(asset is UniversalRenderPipelineAsset urp)) continue;
+                var list = new SerializedObject(urp).FindProperty("m_RendererDataList");
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    if (!(list.GetArrayElementAtIndex(i).objectReferenceValue is ScriptableRendererData data)) continue;
+                    FullScreenPassRendererFeature feature = null;
+                    foreach (var f in data.rendererFeatures)
+                        if (f is FullScreenPassRendererFeature fs && f.name == FogFeatureName) feature = fs;
+                    if (feature == null)
+                    {
+                        feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+                        feature.name = FogFeatureName;
+                        AssetDatabase.AddObjectToAsset(feature, data);
+                        data.rendererFeatures.Add(feature);
+                        AssetDatabase.SaveAssets();
+                        if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out string _, out long localId))
+                        {
+                            var so = new SerializedObject(data);
+                            var map = so.FindProperty("m_RendererFeatureMap");
+                            map.arraySize++;
+                            map.GetArrayElementAtIndex(map.arraySize - 1).longValue = localId;
+                            so.ApplyModifiedPropertiesWithoutUndo();
+                        }
+                    }
+                    feature.passMaterial = mat;
+                    feature.passIndex = 0;
+                    feature.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing;
+                    feature.requirements = ScriptableRenderPassInput.Depth;
+                    feature.fetchColorBuffer = false;
+                    feature.bindDepthStencilAttachment = false;
+                    feature.SetActive(true);
+                    EditorUtility.SetDirty(feature);
+                    EditorUtility.SetDirty(data);
+                }
+            }
+            AssetDatabase.SaveAssets();
+        }
+
         /// <summary>Shadow distance covering the furthest RTS zoom (was 50 m; the camera reaches 60 m away).</summary>
         public static void ConfigurePipeline()
         {
+            EnsureFogPass();
             foreach (var asset in new[] { GraphicsSettings.defaultRenderPipeline, QualitySettings.renderPipeline })
             {
                 if (!(asset is UniversalRenderPipelineAsset urp)) continue;

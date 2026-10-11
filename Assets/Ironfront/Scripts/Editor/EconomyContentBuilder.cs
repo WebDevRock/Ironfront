@@ -61,6 +61,7 @@ namespace Ironfront.EditorTools
             public BuildingDefinition Outpost;
             public CombatVisuals CombatVisuals;
             public CombatContentBuilder.Defs Combat;
+            public ExpansionContentBuilder.Defs Expansion;
             public GameObject DepositPrefab;
             public Material GhostValid, GhostInvalid;
         }
@@ -114,6 +115,7 @@ namespace Ironfront.EditorTools
             c.Harvester = LoadOrCreate<HarvesterDefinition>(HarvesterPath);
             c.MatchSetup = LoadOrCreate<MatchSetup>(MatchSetupPath);
             var combat = CombatContentBuilder.CreateDefinitions(unlit);
+            var expansion = ExpansionContentBuilder.CreateDefinitions(c, combat);
 
             SetBuilding(c.Headquarters, "headquarters", "Headquarters", cost: 0, size: new Vector2(8f, 8f), apron: 3f,
                 powerOut: 20, powerDrain: 0, constructible: false, prereqs: new BuildingDefinition[0], units: new UnitDefinition[0]);
@@ -123,7 +125,7 @@ namespace Ironfront.EditorTools
                 powerOut: 50, powerDrain: 0, constructible: true, prereqs: new[] { c.Headquarters }, units: new UnitDefinition[0]);
             SetBuilding(c.VehicleFactory, "vehicle_factory", "Vehicle Factory", cost: 1300, size: new Vector2(8f, 7f), apron: 5f,
                 powerOut: 0, powerDrain: 30, constructible: true, prereqs: new[] { c.Headquarters },
-                units: new UnitDefinition[] { c.Harvester, combat.LightTank, combat.HeavyTank });
+                units: new UnitDefinition[] { c.Harvester, expansion.Recon, combat.LightTank, combat.HeavyTank, expansion.Artillery });
             SetBuildingCombat(c.Headquarters, maxHealth: 2000f, armour: 0.3f);
             SetBuildingCombat(c.Refinery, maxHealth: 1200f, armour: 0.2f);
             SetBuildingCombat(c.PowerPlant, maxHealth: 800f, armour: 0.2f);
@@ -147,7 +149,10 @@ namespace Ironfront.EditorTools
                 SetFaction(factions.GetArrayElementAtIndex(1), CombatContentBuilder.EnemyFactionId, "Enemy",
                     new Color(0.85f, 0.15f, 0.12f), human: false, credits: StartingCredits); // equal start for the AI match
                 so.FindProperty("combatVisuals").objectReferenceValue = combat.Visuals;
-                SetList(so.FindProperty("constructionOptions"), c.Refinery, c.PowerPlant, c.VehicleFactory);
+                SetList(so.FindProperty("constructionOptions"), c.Refinery, c.PowerPlant, c.VehicleFactory,
+                    expansion.ResearchCentre, expansion.GuardTower, expansion.AtTurret);
+                SetList(so.FindProperty("research"), expansion.Research);
+                so.FindProperty("fogOfWar").boolValue = true;
                 so.FindProperty("creditsPerOre").intValue = 1;
                 so.FindProperty("lowPowerProductionMultiplier").floatValue = 0.5f;
                 so.FindProperty("productionQueueCapacity").intValue = 5;
@@ -160,6 +165,7 @@ namespace Ironfront.EditorTools
             SetPrefab(c.VehicleFactory, SavePrefab(BuildFactory(c.VehicleFactory, pal), $"{BuildingPrefabsDir}/VehicleFactory.prefab"));
             SetPrefab(c.Harvester, SavePrefab(BuildHarvester(c.Harvester, pal), $"{UnitPrefabsDir}/Harvester.prefab"));
             CombatContentBuilder.CreatePrefabs(combat, pal);
+            ExpansionContentBuilder.CreatePrefabs(expansion, pal);
             c.DepositPrefab = SavePrefab(BuildDeposit(pal), DepositPrefabPath);
 
             AssetDatabase.SaveAssets();
@@ -185,6 +191,7 @@ namespace Ironfront.EditorTools
                 GhostInvalid = Require<Material>(GhostInvalidPath),
             };
             c.Combat = CombatContentBuilder.Load();
+            c.Expansion = ExpansionContentBuilder.Load();
             c.LightTank = c.Combat.LightTank;
             c.HeavyTank = c.Combat.HeavyTank;
             c.Outpost = c.Combat.Outpost;
@@ -247,6 +254,7 @@ namespace Ironfront.EditorTools
 
             root.AddComponent<FactionMember>();
             building = root.AddComponent<Building>();
+            root.AddComponent<Ironfront.Vision.VisionEntity>();
 
             var frame = Part(root.transform, PrimitiveType.Cube, "SelectionIndicator", new Vector3(0f, 0.04f, 0f),
                 new Vector3(size.x + 0.8f, 0.06f, size.y + 0.8f), pal.Ring, castShadows: false);
@@ -350,6 +358,7 @@ namespace Ironfront.EditorTools
             root.AddComponent<UnitMover>();
             root.AddComponent<FactionMember>();
             selectable = root.AddComponent<SelectableUnit>();
+            root.AddComponent<Ironfront.Vision.VisionEntity>();
             var ring = RtsSandboxBuilder.AddSelectionRing(root.transform, pal.Ring, 0.03f, Mathf.Max(colliderSize.x, colliderSize.z) + 0.6f);
             RtsSandboxBuilder.SetRef(selectable, "selectionIndicator", ring);
 

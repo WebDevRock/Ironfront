@@ -211,6 +211,7 @@ namespace Ironfront.EditorTools
             unit.AddComponent<UnitMover>();
             unit.AddComponent<FactionMember>();
             var selectable = unit.AddComponent<SelectableUnit>();
+            unit.AddComponent<Ironfront.Vision.VisionEntity>();
 
             // Facing marker so orientation is readable.
             var nose = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -393,6 +394,8 @@ namespace Ironfront.EditorTools
             var match = matchGo.AddComponent<MatchController>();
             SetRef(match, "setup", economy.MatchSetup);
             matchGo.AddComponent<MatchStatisticsTracker>();
+            matchGo.AddComponent<Ironfront.Vision.VisionSystem>();
+            matchGo.AddComponent<Ironfront.Vision.FogOfWarView>();
 
             var systems = new GameObject("RTS Systems");
             var selection = systems.AddComponent<SelectionManager>();
@@ -514,7 +517,7 @@ namespace Ironfront.EditorTools
             var sidebarRect = (RectTransform)sidebar.transform;
             sidebarRect.anchorMin = sidebarRect.anchorMax = sidebarRect.pivot = new Vector2(1f, 1f);
             sidebarRect.anchoredPosition = new Vector2(-10f, -10f);
-            sidebarRect.sizeDelta = new Vector2(320f, 580f);
+            sidebarRect.sizeDelta = new Vector2(320f, 720f);
             var sidebarImage = sidebar.AddComponent<Image>();
             UiTheme.ApplyPanel(sidebarImage, UiTheme.Panel);
             sidebarImage.raycastTarget = true;

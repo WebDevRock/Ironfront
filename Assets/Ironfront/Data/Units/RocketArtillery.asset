@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dde82e58f08d6b0439864dbe6c7b8db3, type: 3}
+  m_Name: RocketArtillery
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.UnitDefinition
+  id: rocket_artillery
+  displayName: Rocket Artillery
+  cost: 1100
+  buildTime: 12
+  prefab: {fileID: 9037295854074496039, guid: d8015b13dfec85842a60d34901b39e0c, type: 3}
+  maxHealth: 260
+  armour: 0.05
+  moveSpeed: 5.5
+  weapon: {fileID: 11400000, guid: 4376e01439cc3a1418e67a3bdf22cc5c, type: 2}
+  icon: {fileID: 21300000, guid: 343224be6c85d404281d99cb4622b95f, type: 3}
+  description: Long-range rocket launcher (28 m) that wrecks structures and defences. Needs others to spot distant targets, cannot fire at anything closer than 9 m and is easy prey for fast attackers. Moving targets can dodge its rockets.
+  sightRange: 12
+  armourClass: 0
+  requiredStructure: {fileID: 11400000, guid: cbc05e4140efa3e4197b3588f48e1b49, type: 2}

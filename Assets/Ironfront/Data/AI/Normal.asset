@@ -30,6 +30,11 @@ MonoBehaviour:
     CreditReserve: 300
     PowerMargin: 10
     ExpansionCredits: 3500
+    ReconCount: 1
+    MaxGuardTowers: 2
+    MaxAtTurrets: 2
+    ResearchArmyThreshold: 5
+    ArtilleryShare: 0.25
   visionRange: 22
   threatMemorySeconds: 20
   knowsEnemyStartLocation: 1

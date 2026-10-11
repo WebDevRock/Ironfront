@@ -11,7 +11,7 @@ namespace Ironfront.Core.Combat
         public float Max { get; }
         public float Current { get; private set; }
         /// <summary>Fraction of incoming damage absorbed, 0..<see cref="DamageRules.MaxArmour"/>.</summary>
-        public float Armour { get; }
+        public float Armour { get; private set; }
         public bool IsDead { get; private set; }
         public float Fraction => Max > 0f ? Current / Max : 0f;
         public bool IsDamaged => Current < Max;
@@ -27,6 +27,9 @@ namespace Ironfront.Core.Combat
             Current = max;
             Armour = DamageRules.ClampArmour(armour);
         }
+
+        /// <summary>Changes armour (research upgrades); clamped like the constructor value.</summary>
+        public void SetArmour(float armour) => Armour = DamageRules.ClampArmour(armour);
 
         /// <summary>Applies raw damage (armour is applied here). Returns the damage dealt.</summary>
         public float ApplyDamage(float rawDamage)

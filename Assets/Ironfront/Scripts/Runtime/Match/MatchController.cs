@@ -38,6 +38,7 @@ namespace Ironfront.Match
             foreach (var f in setup.Factions)
             {
                 _factions[f.id] = new FactionState(f.id, f.displayName, f.humanControlled, f.startingCredits);
+                Buildings.ResearchCentre.HookUpgrades(_factions[f.id].Research, f.id);
                 if (f.humanControlled && !playerChosen)
                 {
                     PlayerFactionId = f.id;
@@ -57,6 +58,7 @@ namespace Ironfront.Match
             if (!_factions.TryGetValue(id, out var state))
             {
                 state = new FactionState(id, "Faction " + id, false, 0);
+                Buildings.ResearchCentre.HookUpgrades(state.Research, id);
                 _factions[id] = state;
             }
             return state;

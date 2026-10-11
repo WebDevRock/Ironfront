@@ -26,3 +26,7 @@ MonoBehaviour:
   maxHealth: 1000
   armour: 0.1
   icon: {fileID: 0}
+  description: Fortified enemy outpost.
+  sightRange: 14
+  weapon: {fileID: 0}
+  needsPower: 0

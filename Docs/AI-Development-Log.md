@@ -423,3 +423,80 @@ Deliverables: art direction, asset inventory and licences, report, log, commit.
 
 ### Relevant commit hash
 Milestone commit: `ab902ce` (ab902ce534dff177d362d1513de45ab63f99be67)
+
+## Milestone 007 — Content Expansion, Technology and Strategic Depth (2026-10-11)
+
+### Feature requested
+Add strategic depth without new factions, air, naval or campaign:
+1. Audit and design document with stats, costs, prerequisites and counters.
+2. Rocket Artillery (long range, minimum range, siege) and Recon Vehicle (fast, extended sight).
+3. Guard Tower (cheap, anti-light) and Anti-Armour Turret (power-dependent, anti-heavy).
+4. Research Centre with 3+ upgrades: costs and time, no double purchase, applies to existing and new units, AI uses it, no leaks between matches.
+5. Fog of war: unexplored, explored and visible states; enemies visible and targetable only when revealed; minimap respects it; no AI omniscience; performant; trade-offs documented.
+6. AI that scouts, builds defences, researches, uses the new units and counters artillery, on the same architecture.
+7. Multi-seed, swapped-start balance simulations that look at viability, not just 50/50, plus performance tests.
+8. Player-facing icons, tooltips, progress, range indicators and readable fog.
+
+Deliverables: playable game, tests, balance and performance analysis, report, log, commit.
+
+### Changes implemented
+- **Pure core:**
+  - `Core/Vision/VisibilityGrid`, `Core/AI/ScoutPlanner`, `Core/Research/ResearchState`;
+  - `Core/Combat/WeaponClassRules` (armour classes, splash, firing band);
+  - `Core/AI/ExpansionRules` (recon, defences, tech, research choice);
+  - `CombatOrderMachine` gains minimum range with back-off, sight awareness, and seeking last-known positions;
+  - composition saving for heavies and artillery, end-game spending rules;
+  - `HarvesterStateMachine.SinkLost`.
+- **Data and content (`ExpansionContentBuilder`, `ExpansionModels`):**
+  - new definitions, prefabs, icons and sounds for Rocket Artillery, Recon, Guard Tower, AT Turret, Research Centre and three `ResearchDefinition`s;
+  - new data fields: weapon min range, splash, salvo, ballistic, class multipliers; unit sight, armour class, required structure; structure weapon and needs-power.
+- **Runtime:**
+  - `Vision/` (`VisionSystem`, `VisionEntity`, `StructureGhost`, `FogOfWarView`, `FogOfWar.shader` as a URP full-screen pass with soft edges);
+  - `DefenceTurret`, `ResearchCentre`, `RangeIndicator`;
+  - ballistic and splash `Projectile`; fog-aware targeting, selection, health bars, effects, audio, minimap and notifications;
+  - RESEARCH sidebar section and extended tooltips.
+- **AI (`EnemyCommander`, `AiPerception`):** vision-limited perception with remembered structures, scouting, defence and tech building, research, artillery stand-off, counter-artillery, scouts joining the end-game attack, research chosen after the snapshot counts.
+- **Map (`MatchSceneBuilder`):** home ore 9000 + 6000 per side (was 6000 + 4000), plus a contested 5000 + 5000 pair at the central wall.
+- **Tools:**
+  - balance study records economy, composition, damage and research (JSONL);
+  - `-fxNoFog` profiling switch;
+  - `IronfrontBuild.BuildWindows(path, development)`;
+  - showcase shots 08–10.
+- **Docs:** `Docs/Milestone-007-Design.md`, `Docs/Milestone-007-Report.md`, `Docs/Balance/M007/`, `Docs/Performance/M007/`, `Docs/Screenshots/M007/`.
+
+### Tests attempted and results
+- EditMode **210/210** (+29) and PlayMode **57/57** (+8) on the final code.
+- **Balance study:** 5 runs of 10 AI-vs-AI matches.
+  - Final: 5 decisive, 5 exhaustion draws, 0 timeouts; south-west/north-east wins 2/3 (baseline 2/8).
+  - Every new unit, defence and two of the three topics are used in most matches; artillery is the most cost-efficient damage source.
+  - Details in the report, §3.
+- **Release benchmark:** M007 vs an M006 control build of `9f7dcd9`, interleaved in one session. Within 0.2 ms everywhere: 200-unit combat 3.14 → 3.32 ms, p99 under 6 ms. Fog cost is in the noise; `Vision.Tick` is about 0.05 ms per frame.
+- **Screenshots:** 13 showcase shots of the final build reviewed.
+
+### Problems encountered
+- **Fog vs earlier assumptions:** attack orders on hidden targets were dropped and two M003 tests failed. Fixed by seeking the last known position. Two presentation tests also needed fog-aware setups: a visible death, and a vision tick on spawn.
+- **Economy too small for the tech tier:** run 1 had no research and no artillery. Ore was raised.
+- **End-game deadlock:** factions saved forever, or kept an idle scout, so matches timed out at 1500 s. Fixed with end-game rules.
+- **Research-choice bug:** research was chosen before harvesters were counted, so Advanced Harvesting was never researched. Found from balance data.
+- **Latent harvester crash:** a refinery destroyed while a harvester was heading to it caused a Unity fake-null in pure code. Fixed.
+- **Benchmark noise:** a first non-interleaved benchmark set suggested a +50 % regression. An M006 control build, interleaved, showed it was machine load. Lesson: always interleave.
+- **Tooling:**
+  - the URP renderer feature map gained a stray character twice when serialised; fixed by hand and reimported;
+  - `run_tests --filter` needs the fully qualified class name;
+  - `Until()` waits use scaled time.
+
+### Human interventions required
+- **None during the work.**
+- **Decisions requested:**
+  1. AI-mirror exhaustion draws (about 50 %): ore regrowth, or a tiebreak rule?
+  2. Approval to remove the unused AI Assistant/Inference packages (pending since M005).
+
+### Known limitations
+- Sight is not occluded by walls; visibility uses a 1 m grid at 10 Hz; remembered structures don't show health.
+- Enhanced Weapons is rarely reached by the AI.
+- Mirror AI matches often end in exhaustion draws.
+- The longer economy changes match pacing (about 600 s).
+- Fog readability, artillery feel, tooltips and AI fun still need a human playthrough; see the report, §5.
+
+### Relevant commit hash
+Milestone commit: (recorded after commit)

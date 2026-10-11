@@ -22,6 +22,10 @@ MonoBehaviour:
   moveSpeed: 6
   weapon: {fileID: 0}
   icon: {fileID: 21300000, guid: beeb85e7dbecb7a43aa490d0da1f8f36, type: 3}
+  description: Collects ore and delivers it to a refinery for credits.
+  sightRange: 10
+  armourClass: 1
+  requiredStructure: {fileID: 0}
   cargoCapacity: 200
   harvestRate: 50
   unloadRate: 100

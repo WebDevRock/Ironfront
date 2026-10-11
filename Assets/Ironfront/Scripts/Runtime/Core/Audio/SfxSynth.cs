@@ -25,6 +25,7 @@ namespace Ironfront.Core.Audio
             "place_structure", "construction_complete", "unit_ready", "delivery",
             "ui_click", "ui_hover", "ui_error", "alert", "victory", "defeat",
             "ambience_wind_loop", "engine_loop", "distant_battle_a", "distant_battle_b", "distant_battle_c",
+            "machine_gun_a", "machine_gun_b", "rocket_launch_a", "rocket_launch_b", "research_complete",
         };
 
         /// <summary>True for recipes designed to loop seamlessly.</summary>
@@ -67,6 +68,11 @@ namespace Ironfront.Core.Audio
                 case "distant_battle_a": return DistantBattle(131);
                 case "distant_battle_b": return DistantBattle(132);
                 case "distant_battle_c": return DistantBattle(133);
+                case "machine_gun_a": return MachineGun(141, 3);
+                case "machine_gun_b": return MachineGun(142, 2);
+                case "rocket_launch_a": return RocketLaunch(151);
+                case "rocket_launch_b": return RocketLaunch(152);
+                case "research_complete": return Chime(new[] { 587.33f, 783.99f, 987.77f, 1174.66f, 1567.98f }, 0.09f, 1.2f, 0.75f);
                 default: throw new ArgumentException("Unknown recipe " + name);
             }
         }
@@ -233,6 +239,37 @@ namespace Ironfront.Core.Audio
                 s[i] += lp2.Run(lp.Run(n.Next(), 160f), 120f) * Env(t, 0.6f, 1.0f) * 5f;
             }
             return Fade(Normalize(s, 0.98f), 0.001f, 0.4f);
+        }
+
+        /// <summary>Short machine-gun burst: rapid cracks with a little low-end body.</summary>
+        private static float[] MachineGun(int seed, int rounds)
+        {
+            var s = new float[Len(0.09f * rounds + 0.2f)];
+            for (int r = 0; r < rounds; r++)
+            {
+                var shot = Cannon(0.18f, 210f, 0.35f, seed * 10 + r);
+                Mix(s, shot, Len(0.09f * r), 0.9f - r * 0.1f);
+            }
+            return Fade(Normalize(s, 0.85f), 0.0005f, 0.05f);
+        }
+
+        /// <summary>Rocket launch: a roaring, slowly filtered noise "whoosh" over an ignition thump.</summary>
+        private static float[] RocketLaunch(int seed)
+        {
+            var n = new Noise(seed);
+            var s = new float[Len(1.1f)];
+            var lp = new LowPass(); var hp = new HighPass();
+            double phase = 0;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = T(i);
+                float cutoff = 900f + 2600f * (float)Math.Exp(-t / 0.25f);
+                float roar = lp.Run(hp.Run(n.Next(), 120f), cutoff) * Env(t, 0.03f, 0.45f) * 2.2f;
+                phase += 2 * Math.PI * (80f + 40f * (float)Math.Exp(-t / 0.08f)) / SampleRate;
+                float thump = Sin(phase) * Env(t, 0.002f, 0.06f);
+                s[i] = Drive(roar + thump, 1.6f);
+            }
+            return Fade(Normalize(s, 0.85f), 0.001f, 0.15f);
         }
 
         // ---------------- Unit acknowledgements (radio) ----------------

@@ -112,7 +112,16 @@ namespace Ironfront.Buildings
             if (!CanProduce(unit)) throw new ArgumentException($"{name} cannot produce {unit?.DisplayName}.");
             var faction = Faction;
             if (faction == null) return EnqueueResult.InsufficientFunds;
+            if (!IsUnlocked(unit)) return EnqueueResult.Locked;
             return Queue.TryEnqueue(unit, faction.Wallet);
+        }
+
+        /// <summary>True when the owner has the structure the unit requires (or it requires none).</summary>
+        public bool IsUnlocked(UnitDefinition unit)
+        {
+            if (unit == null || unit.RequiredStructure == null) return true;
+            var faction = Faction;
+            return faction != null && faction.Structures.Has(unit.RequiredStructure.Id);
         }
 
         public bool Cancel(int index)

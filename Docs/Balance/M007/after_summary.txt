@@ -1,0 +1,20 @@
+Balance study: 10 AI-vs-AI matches, Normal vs Normal, 10x time scale
+Faction 1 wins 3, faction 2 wins 2, draws/timeouts 5
+South-west start wins 2, north-east start wins 3
+seed  11  standard  draw (Exhaustion)              527s
+seed  11  swapped   F1 won                         550s
+seed  23  standard  F1 won                         663s
+seed  23  swapped   F2 won                         671s
+seed  37  standard  F2 won                         550s
+seed  37  swapped   draw (Exhaustion)              702s
+seed  51  standard  draw (Exhaustion)              587s
+seed  51  swapped   draw (Exhaustion)              536s
+seed  73  standard  draw (Exhaustion)              547s
+seed  73  swapped   F1 won                         606s
+matches 10 mean dur 593.9
+income 19972.55 spent 21717.5 firstAttack 317.7 245 449
+produced {'harvester': 64, 'heavy_tank': 60, 'light_tank': 185, 'recon': 59, 'rocket_artillery': 34}
+built {'at_turret': 25, 'guard_tower': 40, 'power_plant': 56, 'refinery': 20, 'research_centre': 20, 'vehicle_factory': 21}
+lost {'at_turret': 8, 'harvester': 43, 'heavy_tank': 52, 'light_tank': 177, 'recon': 58, 'rocket_artillery': 30, 'guard_tower': 10, 'headquarters': 5, 'power_plant': 10, 'refinery': 5, 'vehicle_factory': 7, 'research_centre': 2}
+damage {'at_turret': 7650, 'guard_tower': 4907, 'heavy_tank': 58546, 'light_tank': 74727, 'recon': 3382, 'rocket_artillery': 43660}
+research started {'advanced_harvesting': 19, 'composite_armour': 18, 'enhanced_weapons': 1} completed {'advanced_harvesting': 19, 'composite_armour': 18, 'enhanced_weapons': 1}

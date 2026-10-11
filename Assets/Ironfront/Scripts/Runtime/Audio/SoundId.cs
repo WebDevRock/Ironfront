@@ -22,6 +22,9 @@ namespace Ironfront.Audio
         Alert,
         Victory,
         Defeat,
+        MachineGun,
+        RocketLaunch,
+        ResearchComplete,
     }
 
     /// <summary>Mixer category; each has its own volume setting.</summary>

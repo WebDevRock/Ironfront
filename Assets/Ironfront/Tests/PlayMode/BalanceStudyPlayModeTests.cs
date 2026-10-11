@@ -35,6 +35,39 @@ namespace Ironfront.Tests
         private const int Enemy = 2;
         private static readonly int[] Seeds = { 11, 23, 37, 51, 73 };
 
+        /// <summary>Per-faction statistics gathered from gameplay events during one match (Milestone 007 analysis).</summary>
+        private sealed class FactionTally
+        {
+            public int StartCredits, Spent, Income;
+            public readonly Dictionary<string, int> Produced = new Dictionary<string, int>();
+            public readonly Dictionary<string, int> Built = new Dictionary<string, int>();
+            public readonly Dictionary<string, int> Lost = new Dictionary<string, int>();
+            public readonly Dictionary<string, float> DamageBy = new Dictionary<string, float>();
+            public readonly List<string> Research = new List<string>();
+            public readonly List<string> ResearchStarted = new List<string>();
+            public float FirstAttack = -1f;
+
+            public string Json()
+            {
+                string D<T>(Dictionary<string, T> d) => "{" + string.Join(",", d.OrderBy(k => k.Key).Select(k => $"\"{k.Key}\":{System.Convert.ToSingle(k.Value):0.#}")) + "}";
+                return $"{{\"spent\":{Spent},\"income\":{Income},\"produced\":{D(Produced)},\"built\":{D(Built)},\"lost\":{D(Lost)}," +
+                       $"\"damageBy\":{D(DamageBy)},\"research\":[{string.Join(",", Research.Select(r => $"\"{r}\""))}]," +
+                       $"\"researchStarted\":[{string.Join(",", ResearchStarted.Select(r => $"\"{r}\""))}],\"firstAttack\":{FirstAttack:0}}}";
+            }
+        }
+
+        private static string KindOf(Health h)
+        {
+            if (h == null) return "unknown";
+            var b = h.GetComponent<Ironfront.Buildings.Building>();
+            if (b != null && b.Definition != null) return b.Definition.Id;
+            var u = h.GetComponent<Ironfront.Units.UnitIdentity>();
+            return u != null && u.Definition != null ? u.Definition.Id : h.name;
+        }
+
+        private static void Add<T>(Dictionary<string, T> d, string key, T v, System.Func<T, T, T> plus) =>
+            d[key] = d.TryGetValue(key, out var old) ? plus(old, v) : v;
+
         private struct Run
         {
             public int Seed;
@@ -81,14 +114,59 @@ namespace Ironfront.Tests
                 yield return null;
 
                 var flow = MatchFlowController.Current;
+                var match = MatchController.Current;
+                var tally = new Dictionary<int, FactionTally> { { Player, new FactionTally() }, { Enemy, new FactionTally() } };
+                var last = new Dictionary<int, int>();
+                foreach (int f in new[] { Player, Enemy })
+                {
+                    int faction = f;
+                    var wallet = match.GetFaction(faction).Wallet;
+                    tally[faction].StartCredits = wallet.Credits;
+                    last[faction] = wallet.Credits;
+                    wallet.Changed += balance =>
+                    {
+                        int delta = balance - last[faction];
+                        if (delta < 0) tally[faction].Spent -= delta; else tally[faction].Income += delta;
+                        last[faction] = balance;
+                    };
+                }
+                System.Action<Ironfront.Buildings.VehicleFactory, GameObject> onProduced = (fac, unit) =>
+                {
+                    if (fac != null && unit != null && tally.TryGetValue(fac.FactionId, out var t)) Add(t.Produced, KindOf(unit.GetComponent<Health>()), 1, (a, b) => a + b);
+                };
+                System.Action<Ironfront.Buildings.Building> onBuilt = b =>
+                {
+                    if (b != null && tally.TryGetValue(b.FactionId, out var t)) Add(t.Built, b.Definition.Id, 1, (a, c) => a + c);
+                };
+                System.Action<Health> onDied = h =>
+                {
+                    if (h != null && tally.TryGetValue(h.FactionId, out var t)) Add(t.Lost, KindOf(h), 1, (a, b) => a + b);
+                };
+                System.Action<Health, float, Health> onDamaged = (victim, dmg, attacker) =>
+                {
+                    if (attacker != null && victim != null && tally.TryGetValue(attacker.FactionId, out var t) && attacker.FactionId != victim.FactionId)
+                        Add(t.DamageBy, KindOf(attacker), dmg, (a, b) => a + b);
+                };
+                Ironfront.Buildings.VehicleFactory.AnyUnitProduced += onProduced;
+                BuildingPlacementController.AnyBuildingPlaced += onBuilt;
+                Health.AnyDied += onDied;
+                Health.AnyDamaged += onDamaged;
+                ResearchHook(tally);
+
                 Time.timeScale = 10f;
                 float simulated = 0f;
                 while (!flow.IsOver && simulated < 1500f)
                 {
                     simulated += Time.deltaTime;
+                    if (tally[Player].FirstAttack < 0f && playerAi.AttacksLaunched > 0) tally[Player].FirstAttack = simulated;
+                    if (tally[Enemy].FirstAttack < 0f && enemyAi.AttacksLaunched > 0) tally[Enemy].FirstAttack = simulated;
                     yield return null;
                 }
                 Time.timeScale = 1f;
+                Ironfront.Buildings.VehicleFactory.AnyUnitProduced -= onProduced;
+                BuildingPlacementController.AnyBuildingPlaced -= onBuilt;
+                Health.AnyDied -= onDied;
+                Health.AnyDamaged -= onDamaged;
 
                 var run = new Run { Seed = seed, Swapped = swapped, Seconds = simulated };
                 if (!flow.IsOver)
@@ -103,6 +181,9 @@ namespace Ironfront.Tests
                     run.Result = $"F{run.Winner} won";
                 }
                 runs.Add(run);
+                string line = $"{{\"seed\":{seed},\"swapped\":{(swapped ? "true" : "false")},\"result\":\"{run.Result}\",\"winner\":{run.Winner},\"seconds\":{simulated:0}," +
+                              $"\"f1\":{tally[Player].Json()},\"f2\":{tally[Enemy].Json()}}}";
+                File.AppendAllText(Path.Combine(Application.dataPath, "..", "Temp", "balance_runs.jsonl"), line + "\n");
                 Debug.Log($"[Balance] seed {seed} {(swapped ? "swapped (F1 north-east)" : "standard (F1 south-west)")}: " +
                           $"{run.Result} after {simulated:0}s; F1 built {playerAi.BuildingsPlaced}/produced {playerAi.UnitsProduced}/attacks {playerAi.AttacksLaunched}, " +
                           $"F2 built {enemyAi.BuildingsPlaced}/produced {enemyAi.UnitsProduced}/attacks {enemyAi.AttacksLaunched}");
@@ -125,6 +206,20 @@ namespace Ironfront.Tests
 
             Assert.AreEqual(plan.Count, n);
             Assert.IsTrue(runs.All(r => r.Result != "timeout"), "every match reached an outcome");
+        }
+
+        /// <summary>Records research started and completed per faction, with the match time.</summary>
+        private static void ResearchHook(Dictionary<int, FactionTally> tally)
+        {
+            var match = MatchController.Current;
+            float start = Time.time;
+            foreach (var kv in tally)
+            {
+                var t = kv.Value;
+                var research = match.GetFaction(kv.Key).Research;
+                research.Started += id => t.ResearchStarted.Add($"{id}@{Time.time - start:0}");
+                research.Completed += id => t.Research.Add($"{id}@{Time.time - start:0}");
+            }
         }
 
         private static string DumpState(EnemyCommander f1, EnemyCommander f2)

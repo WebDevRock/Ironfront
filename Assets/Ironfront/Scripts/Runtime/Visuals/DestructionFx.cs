@@ -37,7 +37,7 @@ namespace Ironfront.Visuals
             {
                 var size = building.Definition.FootprintSize;
                 float height = GetComponent<Collider>() is BoxCollider box ? box.size.y : 3f;
-                FxLibrary.StructureDestroyed(transform.position, size, height);
+                if (Ironfront.Vision.VisionSystem.PlayerCanSee(transform.position)) FxLibrary.StructureDestroyed(transform.position, size, height);
                 GameAudio.Play(SoundId.StructureDestroyed, transform.position);
                 return;
             }
@@ -49,6 +49,7 @@ namespace Ironfront.Visuals
         {
             var visuals = CombatFx.Visuals;
             if (!VisualFeatures.Wrecks || wreckParts.Length == 0 || visuals == null || visuals.Debris == null) return;
+            if (!Ironfront.Vision.VisionSystem.PlayerCanSee(transform.position)) return; // deaths in the fog leave no visible trace
             var wreck = new GameObject(name + "_Wreck") { layer = 2 };
             wreck.transform.SetPositionAndRotation(transform.position, transform.rotation);
             foreach (var part in wreckParts)

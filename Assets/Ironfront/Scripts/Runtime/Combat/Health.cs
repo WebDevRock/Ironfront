@@ -31,6 +31,11 @@ namespace Ironfront.Combat
         [SerializeField] private float explosionSize = 3f;
 
         private HealthModel _model;
+        private float _baseArmour;
+        private ArmourClass _armourClass = ArmourClass.Light;
+
+        /// <summary>Fog-of-war participant on the same object (set by VisionEntity; null without fog).</summary>
+        [System.NonSerialized] public Ironfront.Vision.VisionEntity Vision;
         private Collider _collider;
         private FactionMember _member;
         private bool _isStructure;
@@ -43,6 +48,8 @@ namespace Ironfront.Combat
         public float Armour => _model != null ? _model.Armour : 0f;
         public bool IsStructure => _isStructure;
         public bool IsArmed => _isArmed;
+        /// <summary>Weapon-effectiveness class (Milestone 007): structures, or the unit definition's class.</summary>
+        public ArmourClass ArmourClass => _armourClass;
         public int FactionId => _member != null ? _member.FactionId : FactionMember.Of(this);
 
         private float _boundingRadius = -1f;
@@ -85,7 +92,7 @@ namespace Ironfront.Combat
         {
             _collider = GetComponent<Collider>();
             _member = GetComponentInParent<FactionMember>();
-            _isArmed = GetComponent<CombatUnit>() != null;
+            _isArmed = GetComponent<CombatUnit>() != null || GetComponent<DefenceTurret>() != null;
 
             float max = fallbackMaxHealth, armour = fallbackArmour;
             var building = GetComponent<Building>();
@@ -93,6 +100,7 @@ namespace Ironfront.Combat
             if (building != null && building.Definition != null)
             {
                 _isStructure = true;
+                _armourClass = ArmourClass.Structure;
                 max = building.Definition.MaxHealth;
                 armour = building.Definition.Armour;
                 _displayName = building.Definition.DisplayName;
@@ -101,14 +109,30 @@ namespace Ironfront.Combat
             {
                 max = identity.Definition.MaxHealth;
                 armour = identity.Definition.Armour;
+                _armourClass = identity.Definition.ArmourClass;
                 _displayName = identity.Definition.DisplayName;
             }
 
+            _baseArmour = armour;
             _model = new HealthModel(max, armour);
             _model.Died += OnModelDied;
         }
 
         private void OnEnable() { if (!s_All.Contains(this)) s_All.Add(this); }
+
+        private void Start()
+        {
+            // Vehicles produced after an armour upgrade start with it.
+            if (_isStructure || MatchController.Current == null) return;
+            ApplyArmourBonus(MatchController.Current.GetFaction(FactionId).Research.ArmourBonus);
+        }
+
+        /// <summary>Sets armour to the definition value plus a research bonus (vehicles only).</summary>
+        public void ApplyArmourBonus(float bonus)
+        {
+            if (_model == null || _isStructure) return;
+            _model.SetArmour(_baseArmour + Mathf.Max(0f, bonus));
+        }
         private void OnDisable() => s_All.Remove(this);
 
         /// <summary>
@@ -122,6 +146,7 @@ namespace Ironfront.Combat
             if (attacker != null) LastAttackerFaction = attacker.FactionId; // set first: the killing blow fires Died inside ApplyDamage
             else if (DamageRules.AreHostile(attackerFaction, FactionId)) LastAttackerFaction = attackerFaction;
             float dealt = _model.ApplyDamage(rawDamage);
+            if (dealt > 0f && attacker != null) Ironfront.Vision.VisionSystem.RevealAttacker(attacker, FactionId);
             if (dealt > 0f && IsAlive)
             {
                 Damaged?.Invoke(dealt);

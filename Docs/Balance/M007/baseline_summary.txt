@@ -1,0 +1,13 @@
+Balance study: 10 AI-vs-AI matches, Normal vs Normal, 10x time scale
+Faction 1 wins 5, faction 2 wins 5, draws/timeouts 0
+South-west start wins 2, north-east start wins 8
+seed  11  standard  F2 won                         559s
+seed  11  swapped   F1 won                         366s
+seed  23  standard  F2 won                         372s
+seed  23  swapped   F1 won                         272s
+seed  37  standard  F1 won                         365s
+seed  37  swapped   F2 won                         354s
+seed  51  standard  F2 won                         389s
+seed  51  swapped   F1 won                         364s
+seed  73  standard  F2 won                         379s
+seed  73  swapped   F1 won                         385s

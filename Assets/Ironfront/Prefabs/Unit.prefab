@@ -196,6 +196,7 @@ GameObject:
   - component: {fileID: 707174302791214117}
   - component: {fileID: 4265297508548879239}
   - component: {fileID: 3471733176491297799}
+  - component: {fileID: 3006774298011965986}
   - component: {fileID: 9012028076288504771}
   - component: {fileID: 8540945444919061083}
   m_Layer: 9
@@ -363,6 +364,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Units.SelectableUnit
   selectionIndicator: {fileID: 2498359196931126256}
+--- !u!114 &3006774298011965986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2995612007430683257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56826c37b0f391147a6a9a705b9ff08e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Vision.VisionEntity
+  sightOverride: 0
 --- !u!114 &9012028076288504771
 MonoBehaviour:
   m_ObjectHideFlags: 0

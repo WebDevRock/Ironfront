@@ -22,3 +22,7 @@ MonoBehaviour:
   moveSpeed: 8
   weapon: {fileID: 11400000, guid: 3903389b7999cf148b9589f90ea7af7c, type: 2}
   icon: {fileID: 21300000, guid: dc560c7359dff9043bd7f1a40fd3db32, type: 3}
+  description: Fast, inexpensive tank. Good all-rounder and the counter to artillery.
+  sightRange: 15
+  armourClass: 0
+  requiredStructure: {fileID: 0}

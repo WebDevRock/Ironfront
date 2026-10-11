@@ -876,6 +876,7 @@ GameObject:
   - component: {fileID: 1462228777589207311}
   - component: {fileID: 4843488864611904904}
   - component: {fileID: 2577053746928685892}
+  - component: {fileID: 2553665675775903773}
   - component: {fileID: 6896458013565812373}
   - component: {fileID: 415922331195136231}
   - component: {fileID: 7199667373765003626}
@@ -884,6 +885,7 @@ GameObject:
   - component: {fileID: 1328427622047852968}
   - component: {fileID: 8099184999332916065}
   - component: {fileID: 417159651837690293}
+  - component: {fileID: 5262010181503784899}
   - component: {fileID: 8717679392486968724}
   m_Layer: 9
   m_Name: HeavyTank
@@ -992,6 +994,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Units.SelectableUnit
   selectionIndicator: {fileID: 8125368109783075687}
+--- !u!114 &2553665675775903773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7520948368627671396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56826c37b0f391147a6a9a705b9ff08e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Vision.VisionEntity
+  sightOverride: 0
 --- !u!114 &6896458013565812373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1134,6 +1149,18 @@ MonoBehaviour:
   dustSize: 1
   wheels: []
   wheelRadius: 0.3
+--- !u!114 &5262010181503784899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7520948368627671396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6f8d6d9de09f1d49ba8b6c274803a04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Visuals.RangeIndicator
 --- !u!114 &8717679392486968724
 MonoBehaviour:
   m_ObjectHideFlags: 0

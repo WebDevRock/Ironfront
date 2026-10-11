@@ -77,6 +77,28 @@ namespace Ironfront.Tests
         }
 
         [Test]
+        public void SinkLost_WhileReturning_HeadsForAnotherRefinery()
+        {
+            var body = new Body { TravelTicks = 1000 };
+            body.Deposits.Add(new Deposit { Remaining = 10000 });
+            var m = NewMachine();
+            m.StartHarvesting(body);
+            body.TicksSinceMove = 1000;
+            for (int i = 0; i < 10; i++) m.Tick(0.5f, body);
+            Assert.AreEqual(HarvesterState.MovingToSink, m.State);
+            var first = body.Refinery;
+            body.Refinery = new Refinery(); // the first one was destroyed
+            m.SinkLost(body);
+            Assert.AreSame(body.Refinery, m.Sink);
+            Assert.AreNotSame(first, m.Sink);
+            Assert.AreEqual(HarvesterState.MovingToSink, m.State);
+            body.Refinery = null;
+            m.SinkLost(body);
+            Assert.AreEqual(HarvesterState.NoSinkAvailable, m.State, "no refinery left: wait, keeping the cargo");
+            Assert.AreEqual(100, m.Cargo);
+        }
+
+        [Test]
         public void Cargo_NeverExceedsCapacity()
         {
             var body = new Body { TravelTicks = 1000 }; // never reaches the refinery

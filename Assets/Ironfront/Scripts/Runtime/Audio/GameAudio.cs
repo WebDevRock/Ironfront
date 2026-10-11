@@ -132,6 +132,7 @@ namespace Ironfront.Audio
             float pan = 0f;
             if (hasPosition && e.positional)
             {
+                if (!Ironfront.Vision.VisionSystem.PlayerCanSee(position)) return; // nothing heard from inside the fog
                 if (!Attenuate(position, out float att, out pan)) return;
                 gain *= att;
             }

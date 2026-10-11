@@ -45,6 +45,14 @@ namespace Ironfront.AI
         private CostTable _cost;
         private BuildingDefinition _refineryDef, _powerPlantDef, _factoryDef;
         private UnitDefinition _harvesterDef, _lightDef, _heavyDef;
+        // Milestone 007 content (optional: null in scenes without it).
+        private BuildingDefinition _researchDef, _towerDef, _atDef;
+        private UnitDefinition _reconDef, _artilleryDef;
+        private float _lastThreatTime = -999f;
+        private readonly Dictionary<CombatUnit, Vector3> _scoutTargets = new Dictionary<CombatUnit, Vector3>();
+        private readonly HashSet<CombatUnit> _hunters = new HashSet<CombatUnit>();
+        public int ResearchStarted { get; private set; }
+        public int ScoutMissions { get; private set; }
         private AiPerception _perception;
         private float _timer;
         private System.Random _rng;
@@ -184,13 +192,16 @@ namespace Ironfront.AI
             RallyPoint = ComputeRallyPoint(hq.transform.position);
             SetupFactories();
 
-            var army = OwnArmy();
+            var all = OwnArmy();
+            var scouts = all.Where(IsRecon).ToList();
+            var army = all.Where(u => !IsRecon(u)).ToList();
             foreach (var dead in _unitKeys.Keys.Where(k => k == null).ToList()) _unitKeys.Remove(dead);
             _attackers.RemoveWhere(u => u == null || !u.GetComponent<Health>().IsAlive);
 
             var basePoints = OwnStructures().Select(b => b.transform.position).ToList();
             var threats = _perception.ThreatsNear(basePoints, difficulty.DefendRadius);
-            var snapshot = BuildSnapshot(army, threats);
+            if (threats.Count > 0) _lastThreatTime = Time.time;
+            var snapshot = BuildSnapshot(army, threats, scouts);
             LastSnapshot = snapshot;
 
             var next = StrategyRules.Next(State, TimeInState, snapshot, _cfg);
@@ -201,6 +212,8 @@ namespace Ironfront.AI
             Execute(action);
 
             ManageArmy(army, threats);
+            ManageScouts(scouts);
+            CounterArtillery(army, basePoints);
         }
 
         private void EnterState(StrategicState next, List<CombatUnit> army)
@@ -227,7 +240,7 @@ namespace Ironfront.AI
 
         // ---------- Snapshot ----------
 
-        private CommanderSnapshot BuildSnapshot(List<CombatUnit> army, List<Health> threats)
+        private CommanderSnapshot BuildSnapshot(List<CombatUnit> army, List<Health> threats, List<CombatUnit> scouts)
         {
             var faction = MatchController.Current.GetFaction(factionId);
             var s = new CommanderSnapshot
@@ -238,6 +251,12 @@ namespace Ironfront.AI
                 HasHeadquarters = Headquarters() != null,
                 KnownEnemyLight = _perception.KnownEnemyLight,
                 KnownEnemyHeavy = _perception.KnownEnemyHeavy,
+                KnownEnemyArtillery = _perception.KnownEnemyArtillery,
+                KnownEnemyDefences = _perception.KnownEnemyDefences,
+                KnownEnemyStructures = _perception.Structures.Count,
+                RecentlyAttacked = Time.time - _lastThreatTime < 60f,
+                Recon = scouts.Count,
+                ResearchBusy = faction.Research.Current != null,
             };
 
             var refineries = new List<Vector3>();
@@ -248,6 +267,9 @@ namespace Ironfront.AI
                     case "refinery": s.Refineries++; refineries.Add(b.FrontPoint); break;
                     case "power_plant": s.PowerPlants++; break;
                     case "vehicle_factory": s.Factories++; break;
+                    case "research_centre": s.ResearchCentres++; break;
+                    case "guard_tower": s.GuardTowers++; break;
+                    case "at_turret": s.AtTurrets++; break;
                 }
             }
 
@@ -256,8 +278,9 @@ namespace Ironfront.AI
 
             foreach (var u in army)
             {
-                bool heavy = IsHeavy(u);
-                if (heavy) s.HeavyTanks++; else s.LightTanks++;
+                if (IsArtillery(u)) s.Artillery++;
+                else if (IsHeavy(u)) s.HeavyTanks++;
+                else s.LightTanks++;
                 s.ArmyStrength += Strength(u);
             }
 
@@ -269,14 +292,14 @@ namespace Ironfront.AI
                     if (item.Id == _harvesterDef.Id) s.QueuedHarvesters++;
                     else if (item.Id == _heavyDef.Id) s.QueuedHeavy++;
                     else if (item.Id == _lightDef.Id) s.QueuedLight++;
+                    else if (_reconDef != null && item.Id == _reconDef.Id) s.QueuedRecon++;
+                    else if (_artilleryDef != null && item.Id == _artilleryDef.Id) s.QueuedArtillery++;
                 }
             }
 
             foreach (var t in threats)
             {
-                var identity = t.GetComponent<UnitIdentity>();
-                bool heavy = identity != null && identity.Definition != null && identity.Definition.Id == _heavyDef.Id;
-                s.ThreatStrength += ArmyMath.Strength(heavy, t.Model.Fraction);
+                s.ThreatStrength += ArmyMath.Strength(UnitValue(t.GetComponent<UnitIdentity>()), t.Model.Fraction);
             }
 
             foreach (var d in OreDeposit.All)
@@ -290,6 +313,7 @@ namespace Ironfront.AI
             s.AttackersAlive = _attackers.Count;
             s.AttackStrength = _attackers.Sum(Strength);
             s.AttackStartStrength = _attackStartStrength;
+            ChooseResearch(ref s, faction); // after the counts it depends on (harvesters)
             return s;
         }
 
@@ -311,14 +335,19 @@ namespace Ironfront.AI
 
             if (_cooldownUntil.TryGetValue(action.Type, out float until) && Time.time < until) return;
 
-            if (action.IsConstruction) Construct(action);
+            if (action.Type == AiActionType.StartResearch) StartResearch(action);
+            else if (action.IsConstruction) Construct(action);
             else if (action.IsProduction) Produce(action);
         }
 
         private void Construct(AiAction action)
         {
             var def = action.Type == AiActionType.BuildRefinery ? _refineryDef
-                : action.Type == AiActionType.BuildPowerPlant ? _powerPlantDef : _factoryDef;
+                : action.Type == AiActionType.BuildPowerPlant ? _powerPlantDef
+                : action.Type == AiActionType.BuildResearchCentre ? _researchDef
+                : action.Type == AiActionType.BuildGuardTower ? _towerDef
+                : action.Type == AiActionType.BuildAtTurret ? _atDef : _factoryDef;
+            if (def == null) return;
 
             if (!FindSite(def, action.Type, out var site))
             {
@@ -343,7 +372,10 @@ namespace Ironfront.AI
         private void Produce(AiAction action)
         {
             var def = action.Type == AiActionType.ProduceHarvester ? _harvesterDef
-                : action.Type == AiActionType.ProduceHeavyTank ? _heavyDef : _lightDef;
+                : action.Type == AiActionType.ProduceHeavyTank ? _heavyDef
+                : action.Type == AiActionType.ProduceRecon ? _reconDef
+                : action.Type == AiActionType.ProduceArtillery ? _artilleryDef : _lightDef;
+            if (def == null) return;
 
             VehicleFactory best = null;
             foreach (var f in VehicleFactory.All)
@@ -384,6 +416,14 @@ namespace Ironfront.AI
                 case AiActionType.BuildFactory:
                     candidates = SiteSearch.Ranked(home, home + enemyDir * 10f, 14f, 26f, 2f);
                     break;
+                case AiActionType.BuildResearchCentre:
+                    candidates = SiteSearch.Ranked(home, home - enemyDir * 8f, 10f, 24f, 2f);
+                    break;
+                case AiActionType.BuildGuardTower:
+                case AiActionType.BuildAtTurret:
+                    // On the approach from the enemy, a little in front of the base.
+                    candidates = SiteSearch.Ranked(home, home + enemyDir * 18f, 12f, 26f, 2f);
+                    break;
                 default:
                     var deposit = DepositForNewRefinery(home);
                     if (deposit == null) return false;
@@ -403,6 +443,45 @@ namespace Ironfront.AI
                 }
             }
             return false;
+        }
+
+        private void StartResearch(AiAction action)
+        {
+            var topic = MatchController.Current.Setup.FindResearch(action.Topic);
+            if (topic == null) return;
+            var result = ResearchCentre.TryStart(factionId, topic);
+            if (result == Ironfront.Core.Research.ResearchCheck.Ok)
+            {
+                ResearchStarted++;
+                _lastLoggedAction = null;
+                Record($"Research {topic.DisplayName} started");
+            }
+            else
+            {
+                Record($"Research {topic.DisplayName} refused: {result}");
+                _cooldownUntil[AiActionType.StartResearch] = Time.time + 10f;
+            }
+        }
+
+        /// <summary>Picks the next research topic with the same checks the player's buttons use.</summary>
+        private void ChooseResearch(ref CommanderSnapshot s, Ironfront.Core.Economy.FactionState faction)
+        {
+            var setup = MatchController.Current.Setup;
+            if (setup.Research.Count == 0) return;
+            var options = new List<ExpansionRules.TopicOption>();
+            foreach (var r in setup.Research)
+            {
+                if (r == null) continue;
+                bool prereq = true;
+                foreach (var need in r.RequiredResearch) if (!faction.Research.IsResearched(need)) prereq = false;
+                options.Add(new ExpansionRules.TopicOption
+                {
+                    Id = r.Id, Cost = r.Cost, Done = faction.Research.IsResearched(r.Id) || faction.Research.IsInProgress(r.Id), PrerequisitesMet = prereq,
+                });
+            }
+            s.WantedResearch = ExpansionRules.ChooseResearch(s, options);
+            var wanted = s.WantedResearch != null ? setup.FindResearch(s.WantedResearch) : null;
+            s.WantedResearchCost = wanted != null ? wanted.Cost : 0;
         }
 
         private OreDeposit DepositForNewRefinery(Vector3 home)
@@ -491,7 +570,8 @@ namespace Ironfront.AI
         {
             if (_attackers.Count == 0) return;
 
-            bool objectiveGone = _objectiveTarget != null && !_objectiveTarget.IsAlive;
+            // Only what the commander has seen: an objective is "gone" once it is no longer remembered.
+            bool objectiveGone = _objectiveTarget != null && !_perception.Remembers(_objectiveTarget);
             if (_objective == null || objectiveGone)
             {
                 if (objectiveGone) Record("Objective destroyed");
@@ -524,8 +604,10 @@ namespace Ironfront.AI
                     }
 
                     // Finished its leg: attack the objective structure if visible, otherwise continue to it.
-                    if (_objectiveTarget != null && _objectiveTarget.IsAlive && _perception.Visible.Contains(_objectiveTarget))
+                    if (_objectiveTarget != null && _perception.Visible.Contains(_objectiveTarget))
                         Order(u, c => c.OrderAttack(_objectiveTarget));
+                    else if (IsArtillery(u) && (pos - objective).sqrMagnitude > 24f * 24f)
+                        Order(u, c => c.OrderAttackMove(StandOff(objective, pos))); // artillery stays at range
                     else if ((pos - objective).sqrMagnitude > 10f * 10f)
                         Order(u, c => c.OrderAttackMove(objective));
                     else
@@ -567,7 +649,7 @@ namespace Ironfront.AI
             float bestScore = float.MinValue;
             foreach (var s in _perception.Structures)
             {
-                if (!s.Alive || s.Health == exclude) continue;
+                if (s.Health == exclude) continue;
                 float score = TargetPriorities.Score(s.DefinitionId, Vector3.Distance(from, s.Position));
                 if (score > bestScore) { bestScore = score; best = s; }
             }
@@ -604,6 +686,8 @@ namespace Ironfront.AI
             for (int i = 0; i < list.Count; i++)
             {
                 Vector3 slot = slots[assignment[i]];
+                // Artillery attack-moves to a stand-off point behind the main group.
+                if (IsArtillery(list[i])) slot = StandOff(_objective.Value, list[i].transform.position);
                 Order(list[i], c => c.OrderAttackMove(slot));
             }
         }
@@ -664,11 +748,127 @@ namespace Ironfront.AI
             return identity != null && identity.Definition == _heavyDef;
         }
 
+        private bool IsRecon(CombatUnit u)
+        {
+            var identity = u != null ? u.GetComponent<UnitIdentity>() : null;
+            return _reconDef != null && identity != null && identity.Definition == _reconDef;
+        }
+
+        private bool IsArtillery(CombatUnit u)
+        {
+            var identity = u != null ? u.GetComponent<UnitIdentity>() : null;
+            return _artilleryDef != null && identity != null && identity.Definition == _artilleryDef;
+        }
+
+        private static float UnitValue(UnitIdentity identity)
+        {
+            string id = identity != null && identity.Definition != null ? identity.Definition.Id : "light_tank";
+            switch (id)
+            {
+                case "heavy_tank": return ArmyMath.HeavyValue;
+                case "rocket_artillery": return ArmyMath.ArtilleryValue;
+                case "recon": return ArmyMath.ReconValue;
+                default: return ArmyMath.LightValue;
+            }
+        }
+
         private float Strength(CombatUnit u)
         {
             if (u == null) return 0f;
             var h = u.GetComponent<Health>();
-            return h == null ? 0f : ArmyMath.Strength(IsHeavy(u), h.Model.Fraction);
+            return h == null ? 0f : ArmyMath.Strength(UnitValue(u.GetComponent<UnitIdentity>()), h.Model.Fraction);
+        }
+
+        /// <summary>A point 22 m short of the objective on the approach line (inside rocket range, outside defences).</summary>
+        private static Vector3 StandOff(Vector3 objective, Vector3 from)
+        {
+            Vector3 d = from - objective;
+            d.y = 0f;
+            if (d.sqrMagnitude < 1e-3f) d = Vector3.back;
+            Vector3 p = objective + d.normalized * 22f;
+            return NavMesh.SamplePosition(p, out var hit, 6f, NavMesh.AllAreas) ? hit.position : p;
+        }
+
+        // ---------- Milestone 007: scouting and counter-artillery ----------
+
+        /// <summary>
+        /// Recon units explore the nearest unexplored area (biased towards the enemy side) using only this
+        /// faction's own exploration record; once the map is explored they watch the approach to the base.
+        /// Damaged scouts withdraw.
+        /// </summary>
+        private void ManageScouts(List<CombatUnit> scouts)
+        {
+            var vision = Ironfront.Vision.VisionSystem.Current;
+            foreach (var key in _scoutTargets.Keys.Where(k => k == null).ToList()) _scoutTargets.Remove(key);
+            // End game: no ore left anywhere, so information no longer pays; scouts join the final attack
+            // (otherwise an idle scout at home keeps a spent faction "able to act" and the match never ends).
+            if (!LastSnapshot.OreAvailable)
+            {
+                foreach (var u in scouts)
+                {
+                    if (u.Machine.Order == CombatOrderType.AttackMove || u.Machine.Order == CombatOrderType.Attack) continue;
+                    Vector3 goal = _objective ?? EnemyDirectionTarget(u.transform.position);
+                    _scoutTargets.Remove(u);
+                    Order(u, c => c.OrderAttackMove(goal));
+                    Record($"Scout {u.name} joins the final attack");
+                }
+                return;
+            }
+            foreach (var u in scouts)
+            {
+                var h = u.GetComponent<Health>();
+                if (h.Model.Fraction < 0.4f)
+                {
+                    if (u.Machine.Order != CombatOrderType.Move) Order(u, c => c.OrderMove(RallyPoint));
+                    _scoutTargets.Remove(u);
+                    continue;
+                }
+                bool arrived = !_scoutTargets.TryGetValue(u, out var target) || (u.transform.position - target).sqrMagnitude < 6f * 6f
+                               || u.Machine.Order == CombatOrderType.Idle;
+                if (!arrived) continue;
+                Vector3 interest = EnemyDirectionTarget(u.transform.position);
+                Vector3 next;
+                if (vision != null && vision.FogEnabled && ScoutPlanner.NextWaypoint(vision.Grid, factionId, u.transform.position.x, u.transform.position.z,
+                        interest.x, interest.z, 12f, 0.35f, out float x, out float z))
+                    next = new Vector3(x, 0f, z);
+                else
+                    next = Vector3.Lerp(RallyPoint, interest, 0.45f); // explored: keep watch on the approach
+                if (NavMesh.SamplePosition(next, out var hit, 8f, NavMesh.AllAreas)) next = hit.position;
+                _scoutTargets[u] = next;
+                ScoutMissions++;
+                Order(u, c => c.OrderMove(next));
+                Record($"Scout {u.name} -> ({next.x:0},{next.z:0})");
+            }
+        }
+
+        /// <summary>
+        /// Enemy artillery shelling the base (visible: attackers reveal themselves when they fire) is hunted by
+        /// up to three fast units, since artillery cannot fire at close targets.
+        /// </summary>
+        private void CounterArtillery(List<CombatUnit> army, List<Vector3> basePoints)
+        {
+            _hunters.RemoveWhere(u => u == null || u.Machine == null || u.Machine.Order != CombatOrderType.Attack);
+            Health target = null;
+            float best = float.MaxValue;
+            foreach (var h in _perception.Visible)
+            {
+                var identity = h.GetComponent<UnitIdentity>();
+                if (identity == null || identity.Definition == null || identity.Definition.Id != "rocket_artillery") continue;
+                foreach (var p in basePoints)
+                {
+                    float d = (h.transform.position - p).sqrMagnitude;
+                    if (d < (difficulty.DefendRadius + 16f) * (difficulty.DefendRadius + 16f) && d < best) { best = d; target = h; }
+                }
+            }
+            if (target == null) return;
+            var fast = army.Where(u => !IsArtillery(u) && !IsHeavy(u) && !_hunters.Contains(u) && !_attackers.Contains(u))
+                .OrderBy(u => (u.transform.position - target.transform.position).sqrMagnitude).Take(Mathf.Max(0, 3 - _hunters.Count)).ToList();
+            foreach (var u in fast)
+            {
+                _hunters.Add(u);
+                Order(u, c => c.OrderAttack(target));
+            }
+            if (fast.Count > 0) Record($"Counter-artillery: {fast.Count} units hunt {target.DisplayName}");
         }
 
         private FactionStartLocation HostileStart(Vector3 from)
@@ -738,6 +938,13 @@ namespace Ironfront.AI
                 return false;
             }
 
+            var setup2 = MatchController.Current.Setup;
+            _researchDef = setup2.ConstructionOptions.FirstOrDefault(d => d != null && d.Id == "research_centre");
+            _towerDef = setup2.ConstructionOptions.FirstOrDefault(d => d != null && d.Id == "guard_tower");
+            _atDef = setup2.ConstructionOptions.FirstOrDefault(d => d != null && d.Id == "at_turret");
+            _reconDef = _factoryDef.ProducibleUnits.FirstOrDefault(u => u != null && u.Id == "recon");
+            _artilleryDef = _factoryDef.ProducibleUnits.FirstOrDefault(u => u != null && u.Id == "rocket_artillery");
+
             _cost = new CostTable
             {
                 Refinery = _refineryDef.Cost,
@@ -749,6 +956,11 @@ namespace Ironfront.AI
                 RefineryDrain = _refineryDef.PowerDrain,
                 FactoryDrain = _factoryDef.PowerDrain,
                 PowerPlantOutput = _powerPlantDef.PowerOutput,
+                Recon = _reconDef != null ? _reconDef.Cost : 0,
+                Artillery = _artilleryDef != null ? _artilleryDef.Cost : 0,
+                ResearchCentre = _researchDef != null ? _researchDef.Cost : 0,
+                GuardTower = _towerDef != null ? _towerDef.Cost : 0,
+                AtTurret = _atDef != null ? _atDef.Cost : 0,
             };
             return true;
         }

@@ -21,3 +21,12 @@ MonoBehaviour:
   requiresLineOfSight: 1
   allowFriendlyFire: 0
   projectileSize: 0.25
+  minRange: 0
+  splashRadius: 0
+  salvo: 1
+  ballistic: 0
+  effectiveness:
+    VsLight: 1
+    VsHeavy: 1
+    VsStructure: 1
+  role: All-round cannon

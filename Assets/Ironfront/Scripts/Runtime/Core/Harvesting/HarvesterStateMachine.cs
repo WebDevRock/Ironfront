@@ -60,6 +60,8 @@ namespace Ironfront.Core.Harvesting
         public HarvesterState State { get; private set; } = HarvesterState.Idle;
         public int Cargo { get; private set; }
         public int Capacity => _capacity;
+        /// <summary>Speeds up mining and unloading (research upgrades); 1 = definition rates.</summary>
+        public float RateMultiplier { get; set; } = 1f;
         public IOreSource Source { get; private set; }
         public IOreSink Sink { get; private set; }
 
@@ -137,7 +139,7 @@ namespace Ironfront.Core.Harvesting
                 return;
             }
 
-            _accumulator += _harvestRate * deltaTime;
+            _accumulator += _harvestRate * RateMultiplier * deltaTime;
             int whole = (int)_accumulator;
             if (whole > 0)
             {
@@ -158,7 +160,7 @@ namespace Ironfront.Core.Harvesting
                 return;
             }
 
-            _accumulator += _unloadRate * deltaTime;
+            _accumulator += _unloadRate * RateMultiplier * deltaTime;
             int whole = Math.Min((int)_accumulator, Cargo);
             if (whole > 0)
             {
@@ -196,6 +198,17 @@ namespace Ironfront.Core.Harvesting
 
             body.MoveTo(Source);
             SetState(HarvesterState.MovingToSource);
+        }
+
+        /// <summary>
+        /// The current refinery was destroyed (the runtime detects this; a destroyed engine object does not
+        /// compare to null here). Forgets it and, if heading to or unloading at it, looks for another.
+        /// </summary>
+        public void SinkLost(IHarvesterBody body)
+        {
+            if (Sink == null) return;
+            Sink = null;
+            if (State == HarvesterState.MovingToSink || State == HarvesterState.Unloading) GoToSink(body);
         }
 
         private void GoToSink(IHarvesterBody body)

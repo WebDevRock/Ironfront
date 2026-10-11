@@ -11,6 +11,11 @@ namespace Ironfront.AI
     /// What a commander knows about its opponents: enemies currently within vision range of its own units and
     /// buildings, plus remembered structures (until seen to be gone) and recently seen units.
     /// It never reads enemy positions outside vision.
+    ///
+    /// Milestone 007: with fog of war the commander sees exactly what its faction sees in
+    /// <see cref="Ironfront.Vision.VisionSystem"/> (the same rules as the player, including per-unit sight
+    /// ranges and attackers revealing themselves). Remembered structures stay "known" until the commander sees
+    /// the spot again, so it cannot learn of a loss it did not witness.
     /// </summary>
     public sealed class AiPerception
     {
@@ -27,12 +32,32 @@ namespace Ironfront.AI
         private readonly float _vision;
         private readonly float _memory;
         private readonly List<Vector3> _eyes = new List<Vector3>();
-        private readonly Dictionary<Health, (float lastSeen, bool heavy)> _units = new Dictionary<Health, (float, bool)>();
+        private readonly Dictionary<Health, (float lastSeen, string kind)> _units = new Dictionary<Health, (float, string)>();
 
         public List<Health> Visible { get; } = new List<Health>();
         public List<KnownStructure> Structures { get; } = new List<KnownStructure>();
         public int KnownEnemyLight { get; private set; }
         public int KnownEnemyHeavy { get; private set; }
+        public int KnownEnemyArtillery { get; private set; }
+        /// <summary>Known (remembered) enemy defensive structures.</summary>
+        public int KnownEnemyDefences
+        {
+            get
+            {
+                int n = 0;
+                foreach (var s in Structures) if (s.DefinitionId == "guard_tower" || s.DefinitionId == "at_turret") n++;
+                return n;
+            }
+        }
+
+        /// <summary>True while the structure is still in the commander's memory (seen, and not yet seen gone).</summary>
+        public bool Remembers(Health structure)
+        {
+            foreach (var s in Structures) if (s.Health == structure) return true;
+            return false;
+        }
+
+        private static bool FogActive => Ironfront.Vision.VisionSystem.Current != null && Ironfront.Vision.VisionSystem.Current.FogEnabled;
 
         public AiPerception(int faction, float visionRange, float memorySeconds)
         {
@@ -52,7 +77,7 @@ namespace Ironfront.AI
             foreach (var h in Health.All)
             {
                 if (!h.IsAlive || !DamageRules.AreHostile(_faction, h.FactionId)) continue;
-                if (!Seen(h.transform.position, vision2)) continue;
+                if (FogActive ? !Ironfront.Vision.VisionSystem.CanSee(_faction, h) : !Seen(h.transform.position, vision2)) continue;
                 Visible.Add(h);
 
                 var building = h.GetComponent<Building>();
@@ -69,20 +94,25 @@ namespace Ironfront.AI
                 else if (h.IsArmed)
                 {
                     var identity = h.GetComponent<UnitIdentity>();
-                    bool heavy = identity != null && identity.Definition != null && identity.Definition.Id == "heavy_tank";
-                    _units[h] = (time, heavy);
+                    _units[h] = (time, identity != null && identity.Definition != null ? identity.Definition.Id : "light_tank");
                 }
             }
 
             // Forget structures that are gone, but only once the spot is in view again.
-            Structures.RemoveAll(s => !s.Alive && Seen(s.Position, vision2));
+            Structures.RemoveAll(s => !s.Alive && (FogActive ? Ironfront.Vision.VisionSystem.CanSeePoint(_faction, s.Position) : Seen(s.Position, vision2)));
 
-            KnownEnemyLight = KnownEnemyHeavy = 0;
+            KnownEnemyLight = KnownEnemyHeavy = KnownEnemyArtillery = 0;
             var stale = new List<Health>();
             foreach (var kv in _units)
             {
                 if (kv.Key == null || !kv.Key.IsAlive || time - kv.Value.lastSeen > _memory) { stale.Add(kv.Key); continue; }
-                if (kv.Value.heavy) KnownEnemyHeavy++; else KnownEnemyLight++;
+                switch (kv.Value.kind)
+                {
+                    case "heavy_tank": KnownEnemyHeavy++; break;
+                    case "rocket_artillery": KnownEnemyArtillery++; break;
+                    case "recon": break; // scouts are not an army
+                    default: KnownEnemyLight++; break;
+                }
             }
             foreach (var h in stale) _units.Remove(h);
         }

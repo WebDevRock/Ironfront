@@ -66,6 +66,13 @@ namespace Ironfront.Economy
             UpdateCargoVisual();
         }
 
+        private void LateUpdate()
+        {
+            // Research (Advanced Harvesting) speeds up mining and unloading.
+            if (Machine != null && MatchController.Current != null)
+                Machine.RateMultiplier = MatchController.Current.GetFaction(FactionMember.Of(this)).Research.HarvestMultiplier;
+        }
+
         private void Start()
         {
             if (harvestOnStart) Machine.StartHarvesting(this);
@@ -73,6 +80,7 @@ namespace Ironfront.Economy
 
         private void Update()
         {
+            if (Machine.Sink is Refinery refinery && refinery == null) Machine.SinkLost(this); // refinery destroyed
             Machine.Tick(Time.deltaTime, this);
             UpdateCargoVisual();
         }

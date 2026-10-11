@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1a86bace8c017e409e3558254c23dd8, type: 3}
+  m_Name: RocketSalvo
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.WeaponDefinition
+  displayName: Rocket Salvo
+  damage: 120
+  range: 28
+  acquisitionRange: 28
+  cooldown: 6
+  projectileSpeed: 20
+  requiresLineOfSight: 0
+  allowFriendlyFire: 0
+  projectileSize: 0.3
+  minRange: 9
+  splashRadius: 3
+  salvo: 3
+  ballistic: 1
+  effectiveness:
+    VsLight: 0.7
+    VsHeavy: 1
+    VsStructure: 2
+  role: Long range, splash; devastating vs structures. Cannot fire closer than 9 m.

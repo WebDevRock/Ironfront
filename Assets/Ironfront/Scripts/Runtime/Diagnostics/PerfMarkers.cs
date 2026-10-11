@@ -17,6 +17,7 @@ namespace Ironfront.Diagnostics
         public const string HudName = "Ironfront.UI.Hud";
         public const string CommanderName = "Ironfront.AI.Decide";
         public const string PathRequestName = "Ironfront.Nav.PathRequest";
+        public const string VisionName = "Ironfront.Vision.Tick";
 
         public static readonly ProfilerMarker CombatTick = new ProfilerMarker(ProfilerCategory.Scripts, CombatTickName);
         public static readonly ProfilerMarker FindTarget = new ProfilerMarker(ProfilerCategory.Scripts, FindTargetName);
@@ -27,11 +28,12 @@ namespace Ironfront.Diagnostics
         public static readonly ProfilerMarker Hud = new ProfilerMarker(ProfilerCategory.Scripts, HudName);
         public static readonly ProfilerMarker Commander = new ProfilerMarker(ProfilerCategory.Scripts, CommanderName);
         public static readonly ProfilerMarker PathRequest = new ProfilerMarker(ProfilerCategory.Scripts, PathRequestName);
+        public static readonly ProfilerMarker Vision = new ProfilerMarker(ProfilerCategory.Scripts, VisionName);
 
         public static readonly string[] All =
         {
             CombatTickName, FindTargetName, LineOfSightName, ProjectilesName, FxSpawnName, HealthBarsName, HudName,
-            CommanderName, PathRequestName,
+            CommanderName, PathRequestName, VisionName,
         };
     }
 }

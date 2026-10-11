@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9d6954ee05301e42ac988000bb301a1, type: 3}
+  m_Name: AdvancedHarvesting
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.ResearchDefinition
+  id: advanced_harvesting
+  displayName: Advanced Harvesting
+  description: Harvesters mine and unload 40% faster.
+  cost: 800
+  researchTime: 35
+  effect: 3
+  value: 0.4
+  requires: []
+  icon: {fileID: 0}

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb45c7de50a198f4a93840797192cb50, type: 3}
+  m_Name: GuardTower
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.BuildingDefinition
+  id: guard_tower
+  displayName: Guard Tower
+  cost: 400
+  footprintSize: {x: 3, y: 3}
+  apronDepth: 0
+  powerOutput: 0
+  powerDrain: 0
+  prerequisites:
+  - {fileID: 11400000, guid: 58406427a7df3e54185a1c26a64fb60c, type: 2}
+  constructible: 1
+  prefab: {fileID: 5493277318515781278, guid: ac06d2afd8b57a64da4a778af1e960c8, type: 3}
+  producibleUnits: []
+  maxHealth: 800
+  armour: 0.25
+  icon: {fileID: 21300000, guid: d783ed7b76dea74408820eb0dff17e17, type: 3}
+  description: Cheap automated machine-gun tower (12 m). Stops scouts and light raids; weak against heavy tanks. Needs no power.
+  sightRange: 16
+  weapon: {fileID: 11400000, guid: d372ed51bd64a62428f905f8998041f2, type: 2}
+  needsPower: 0

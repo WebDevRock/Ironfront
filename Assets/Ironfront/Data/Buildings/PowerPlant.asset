@@ -27,3 +27,7 @@ MonoBehaviour:
   maxHealth: 800
   armour: 0.2
   icon: {fileID: 21300000, guid: 4daadfada7a78664181bb0147d1bf4c5, type: 3}
+  description: Generates 50 power. Low power halves production and research and shuts down anti-armour turrets.
+  sightRange: 9
+  weapon: {fileID: 0}
+  needsPower: 0

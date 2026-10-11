@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dde82e58f08d6b0439864dbe6c7b8db3, type: 3}
+  m_Name: Recon
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.UnitDefinition
+  id: recon
+  displayName: Recon Vehicle
+  cost: 450
+  buildTime: 5
+  prefab: {fileID: 1432930730626065014, guid: b9b1b47ac6031274abbebc14e1bad7e1, type: 3}
+  maxHealth: 180
+  armour: 0
+  moveSpeed: 12
+  weapon: {fileID: 11400000, guid: fe4b5e246baedf149958d2343120185a, type: 2}
+  icon: {fileID: 21300000, guid: 8cb906102298c214692d60a15aa9e617, type: 3}
+  description: 'Fast, lightly armoured scout. Sees twice as far as a tank: use it to explore, spot for artillery and warn of attacks. Weak in a fight.'
+  sightRange: 28
+  armourClass: 0
+  requiredStructure: {fileID: 0}

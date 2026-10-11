@@ -11,6 +11,13 @@ namespace Ironfront.Core.AI
         ProduceHarvester,
         ProduceLightTank,
         ProduceHeavyTank,
+        // Milestone 007
+        ProduceRecon,
+        ProduceArtillery,
+        BuildResearchCentre,
+        BuildGuardTower,
+        BuildAtTurret,
+        StartResearch,
     }
 
     public readonly struct AiAction
@@ -19,16 +26,21 @@ namespace Ironfront.Core.AI
         /// <summary>For <see cref="AiActionType.SaveFor"/>: what is being saved for.</summary>
         public readonly AiActionType Goal;
         public readonly string Reason;
+        /// <summary>For <see cref="AiActionType.StartResearch"/>: the topic id.</summary>
+        public readonly string Topic;
 
-        public AiAction(AiActionType type, string reason, AiActionType goal = AiActionType.None)
+        public AiAction(AiActionType type, string reason, AiActionType goal = AiActionType.None, string topic = null)
         {
             Type = type;
             Reason = reason;
             Goal = goal;
+            Topic = topic;
         }
 
-        public bool IsConstruction => Type == AiActionType.BuildRefinery || Type == AiActionType.BuildPowerPlant || Type == AiActionType.BuildFactory;
-        public bool IsProduction => Type == AiActionType.ProduceHarvester || Type == AiActionType.ProduceLightTank || Type == AiActionType.ProduceHeavyTank;
+        public bool IsConstruction => Type == AiActionType.BuildRefinery || Type == AiActionType.BuildPowerPlant || Type == AiActionType.BuildFactory
+                                      || Type == AiActionType.BuildResearchCentre || Type == AiActionType.BuildGuardTower || Type == AiActionType.BuildAtTurret;
+        public bool IsProduction => Type == AiActionType.ProduceHarvester || Type == AiActionType.ProduceLightTank || Type == AiActionType.ProduceHeavyTank
+                                    || Type == AiActionType.ProduceRecon || Type == AiActionType.ProduceArtillery;
 
         public override string ToString() => Type == AiActionType.SaveFor ? $"Save for {Goal}: {Reason}" : $"{Type}: {Reason}";
     }
@@ -74,6 +86,10 @@ namespace Ironfront.Core.AI
             if (s.Factories == 0)
                 return BuyOrSave(s.Credits, cost.Factory, AiActionType.BuildFactory, "no factory");
 
+            // 4b-4e. Milestone 007: scouting, defences, technology (each only when the content exists).
+            var expansion = ExpansionRules.Next(s, state, cfg, cost);
+            if (expansion.Type != AiActionType.None) return expansion;
+
             // 5. Expansion: a refinery near ore that is still available when the local fields are spent,
             //    or a second refinery once harvesters are saturated and credits allow.
             if (s.Refineries < cfg.MaxRefineries && s.OreAvailable && !s.OreNearRefinery)
@@ -87,6 +103,11 @@ namespace Ironfront.Core.AI
             if (s.ArmyIncludingQueued < cfg.MaxArmy && QueueHasRoom(s, cfg))
             {
                 var unit = CompositionRules.Choose(s, cfg, cost, ignoreReserve: defending);
+                if (unit == AiActionType.SaveFor)
+                {
+                    var goal = CompositionRules.WantArtillery(s, cfg, cost) ? AiActionType.ProduceArtillery : AiActionType.ProduceHeavyTank;
+                    return new AiAction(AiActionType.SaveFor, "army composition", goal);
+                }
                 if (unit != AiActionType.None)
                     return new AiAction(unit, $"army {s.ArmyIncludingQueued + 1}/{cfg.MaxArmy}");
                 return new AiAction(AiActionType.SaveFor, "army unit", AiActionType.ProduceLightTank);
@@ -103,11 +124,11 @@ namespace Ironfront.Core.AI
         }
 
         public static bool QueueHasRoom(in CommanderSnapshot s, in CommanderSettings cfg) =>
-            s.QueuedHarvesters + s.QueuedLight + s.QueuedHeavy < cfg.MaxQueuedUnits * (s.Factories < 1 ? 1 : s.Factories);
+            s.QueuedHarvesters + s.QueuedLight + s.QueuedHeavy + s.QueuedRecon + s.QueuedArtillery < cfg.MaxQueuedUnits * (s.Factories < 1 ? 1 : s.Factories);
 
         public static bool Affordable(int credits, int cost, int reserve = 0) => cost >= 0 && credits - reserve >= cost;
 
-        private static AiAction BuyOrSave(int credits, int price, AiActionType type, string reason) =>
+        internal static AiAction BuyOrSave(int credits, int price, AiActionType type, string reason) =>
             Affordable(credits, price) ? new AiAction(type, reason) : new AiAction(AiActionType.SaveFor, $"{reason} ({credits}/{price})", type);
     }
 
@@ -117,20 +138,47 @@ namespace Ironfront.Core.AI
         public const float BaseHeavyShare = 0.4f;
         public const float CounterHeavyShare = 0.65f;
 
-        public static float DesiredHeavyShare(in CommanderSnapshot s) =>
-            s.KnownEnemyHeavy > s.KnownEnemyLight ? CounterHeavyShare : BaseHeavyShare;
+        /// <summary>Fast light tanks are the answer to enemy artillery, so fewer heavies are wanted while it is around.</summary>
+        public const float AntiArtilleryHeavyShare = 0.25f;
 
-        /// <summary>Returns ProduceHeavyTank, ProduceLightTank or None (nothing affordable).</summary>
+        public static float DesiredHeavyShare(in CommanderSnapshot s) =>
+            s.KnownEnemyHeavy > s.KnownEnemyLight ? CounterHeavyShare
+            : s.KnownEnemyArtillery > 0 ? AntiArtilleryHeavyShare
+            : BaseHeavyShare;
+
+        /// <summary>Artillery wanted: available (cost known, Research Centre built) and worth it (enemy defences known or a big army).</summary>
+        public static bool WantArtillery(in CommanderSnapshot s, in CommanderSettings cfg, in CostTable cost)
+        {
+            if (cost.Artillery <= 0 || s.ResearchCentres == 0) return false;
+            if (s.KnownEnemyDefences == 0 && s.ArmyCount < 6) return false;
+            int have = s.Artillery + s.QueuedArtillery;
+            int want = System.Math.Max(1, (int)System.Math.Round(s.ArmyIncludingQueued * cfg.ArtilleryShare));
+            return have < want;
+        }
+
+        /// <summary>
+        /// Returns ProduceArtillery, ProduceHeavyTank, ProduceLightTank, None (nothing affordable) or — when not in
+        /// an emergency and the wanted unit is not affordable yet — SaveFor (Milestone 007: saving for heavies and
+        /// artillery fixes the Light-Tank-only armies the M007 baseline study found).
+        /// </summary>
         public static AiActionType Choose(in CommanderSnapshot s, in CommanderSettings cfg, in CostTable cost, bool ignoreReserve)
         {
+            // No ore left anywhere: income has ended, so saving and the reserve only strand credits.
+            if (!s.OreAvailable) ignoreReserve = true;
             int reserve = ignoreReserve ? 0 : cfg.CreditReserve;
+            if (!ignoreReserve && WantArtillery(s, cfg, cost))
+                return EconomyPlanner.Affordable(s.Credits, cost.Artillery, reserve) ? AiActionType.ProduceArtillery : AiActionType.SaveFor;
             int heavies = s.HeavyTanks + s.QueuedHeavy;
             int total = s.ArmyIncludingQueued;
             // Small tolerance: an exact match of the target share counts as met regardless of float rounding.
             bool wantHeavy = total == 0 ? DesiredHeavyShare(s) >= 0.5f : (float)heavies / total < DesiredHeavyShare(s) - 1e-4f;
 
             if (wantHeavy && EconomyPlanner.Affordable(s.Credits, cost.HeavyTank, reserve)) return AiActionType.ProduceHeavyTank;
+            // Not an emergency: save for the heavy instead of always buying the cheaper tank (only with M007 content).
+            if (wantHeavy && !ignoreReserve && cost.Artillery > 0) return AiActionType.SaveFor;
             if (EconomyPlanner.Affordable(s.Credits, cost.LightTank, reserve)) return AiActionType.ProduceLightTank;
+            // End game: the last credits buy whatever armed unit they can (a recon), rather than sitting unspent.
+            if (!s.OreAvailable && cost.Recon > 0 && EconomyPlanner.Affordable(s.Credits, cost.Recon)) return AiActionType.ProduceRecon;
             return AiActionType.None;
         }
     }

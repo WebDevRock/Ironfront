@@ -73,7 +73,23 @@ namespace Ironfront.UI
                 _player = MatchController.Current.PlayerFaction;
                 _wasLowPower = _player.Power.IsLowPower;
                 _player.Power.Changed += OnPowerChanged;
+                _player.Research.Started += OnResearchStarted;
+                _player.Research.Completed += OnResearchCompleted;
             }
+        }
+
+        private string TopicName(string id)
+        {
+            var t = MatchController.Current != null && MatchController.Current.Setup != null ? MatchController.Current.Setup.FindResearch(id) : null;
+            return t != null ? t.DisplayName : id;
+        }
+
+        private void OnResearchStarted(string id) => Post($"Research started: {TopicName(id)}", Kind.Info);
+
+        private void OnResearchCompleted(string id)
+        {
+            Post($"Research complete: {TopicName(id)}", Kind.Good);
+            Ironfront.Audio.GameAudio.PlayFlat(Ironfront.Audio.SoundId.ResearchComplete);
         }
 
         private void OnDestroy()
@@ -86,7 +102,12 @@ namespace Ironfront.UI
             OreDeposit.AnyDepleted -= OnDepleted;
             if (placement != null) placement.Message -= OnPlacementMessage;
             if (_groups != null) _groups.Feedback -= OnGroupFeedback;
-            if (_player != null) _player.Power.Changed -= OnPowerChanged;
+            if (_player != null)
+            {
+                _player.Power.Changed -= OnPowerChanged;
+                _player.Research.Started -= OnResearchStarted;
+                _player.Research.Completed -= OnResearchCompleted;
+            }
         }
 
         private void Update()
@@ -170,6 +191,8 @@ namespace Ironfront.UI
         {
             if (dead == null) return;
             bool mine = dead.FactionId == PlayerFaction;
+            // Fog of war: the loss of an enemy structure is only reported if the player actually saw it go.
+            if (!mine && !Ironfront.Vision.VisionSystem.CanSee(PlayerFaction, dead)) return;
             if (dead.IsStructure)
                 Post(mine ? $"Structure destroyed: {dead.DisplayName}" : $"Enemy {dead.DisplayName} destroyed", mine ? Kind.Danger : Kind.Good,
                     location: mine ? dead.transform.position : (Vector3?)null);

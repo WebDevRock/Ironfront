@@ -193,6 +193,35 @@ MonoBehaviour:
     maxVoices: 1
     minInterval: 1
     positional: 0
+  - id: 19
+    clips:
+    - {fileID: 8300000, guid: 12653230b337e8f458eb50055aa80018, type: 3}
+    - {fileID: 8300000, guid: 6a6761a6218a35d4a8a1d95ea2a94035, type: 3}
+    category: 0
+    volume: 0.35
+    pitchJitter: 0.08
+    maxVoices: 5
+    minInterval: 0.05
+    positional: 1
+  - id: 20
+    clips:
+    - {fileID: 8300000, guid: 2db485184970b9346b094c82f18d0dca, type: 3}
+    - {fileID: 8300000, guid: b122b978033eb7d46b7cdcee44b05deb, type: 3}
+    category: 0
+    volume: 0.6
+    pitchJitter: 0.06
+    maxVoices: 4
+    minInterval: 0.08
+    positional: 1
+  - id: 21
+    clips:
+    - {fileID: 8300000, guid: 395ea8e130a254a4ea72ae85f5bbd14d, type: 3}
+    category: 1
+    volume: 0.55
+    pitchJitter: 0
+    maxVoices: 1
+    minInterval: 1
+    positional: 0
   ambienceLoop: {fileID: 8300000, guid: 8017f88eeb1370a4f8646d73df674498, type: 3}
   engineLoop: {fileID: 8300000, guid: 8984f822e56ac244aa0c3af1c82ce127, type: 3}
   distantBattle:

@@ -14,7 +14,7 @@ namespace Ironfront.Combat
     /// the <see cref="Health"/> registry and line-of-sight raycasts, and firing through <see cref="Projectile"/>.
     /// </summary>
     [RequireComponent(typeof(UnitMover), typeof(Health))]
-    public class CombatUnit : MonoBehaviour, ICombatBody
+    public class CombatUnit : MonoBehaviour, ICombatBody, ITargetAwareness, IFiringWeapon
     {
         private static readonly List<CombatUnit> s_All = new List<CombatUnit>();
         public static IReadOnlyList<CombatUnit> All => s_All;
@@ -54,7 +54,7 @@ namespace Ironfront.Combat
                 return;
             }
             _cooldown = new WeaponCooldown(Weapon.Cooldown);
-            Machine = new CombatOrderMachine(CombatSettings.ForWeapon(Weapon.Range, Weapon.AcquisitionRange, Weapon.RequiresLineOfSight));
+            Machine = new CombatOrderMachine(CombatSettings.ForWeapon(Weapon.Range, Weapon.AcquisitionRange, Weapon.RequiresLineOfSight, Weapon.MinRange));
             // Spread target scans over frames instead of every unit scanning in the same frame.
             Machine.OffsetScan((s_spawnIndex++ % 8) * Machine.Settings.ScanInterval / 8f);
         }
@@ -128,6 +128,7 @@ namespace Ironfront.Combat
                 var h = all[i];
                 if (h == _health || !h.IsAlive || ReferenceEquals(h, ignore)) continue;
                 if (!DamageRules.AreHostile(myFaction, h.FactionId)) continue;
+                if (!Ironfront.Vision.VisionSystem.CanSee(myFaction, h)) continue; // fog of war: only what the faction sees
 
                 // Cheap centre-distance rejection before the physics closest-point query.
                 Vector3 p = h.transform.position;
@@ -135,6 +136,7 @@ namespace Ironfront.Combat
                 if (dx * dx + dz * dz > reach * reach) continue;
 
                 float d = h.DistanceFrom(me);
+                if (d < Weapon.MinRange) continue; // too close for artillery
                 if (d <= radius) s_candidates.Add(new TargetCandidate<Health>(h, d, h.IsArmed, h.IsStructure));
             }
             return TargetSelector.TryChoose(s_candidates, radius, out var best) ? best : null;
@@ -162,14 +164,25 @@ namespace Ironfront.Combat
             if (!_cooldown.TryFire()) return false;
 
             Vector3 from = MuzzlePosition;
-            Projectile.Launch(from, h, Weapon.Damage, _health.FactionId, Weapon.AllowFriendlyFire,
-                Weapon.ProjectileSpeed, Weapon.ProjectileSize, _health);
+            float upgrade = DamageUpgrade(_health.FactionId);
+            int salvo = Weapon.Salvo;
+            for (int i = 0; i < salvo; i++)
+                Projectile.Launch(from, h, Weapon.Damage / salvo, _health.FactionId, Weapon.AllowFriendlyFire,
+                    Weapon.ProjectileSpeed, Weapon.ProjectileSize, _health, Weapon, upgrade, i * 0.18f, salvo > 1 ? i : -1);
             ShotsFired++;
             Fired?.Invoke(h);
             return true;
         }
 
         public Transform Muzzle => muzzle;
+
+        /// <summary>Fog of war: the order machine drops targets the faction cannot see.</summary>
+        public bool CanSee(ICombatTarget target) =>
+            !(target is Health h) || h == null || Ironfront.Vision.VisionSystem.CanSee(_health.FactionId, h);
+
+        /// <summary>Research damage multiplier for a faction (1 without research).</summary>
+        public static float DamageUpgrade(int faction) =>
+            MatchController.Current != null ? MatchController.Current.GetFaction(faction).Research.DamageMultiplier : 1f;
 
         private Vector3 MuzzlePosition => muzzle != null ? muzzle.position : transform.position + Vector3.up * 1f;
 

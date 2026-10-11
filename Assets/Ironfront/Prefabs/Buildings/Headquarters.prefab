@@ -193,6 +193,7 @@ GameObject:
   - component: {fileID: 1679631270199781094}
   - component: {fileID: 4033719854353302307}
   - component: {fileID: 7815757513356459826}
+  - component: {fileID: 6926867147738031385}
   - component: {fileID: 4055813496106047383}
   - component: {fileID: 6271941141654070241}
   - component: {fileID: 4435655312763910977}
@@ -289,6 +290,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Buildings.Building
   definition: {fileID: 11400000, guid: 58406427a7df3e54185a1c26a64fb60c, type: 2}
   selectionIndicator: {fileID: 1737662355790565583}
+--- !u!114 &6926867147738031385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2578387970938840374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56826c37b0f391147a6a9a705b9ff08e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Vision.VisionEntity
+  sightOverride: 0
 --- !u!114 &4055813496106047383
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -72,6 +72,9 @@ namespace Ironfront.EditorTools.Art
                 (SoundId.Alert, "alert", SoundCategory.Interface, 0.45f, 0f, 1, 4f, false),
                 (SoundId.Victory, "victory", SoundCategory.Interface, 0.7f, 0f, 1, 1f, false),
                 (SoundId.Defeat, "defeat", SoundCategory.Interface, 0.7f, 0f, 1, 1f, false),
+                (SoundId.MachineGun, "machine_gun", SoundCategory.Effects, 0.35f, 0.08f, 5, 0.05f, true),
+                (SoundId.RocketLaunch, "rocket_launch", SoundCategory.Effects, 0.6f, 0.06f, 4, 0.08f, true),
+                (SoundId.ResearchComplete, "research_complete", SoundCategory.Interface, 0.55f, 0f, 1, 1f, false),
             };
             entries.arraySize = specs.Length;
             for (int i = 0; i < specs.Length; i++)
