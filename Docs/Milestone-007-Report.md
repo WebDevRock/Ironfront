@@ -132,3 +132,5 @@ The acceptance scenario has only been played by the AI against itself and throug
 - **Exhaustion draws:** see §3.
 - **Map changes:** home ore went from 6000 + 4000 to 9000 + 6000 per side, plus two contested fields. This changes M001–006 match pacing (about 600 s instead of about 380 s).
 - **Pending from M005/M006:** the unused AI Assistant/Inference packages still log one CLI relay error during long editor operations.
+
+**Commit:** `267ecfa`

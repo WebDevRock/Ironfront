@@ -499,4 +499,4 @@ Deliverables: playable game, tests, balance and performance analysis, report, lo
 - Fog readability, artillery feel, tooltips and AI fun still need a human playthrough; see the report, §5.
 
 ### Relevant commit hash
-Milestone commit: (recorded after commit)
+Milestone commit: `267ecfa` (267ecfab7218ca9d3bc3d128d413394353a8b61b)
