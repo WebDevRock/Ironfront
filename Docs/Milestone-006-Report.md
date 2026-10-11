@@ -281,4 +281,4 @@ Every listed system is covered by the existing suites, which all still pass:
 
 ## Relevant commit hash
 
-Milestone commit: *(recorded in the follow-up commit, as in earlier milestones)*
+Milestone commit: `ab902ce` (ab902ce534dff177d362d1513de45ab63f99be67)

@@ -422,4 +422,4 @@ Deliverables: art direction, asset inventory and licences, report, log, commit.
 - Checked only at 1920×1080 and 1280×720 on one machine. The look, the mix and readability still need human judgement; see the report.
 
 ### Relevant commit hash
-Milestone commit: *(see the follow-up "Record Milestone 006 commit hash" commit)*
+Milestone commit: `ab902ce` (ab902ce534dff177d362d1513de45ab63f99be67)
