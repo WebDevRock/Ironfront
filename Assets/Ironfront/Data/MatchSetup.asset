@@ -41,3 +41,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0fac82817e46b5949b61954eb6872f8a, type: 2}
   fogOfWar: 1
   repair: {fileID: 11400000, guid: 2a4af784c93dd4949982e2ed235d6340, type: 2}
+  territory: {fileID: 11400000, guid: 18e62c1e4e742714c8b77986958876c7, type: 2}

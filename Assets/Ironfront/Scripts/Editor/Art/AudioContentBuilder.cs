@@ -77,6 +77,11 @@ namespace Ironfront.EditorTools.Art
                 (SoundId.ResearchComplete, "research_complete", SoundCategory.Interface, 0.55f, 0f, 1, 1f, false),
                 (SoundId.RepairWork, "repair_work", SoundCategory.Effects, 0.4f, 0.06f, 3, 0.4f, true),
                 (SoundId.RepairComplete, "repair_complete", SoundCategory.Effects, 0.5f, 0f, 2, 0.5f, true),
+                (SoundId.Dismantle, "dismantle", SoundCategory.Effects, 0.45f, 0.06f, 3, 0.5f, true),
+                (SoundId.SaleComplete, "sale_complete", SoundCategory.Interface, 0.5f, 0f, 1, 0.3f, false),
+                (SoundId.DeployStart, "deploy_start", SoundCategory.Effects, 0.55f, 0.02f, 2, 0.5f, true),
+                (SoundId.BaseEstablished, "base_established", SoundCategory.Interface, 0.6f, 0f, 1, 1f, false),
+                (SoundId.TerritoryLost, "territory_lost", SoundCategory.Interface, 0.5f, 0f, 1, 2f, false),
             };
             entries.arraySize = specs.Length;
             for (int i = 0; i < specs.Length; i++)

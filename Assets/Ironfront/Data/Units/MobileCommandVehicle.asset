@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dde82e58f08d6b0439864dbe6c7b8db3, type: 3}
+  m_Name: MobileCommandVehicle
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.UnitDefinition
+  id: mcv
+  displayName: Mobile Command Vehicle
+  cost: 5000
+  buildTime: 45
+  prefab: {fileID: 5516005671354739920, guid: 6c21c31a43bae90488be9581f4a8a455, type: 3}
+  maxHealth: 2000
+  armour: 0.35
+  moveSpeed: 3.5
+  weapon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 6ba46413ca73045499c1a9f57c21bf77, type: 3}
+  description: 'Slow, unarmed and heavily armoured. Drive it to a new site and press Deploy [T]: after 15 s it becomes a Forward Command Centre with its own construction territory. Can deploy outside your territory but not inside known enemy territory.'
+  sightRange: 16
+  armourClass: 1
+  requiredStructure: {fileID: 0}
+  repairCostMultiplier: 1

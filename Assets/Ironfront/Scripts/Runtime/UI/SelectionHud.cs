@@ -25,7 +25,7 @@ namespace Ironfront.UI
 
         private const string Help =
             "LMB: select   Drag: box select   Shift+LMB: toggle   WASD / edge: pan   Wheel: zoom\n" +
-            "RMB: move / attack enemy / harvest / rally / repair pad   F: attack-move   X: stop   H: hold   R: repair";
+            "RMB: move / attack enemy / harvest / rally / repair pad   F: attack-move   X: stop   H: hold   R: repair   T: deploy MCV";
 
         private float _refreshTimer;
 
@@ -98,6 +98,11 @@ namespace Ironfront.UI
                 if (b.GetComponent<VehicleFactory>() != null) text += "\nRMB ground: set rally point";
                 if (b.Repair != null && b.Repair.IsOn)
                     text += b.Repair.State == BuildingRepair.Status.PausedNoCredits ? "\nRepair: paused (insufficient credits)" : "\nRepair: on";
+                // Milestone 010: territory and sale.
+                if (b.Definition != null && b.Definition.TerritoryRadius > 0f)
+                    text += $"\nConstruction territory: {b.Definition.TerritoryRadius:0} m radius";
+                if (b.Sale != null && b.Sale.IsDismantling)
+                    text += $"\nSelling: {b.Sale.Progress01 * 100f:0}% (refund about {b.Sale.EstimatedRefund})";
                 return text;
             }
 
@@ -127,6 +132,9 @@ namespace Ironfront.UI
 
             var harvester = unit.GetComponent<Harvester>();
             if (harvester != null && harvester.Machine != null) text += $"\n{harvester.StatusText}";
+            var mcv = unit.GetComponent<MobileCommandVehicle>();
+            if (mcv != null)
+                text += mcv.IsDeploying ? $"\nDeploying: {mcv.Progress01 * 100f:0}% (immobile)" : "\nT: deploy into a Forward Command Centre here";
             var repair = RepairClient.Of(unit);
             if (repair != null && repair.IsBusy)
                 text += repair.QueuePosition >= 0 ? $"\nRepair: {repair.State} (place {repair.QueuePosition + 1} in queue)" : $"\nRepair: {repair.State}";

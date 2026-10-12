@@ -32,3 +32,8 @@ MonoBehaviour:
   weapon: {fileID: 0}
   needsPower: 0
   repairCostMultiplier: 1
+  territoryRadius: 0
+  exclusionRadius: 0
+  sellable: 1
+  sellConfirmation: 0
+  saleValueOverride: 0

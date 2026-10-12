@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e5bc140ca5024b48853f15a7228b9a4, type: 3}
+  m_Name: TerritorySettings
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.TerritorySettings
+  sellSeconds: 8
+  refundFraction: 0.5
+  confirmSeconds: 3
+  deploySeconds: 15
+  minConvertedHealth: 0.1
+  deployHeightTolerance: 0.6
+  fillMaterial: {fileID: 2100000, guid: 2ec2f3059608c8344bb97aaad47c8cdc, type: 2}
+  edgeMaterial: {fileID: 2100000, guid: 2a5fb95ae99dd204b84e88ae04108f74, type: 2}
+  enemyEdgeMaterial: {fileID: 2100000, guid: 4197f9a76a0bba84a8b7223e98510dc7, type: 2}
+  overlayCell: 2

@@ -24,6 +24,11 @@ namespace Ironfront.Match
     {
         public const string HeadquartersId = "headquarters";
         public const string FactoryId = "vehicle_factory";
+        /// <summary>
+        /// Milestone 010: a Forward Command Centre is a production structure in Annihilation (it can rebuild), but never
+        /// replaces the Headquarters in Headquarters mode.
+        /// </summary>
+        public const string ForwardCommandId = "forward_command";
 
         [SerializeField] private MatchResultView resultView;
         [Tooltip("Pause the simulation when the match ends.")]
@@ -163,7 +168,7 @@ namespace Ironfront.Match
             foreach (var b in Building.All)
             {
                 if (b.FactionId != factionId || b.Definition == null) continue;
-                if (b.Definition.Id != HeadquartersId && b.Definition.Id != FactoryId) continue;
+                if (b.Definition.Id != HeadquartersId && b.Definition.Id != FactoryId && b.Definition.Id != ForwardCommandId) continue;
                 var h = b.GetComponent<Health>();
                 if (h == null || h.IsAlive) n++;
             }

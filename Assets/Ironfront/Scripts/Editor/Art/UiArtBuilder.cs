@@ -191,6 +191,8 @@ namespace Ironfront.EditorTools.Art
                 (c.Expansion.AtTurret, "Icon_AntiArmourTurret", t => ExpansionModels.AntiArmourTurret(t, a)),
                 (c.Expansion.ResearchCentre, "Icon_ResearchCentre", t => ExpansionModels.ResearchCentre(t, a)),
                 (c.Repair.RepairPad, "Icon_RepairPad", t => RepairModels.RepairPad(t, a)),
+                (c.Command.Mcv, "Icon_Mcv", t => CommandModels.Mcv(t, a)),
+                (c.Command.ForwardCommand, "Icon_ForwardCommand", t => CommandModels.ForwardCommand(t, a)),
             };
             foreach (var (def, name, build) in jobs)
             {

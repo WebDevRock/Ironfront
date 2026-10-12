@@ -181,8 +181,8 @@ namespace Ironfront.UI
                 $"{slots} possible starts (numbered on the map). The enemy's start is hidden: scout to find it.");
             Set(victory, _settings.Victory == VictoryMode.Headquarters ? "Destroy headquarters" : "Annihilation",
                 _settings.Victory == VictoryMode.Headquarters
-                    ? "Win by destroying the enemy headquarters."
-                    : "Win by destroying every enemy headquarters, factory and armed unit. A side that can no longer produce is revealed.");
+                    ? "Win by destroying the enemy headquarters. Forward Command Centres do not replace it."
+                    : "Win by destroying every enemy headquarters, Forward Command Centre, factory and armed unit. A side that can no longer produce is revealed.");
         }
 
         private static void Set(Selector s, string value, string hint)

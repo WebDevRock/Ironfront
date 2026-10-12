@@ -32,6 +32,8 @@ namespace Ironfront.Data
         [SerializeField] private bool fogOfWar = true;
         [Tooltip("Repair costs, rates and recovery limits (Milestone 009).")]
         [SerializeField] private RepairSettings repair;
+        [Tooltip("Building sales, MCV deployment and the territory overlay (Milestone 010).")]
+        [SerializeField] private TerritorySettings territory;
 
         public IReadOnlyList<FactionSetup> Factions => factions;
         public IReadOnlyList<BuildingDefinition> ConstructionOptions => constructionOptions;
@@ -42,6 +44,7 @@ namespace Ironfront.Data
         public IReadOnlyList<ResearchDefinition> Research => research;
         public bool FogOfWar => fogOfWar;
         public RepairSettings Repair => repair;
+        public TerritorySettings Territory => territory;
 
         public ResearchDefinition FindResearch(string id)
         {

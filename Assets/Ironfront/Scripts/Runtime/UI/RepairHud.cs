@@ -24,6 +24,8 @@ namespace Ironfront.UI
     /// </list>
     /// The pad used by the selected vehicles is highlighted. Installs itself in every match scene with a HUD (no scene
     /// rebuild needed).
+    /// <para>Milestone 010 adds <b>Sell</b> (with confirmation for critical structures), <b>Cancel sale</b>, and for a
+    /// selected Mobile Command Vehicle <b>Deploy [T]</b> / <b>Cancel deploy</b> with the site check and progress.</para>
     /// </summary>
     public class RepairHud : MonoBehaviour
     {
@@ -32,7 +34,10 @@ namespace Ironfront.UI
         private RectTransform _panel;
         private RectTransform _ordersPanel;
         private Button _repair, _cancel, _toggle;
-        private Text _toggleLabel, _status;
+        private Button _sell, _cancelSale, _deploy, _cancelDeploy;
+        private Text _toggleLabel, _status, _sellLabel;
+        private Building _confirmTarget;
+        private float _confirmUntil;
         private float _timer;
         private string _message = "";
         private float _messageTimer;
@@ -128,6 +133,18 @@ namespace Ironfront.UI
             _toggle = MakeButton(row.transform, "Repair_Toggle", "Repair: OFF", font, out _toggleLabel, ToggleBuilding);
             TooltipTrigger.Attach(_toggle.gameObject, () =>
                 "REPAIR STRUCTURE\nRestores health gradually, also under attack. Costs credits in proportion to the health restored; pauses without credits.");
+            _sell = MakeButton(row.transform, "Sell", "Sell", font, out _sellLabel, SellSelected);
+            TooltipTrigger.Attach(_sell.gameObject, () =>
+                "SELL\nDismantles the structure over a few seconds and refunds up to half its value, in proportion to its remaining health. " +
+                "Queued units are refunded in full. Can be cancelled until it completes. The Headquarters cannot be sold.");
+            _cancelSale = MakeButton(row.transform, "Sell_Cancel", "Cancel sale", font, out _, CancelSale);
+            TooltipTrigger.Attach(_cancelSale.gameObject, () => "CANCEL SALE\nStop dismantling; the structure keeps working. Nothing is charged.");
+            _deploy = MakeButton(row.transform, "Deploy", "Deploy [T]", font, out _, DeploySelected);
+            TooltipTrigger.Attach(_deploy.gameObject, () =>
+                "DEPLOY  [T]\nThe Mobile Command Vehicle stops and unfolds into a Forward Command Centre where it stands (15 s, vulnerable). " +
+                "The centre grants new construction territory. Allowed outside your territory, not inside known enemy territory.");
+            _cancelDeploy = MakeButton(row.transform, "Deploy_Cancel", "Cancel deploy", font, out _, CancelDeploy);
+            TooltipTrigger.Attach(_cancelDeploy.gameObject, () => "CANCEL DEPLOY\nFold back up; the vehicle can drive again.");
 
             var statusGo = new GameObject("Status", typeof(RectTransform));
             statusGo.layer = go.layer;
@@ -173,6 +190,9 @@ namespace Ironfront.UI
             var key = RtsInput.Repair;
             if (key != null && key.WasPressedThisFrame() && !RtsInputMode.WorldPointerBlocked && IsShown && _repair.gameObject.activeSelf)
                 _commands.IssueRepair();
+            var deployKey = RtsInput.Deploy;
+            if (deployKey != null && deployKey.WasPressedThisFrame() && !RtsInputMode.WorldPointerBlocked && IsShown && _deploy.gameObject.activeSelf)
+                DeploySelected();
             if (_messageTimer > 0f) _messageTimer -= Time.unscaledDeltaTime;
             _timer -= Time.unscaledDeltaTime;
             if (_timer > 0f) return;
@@ -200,6 +220,97 @@ namespace Ironfront.UI
             Refresh();
         }
 
+        // ---------- Milestone 010: sales and deployment ----------
+
+        private void Say(string message, float seconds = 3f)
+        {
+            _message = message;
+            _messageTimer = seconds;
+        }
+
+        /// <summary>Sell button: critical structures need a second click within the confirmation window.</summary>
+        public void SellSelected()
+        {
+            var b = SelectedOwnStructure();
+            if (b == null || b.Sale == null) return;
+            if (!b.Sale.CanSell(out string why)) { Say(why); Refresh(); return; }
+            if (b.Sale.NeedsConfirmation && (_confirmTarget != b || Time.unscaledTime > _confirmUntil))
+            {
+                _confirmTarget = b;
+                _confirmUntil = Time.unscaledTime + Data.TerritorySettings.Current.ConfirmSeconds;
+                Say($"{b.Definition.DisplayName} is critical: click Confirm to sell it for about {b.Sale.EstimatedRefund} credits");
+                Refresh();
+                return;
+            }
+            _confirmTarget = null;
+            Say(b.Sale.Begin(out string reason) ? $"{reason}: refund about {b.Sale.EstimatedRefund} credits" : reason);
+            Refresh();
+        }
+
+        public void CancelSale()
+        {
+            var b = SelectedOwnStructure();
+            if (b != null && b.Sale != null && b.Sale.Cancel()) Say("Sale cancelled");
+            Refresh();
+        }
+
+        private List<MobileCommandVehicle> SelectedVehicles()
+        {
+            var list = new List<MobileCommandVehicle>();
+            if (_selection == null) return list;
+            foreach (var u in _selection.Selection.Items)
+            {
+                if (u == null) continue;
+                var m = u.GetComponent<MobileCommandVehicle>();
+                if (m != null && m.FactionId == Player) list.Add(m);
+            }
+            return list;
+        }
+
+        /// <summary>Deploy button / [T]: every selected Mobile Command Vehicle tries to deploy where it stands.</summary>
+        public void DeploySelected()
+        {
+            int started = 0;
+            var reasons = new List<string>();
+            foreach (var m in SelectedVehicles())
+            {
+                if (m.IsDeploying) continue;
+                var r = m.Deploy();
+                if (r == Core.Construction.DeployCheck.Valid) started++;
+                else reasons.Add(Core.Construction.DeployProcess.Describe(r));
+            }
+            if (started > 0) Say($"Deploying: {started} Forward Command Centre{(started == 1 ? "" : "s")} in {Data.TerritorySettings.Current.DeploySeconds:0} s");
+            else if (reasons.Count > 0) { Say("Cannot deploy here: " + reasons[0]); Audio.GameAudio.PlayFlat(Audio.SoundId.UiError); }
+            Refresh();
+        }
+
+        public void CancelDeploy()
+        {
+            int n = 0;
+            foreach (var m in SelectedVehicles()) if (m.CancelDeploy()) n++;
+            if (n > 0) Say("Deployment cancelled");
+            Refresh();
+        }
+
+        private string DescribeSale(Building b)
+        {
+            var sale = b.Sale;
+            if (sale == null) return "";
+            if (sale.IsDismantling) return $"Selling: {sale.Progress01 * 100f:0}%, {sale.SecondsRemaining:0} s left. Refund about {sale.EstimatedRefund} credits";
+            return b.Definition.Sellable ? $"Sell value about {sale.EstimatedRefund} credits" : "Cannot be sold";
+        }
+
+        private string DescribeDeploy(List<MobileCommandVehicle> mcvs)
+        {
+            var deploying = mcvs.FirstOrDefault(m => m.IsDeploying);
+            if (deploying != null) return $"Deploying: {deploying.Progress01 * 100f:0}%. The vehicle cannot move and can be attacked";
+            var overlay = FindAnyObjectByType<TerritoryOverlay>();
+            var check = overlay != null && overlay.PreviewVehicle != null ? overlay.DeployPreview : mcvs[0].CheckSite();
+            return check == Core.Construction.DeployCheck.Valid
+                ? "Deploy here [T]: the footprint is clear (the dashed ring shows the new territory)"
+                : "Cannot deploy here: " + Core.Construction.DeployProcess.Describe(check);
+        }
+
         /// <summary>Recomputes what the panel shows (public for tests).</summary>
         public void Refresh()
         {
@@ -214,15 +325,23 @@ namespace Ironfront.UI
             bool ordersShown = _ordersPanel != null && _ordersPanel.gameObject.activeInHierarchy;
             _panel.anchoredPosition = new Vector2(0f, ordersShown ? 92f : 10f);
 
+            var mcvs = SelectedVehicles();
+            bool deploying = mcvs.Any(m => m.IsDeploying);
+            _deploy.gameObject.SetActive(vehicles.Count > 0 && mcvs.Count > 0 && !deploying);
+            _cancelDeploy.gameObject.SetActive(vehicles.Count > 0 && deploying);
+            _sell.gameObject.SetActive(vehicles.Count == 0);
             if (vehicles.Count > 0)
             {
+                _cancelSale.gameObject.SetActive(false);
                 _repair.gameObject.SetActive(true);
                 _toggle.gameObject.SetActive(false);
                 int damaged = vehicles.Count(RepairClient.IsDamaged);
                 bool anyBusy = vehicles.Any(u => RepairClient.Of(u) != null && RepairClient.Of(u).IsBusy);
                 _repair.interactable = damaged > 0;
                 _cancel.gameObject.SetActive(anyBusy);
-                _status.text = _messageTimer > 0f ? _message : DescribeVehicles(vehicles, damaged);
+                _status.text = _messageTimer > 0f ? _message
+                    : mcvs.Count > 0 && (deploying || damaged == 0 || mcvs.Count == vehicles.Count) ? DescribeDeploy(mcvs)
+                    : DescribeVehicles(vehicles, damaged);
                 return;
             }
 
@@ -249,6 +368,16 @@ namespace Ironfront.UI
             }
             var pad = structure.GetComponent<RepairPad>();
             if (pad != null) sb.Insert(0, DescribePad(pad) + "\n");
+            // Milestone 010: sale state.
+            var sale = structure.Sale;
+            bool selling = sale != null && sale.IsDismantling;
+            _cancelSale.gameObject.SetActive(selling);
+            _sell.gameObject.SetActive(!selling);
+            _sell.interactable = structure.Definition.Sellable;
+            bool armed = sale != null && _confirmTarget == structure && Time.unscaledTime <= _confirmUntil;
+            _sellLabel.text = armed ? $"Confirm sale (+{sale.EstimatedRefund})" : "Sell";
+            if (selling) { _toggle.interactable = false; sb.Clear(); }
+            sb.Insert(0, DescribeSale(structure) + (sb.Length > 0 ? "\n" : ""));
             _status.text = _messageTimer > 0f ? _message : sb.ToString();
         }
 

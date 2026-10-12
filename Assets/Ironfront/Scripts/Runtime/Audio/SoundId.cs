@@ -28,6 +28,12 @@ namespace Ironfront.Audio
         // Milestone 009
         RepairWork,
         RepairComplete,
+        // Milestone 010
+        Dismantle,
+        SaleComplete,
+        DeployStart,
+        BaseEstablished,
+        TerritoryLost,
     }
 
     /// <summary>Mixer category; each has its own volume setting.</summary>

@@ -79,6 +79,18 @@ namespace Ironfront.Core.AI
         public float BuildingRepairThreshold;
         /// <summary>Seconds between replacement scouts once the enemy has been located (0 = no limit).</summary>
         public float ReconReplaceSeconds;
+        // ---- Milestone 010 forward bases (0 = never: the Milestone 009 behaviour) ----
+        /// <summary>
+        /// Forward Command Centres the commander keeps at the same time (obsolete ones are sold, freeing a slot). Each ore
+        /// field holds 4000-6000 credits, so a long match needs several (M010 study).
+        /// </summary>
+        public int MaxForwardBases;
+        /// <summary>No Mobile Command Vehicle before this many seconds of match time.</summary>
+        public float EarliestForwardBase;
+        /// <summary>Army size needed before an MCV is bought (it needs an escort).</summary>
+        public int ForwardBaseArmy;
+        /// <summary>After this many MCVs lost the commander stops trying.</summary>
+        public int MaxMcvLosses;
 
         /// <summary>Maps at least this wide (metres) count as large for <see cref="ScaledForMap"/>.</summary>
         public const float LargeMapSize = 250f;
@@ -98,6 +110,8 @@ namespace Ironfront.Core.AI
             c.MaxArmy += 4;
             c.ExpansionCredits = (int)Math.Round(ExpansionCredits * 0.6);
             c.SecondFactoryHarvesters = 5;
+            // Milestone 010: refineries need construction territory, so each one feeds an extra harvester.
+            c.HarvestersPerRefinery += 1;
             return c;
         }
 
@@ -132,6 +146,10 @@ namespace Ironfront.Core.AI
             MaxRepairPads = 1,
             VehicleRepairThreshold = 0.45f,
             BuildingRepairThreshold = 0.7f,
+            MaxForwardBases = 2,
+            EarliestForwardBase = 240f,
+            ForwardBaseArmy = 3,
+            MaxMcvLosses = 2,
         };
 
         /// <summary>
@@ -164,6 +182,9 @@ namespace Ironfront.Core.AI
                 c.MaxEscalation = 2;
                 c.VehicleRepairThreshold = 0.35f;
                 c.BuildingRepairThreshold = 0.5f;
+                c.MaxForwardBases = 1;
+                c.EarliestForwardBase = 420f;
+                c.ForwardBaseArmy = 4;
                 return c;
             }
         }
@@ -197,6 +218,8 @@ namespace Ironfront.Core.AI
                 c.MaxRepairPads = 2;
                 c.VehicleRepairThreshold = 0.5f;
                 c.BuildingRepairThreshold = 0.75f;
+                c.MaxForwardBases = 3;
+                c.EarliestForwardBase = 180f;
                 return c;
             }
         }
@@ -212,6 +235,8 @@ namespace Ironfront.Core.AI
         public int Recon, Artillery, ResearchCentre, GuardTower, AtTurret;
         /// <summary>Milestone 009 (0 = not available).</summary>
         public int RepairPad;
+        /// <summary>Milestone 010: Mobile Command Vehicle (0 = not available).</summary>
+        public int Mcv;
     }
 
     /// <summary>What the commander knows at a decision point (its own state plus what it has seen).</summary>
@@ -261,6 +286,20 @@ namespace Ironfront.Core.AI
         public bool ReconOnCooldown;
         /// <summary>Milestone 009: Repair Pads owned.</summary>
         public int RepairPads;
+
+        // ---- Milestone 010 ----
+        /// <summary>Forward Command Centres owned, MCVs alive and queued, MCVs lost this match.</summary>
+        public int ForwardBases, Mcvs, QueuedMcv, McvLosses;
+        /// <summary>An MCV was lost recently (see ForwardBaseRules.LossCooldown).</summary>
+        public bool McvOnCooldown;
+        /// <summary>More refineries are wanted but no unclaimed ore field has a refinery site inside own territory.</summary>
+        public bool RefineryBlockedByTerritory;
+        /// <summary>An explored, reachable ore field outside own territory is a possible forward-base target.</summary>
+        public bool ExpansionTargetKnown;
+        /// <summary>Forward Command Centres without a defensive structure nearby.</summary>
+        public int UndefendedForwardBases;
+        /// <summary>Distance (metres) from the nearest own refinery to the best forward-base target field.</summary>
+        public float ExpansionHaulDistance;
         public int ArmyCap(in CommanderSettings cfg) => cfg.MaxArmy + AttackEscalation;
 
         public int ArmyCount => LightTanks + HeavyTanks + Artillery;

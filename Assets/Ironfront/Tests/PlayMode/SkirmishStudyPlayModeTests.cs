@@ -70,7 +70,11 @@ namespace Ironfront.Tests
                 $"\"located\":{(ai.Intel.FirstDiscovery < 0f ? -1f : ai.Intel.FirstDiscovery - MatchStart):0},\"escalation\":{ai.AttackEscalation},\"scoutMissions\":{ai.ScoutMissions},\"attacks\":{ai.AttacksLaunched}," +
                 $"\"sitesCleared\":{ai.Intel.Count(Core.AI.EnemyIntel.SiteState.Empty)},\"rejectedScoutPoints\":{ai.RejectedScoutPoints}," +
                 $"\"repairOrders\":{ai.RepairsOrdered},\"buildingRepairs\":{ai.BuildingRepairsStarted},\"vehiclesRepaired\":{Ironfront.Buildings.RepairLedger.VehiclesRepaired(ai.FactionId)}," +
-                $"\"repairCreditsVehicles\":{Ironfront.Buildings.RepairLedger.VehicleCredits(ai.FactionId)},\"repairCreditsBuildings\":{Ironfront.Buildings.RepairLedger.BuildingCredits(ai.FactionId)}}}";
+                $"\"repairCreditsVehicles\":{Ironfront.Buildings.RepairLedger.VehicleCredits(ai.FactionId)},\"repairCreditsBuildings\":{Ironfront.Buildings.RepairLedger.BuildingCredits(ai.FactionId)}," +
+                $"\"mcvs\":{ai.McvsProduced},\"mcvsLost\":{ai.McvsLost},\"forwardBases\":{ai.ForwardBasesEstablished}," +
+                $"\"firstForwardBase\":{(ai.FirstForwardBaseTime < 0f ? -1f : ai.FirstForwardBaseTime - MatchStart):0},\"deployAttempts\":{ai.DeployAttempts},\"deployFailures\":{ai.DeployFailures}," +
+                $"\"forwardBasesAtEnd\":{Ironfront.Buildings.Building.All.Count(b => b.FactionId == ai.FactionId && b.Definition != null && b.Definition.Id == "forward_command")}," +
+                $"\"structuresSold\":{ai.StructuresSold},\"saleRefunds\":{Ironfront.Buildings.BuildingSale.RefundedBy(ai.FactionId)}}}";
 
             private static string D(Dictionary<string, int> d) => "{" + string.Join(",", d.OrderBy(k => k.Key).Select(k => $"\"{k.Key}\":{k.Value}")) + "}";
         }
@@ -159,6 +163,12 @@ namespace Ironfront.Tests
                 Time.timeScale = 10f;
                 float realStart = Time.realtimeSinceStartup;
                 string traceFile = Path.Combine(Application.dataPath, "..", "Temp", "skirmish_trace.txt");
+                // Milestone 010: the commanders' forward-base and sale decisions go to the trace as they happen.
+                var keys = new[] { "Mobile Command", "Forward", "forward", "Deploy", "Selling", "ProduceMcv" };
+                System.Action<string> log1 = e => { if (keys.Any(e.Contains)) File.AppendAllText(traceFile, $"{map} seed {seed}   F1 {e}\n"); };
+                System.Action<string> log2 = e => { if (keys.Any(e.Contains)) File.AppendAllText(traceFile, $"{map} seed {seed}   F2 {e}\n"); };
+                playerAi.Logged += log1;
+                enemyAi.Logged += log2;
                 float nextTrace = 0f;
                 while (!flow.IsOver && Time.time - start < TimeLimit)
                 {
@@ -181,6 +191,8 @@ namespace Ironfront.Tests
                 Ironfront.Buildings.VehicleFactory.AnyUnitProduced -= onProduced;
                 BuildingPlacementController.AnyBuildingPlaced -= onBuilt;
                 Health.AnyDamaged -= onDamaged;
+                playerAi.Logged -= log1;
+                enemyAi.Logged -= log2;
 
                 string result = !flow.IsOver ? "timeout"
                     : flow.Outcome.Result == MatchResult.Draw ? $"draw ({flow.Outcome.Reason})" : $"F{flow.Outcome.WinnerFactionId} won";

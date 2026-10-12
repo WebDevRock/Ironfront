@@ -21,6 +21,17 @@ namespace Ironfront.Units
         private bool _started;
         private Vector3? _pendingDestination;
 
+        /// <summary>
+        /// Milestone 010: while locked (a Mobile Command Vehicle deploying) every move order is refused, whoever issues it.
+        /// </summary>
+        public bool Locked { get; private set; }
+
+        public void SetLocked(bool locked)
+        {
+            Locked = locked;
+            if (locked) Stop();
+        }
+
         public NavMeshAgent Agent => _agent != null ? _agent : (_agent = GetComponent<NavMeshAgent>());
 
         public bool HasArrived
@@ -72,6 +83,7 @@ namespace Ironfront.Units
         public bool MoveTo(Vector3 destination)
         {
             using var perfScope = Ironfront.Diagnostics.PerfMarkers.PathRequest.Auto();
+            if (Locked) return false;
             if (!_started)
             {
                 _pendingDestination = destination;

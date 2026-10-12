@@ -41,6 +41,17 @@ namespace Ironfront.Data
         [SerializeField] private bool needsPower;
         [Tooltip("Scales this structure's repair cost (Milestone 009; 1 = the RepairSettings cost).")]
         [SerializeField, Min(0f)] private float repairCostMultiplier = 1f;
+        [Header("Milestone 010")]
+        [Tooltip("Construction territory this structure grants its owner (metres; 0 = none). Command structures only.")]
+        [SerializeField, Min(0f)] private float territoryRadius;
+        [Tooltip("Other factions may not build or deploy within this radius once they have seen the structure (0 = none).")]
+        [SerializeField, Min(0f)] private float exclusionRadius;
+        [Tooltip("Whether the owner may sell (dismantle) this structure.")]
+        [SerializeField] private bool sellable = true;
+        [Tooltip("Strategically critical: selling asks for confirmation.")]
+        [SerializeField] private bool sellConfirmation;
+        [Tooltip("Value used for the sale refund when the structure is not bought directly (0 = its cost).")]
+        [SerializeField, Min(0)] private int saleValueOverride;
 
         public Sprite Icon => icon;
         public string Description => description;
@@ -48,6 +59,12 @@ namespace Ironfront.Data
         public WeaponDefinition Weapon => weapon;
         public bool NeedsPower => needsPower;
         public float RepairCostMultiplier => repairCostMultiplier;
+        public float TerritoryRadius => territoryRadius;
+        public float ExclusionRadius => exclusionRadius;
+        public bool Sellable => sellable && SaleValue > 0;
+        public bool SellConfirmation => sellConfirmation;
+        /// <summary>Value the sale refund is based on: the override, else the construction cost.</summary>
+        public int SaleValue => saleValueOverride > 0 ? saleValueOverride : cost;
 
         public string Id => id;
         public string DisplayName => displayName;

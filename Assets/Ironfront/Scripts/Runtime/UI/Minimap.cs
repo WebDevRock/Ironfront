@@ -144,6 +144,7 @@ namespace Ironfront.UI
             }
 
             ApplyFog(player);
+            DrawTerritory(player);
             DrawCameraView();
             DrawAlert();
 
@@ -170,6 +171,37 @@ namespace Ironfront.UI
                     var c = _pixels[i];
                     if (state == Ironfront.Core.Vision.VisibilityGrid.Unexplored) _pixels[i] = new Color32(8, 10, 12, 255);
                     else _pixels[i] = new Color32((byte)(c.r * 0.5f), (byte)(c.g * 0.5f), (byte)(c.b * 0.55f), 255);
+                }
+            }
+        }
+
+        private readonly System.Collections.Generic.List<Ironfront.Core.Territory.TerritoryAnchor> _territory = new System.Collections.Generic.List<Ironfront.Core.Territory.TerritoryAnchor>();
+        private static readonly Color32 TerritoryColor = new Color32(110, 235, 255, 255);
+
+        /// <summary>
+        /// Milestone 010: the player's construction territory as a dotted outline of the union of its circles (drawn after
+        /// the fog so it stays readable). Only the player's own territory is shown.
+        /// </summary>
+        private void DrawTerritory(int faction)
+        {
+            var anchors = _territory;
+            TerritorySystem.Map.CopyAnchors(faction, anchors);
+            float metresPerPixel = _world.width / resolution;
+            for (int k = 0; k < anchors.Count; k++)
+            {
+                var a = anchors[k];
+                int samples = Mathf.Clamp(Mathf.CeilToInt(2f * Mathf.PI * a.Radius / metresPerPixel), 16, 2048);
+                for (int i = 0; i < samples; i++)
+                {
+                    if ((i / 2) % 2 == 1) continue; // dotted
+                    float ang = i * Mathf.PI * 2f / samples;
+                    var p2 = a.Centre + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * a.Radius;
+                    bool inner = false;
+                    for (int j = 0; j < anchors.Count; j++)
+                        if (j != k && anchors[j] is var o && (p2 - o.Centre).sqrMagnitude < (o.Radius - 0.05f) * (o.Radius - 0.05f)) { inner = true; break; }
+                    if (inner) continue;
+                    var px = MinimapMath.WorldToPixel(new Vector3(p2.x, 0f, p2.y), _world, resolution);
+                    Plot(px.x, px.y, TerritoryColor);
                 }
             }
         }

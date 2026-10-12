@@ -27,6 +27,10 @@ namespace Ironfront.Core.AI
             if (cost.AtTurret > 0 && s.KnownEnemyHeavy >= (cfg.AdvancedCounters ? 1 : 2) && s.AtTurrets < cfg.MaxAtTurrets)
                 return EconomyPlanner.BuyOrSave(s.Credits, cost.AtTurret, AiActionType.BuildAtTurret, $"enemy heavies seen ({s.KnownEnemyHeavy})");
 
+            // Milestone 010: a guard tower at each forward base that has none (beyond the home cap).
+            if (cost.GuardTower > 0 && s.UndefendedForwardBases > 0 && EconomyPlanner.Affordable(s.Credits, cost.GuardTower, cfg.CreditReserve))
+                return new AiAction(AiActionType.BuildGuardTower, "forward base defence");
+
             // Guard tower after the base has been attacked, or one as early insurance once an army exists.
             if (cost.GuardTower > 0 && s.GuardTowers < cfg.MaxGuardTowers)
             {

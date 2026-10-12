@@ -26,6 +26,7 @@ namespace Ironfront.Core.Audio
             "ui_click", "ui_hover", "ui_error", "alert", "victory", "defeat",
             "ambience_wind_loop", "engine_loop", "distant_battle_a", "distant_battle_b", "distant_battle_c",
             "machine_gun_a", "machine_gun_b", "rocket_launch_a", "rocket_launch_b", "research_complete", "repair_work_a", "repair_work_b", "repair_complete",
+            "dismantle_a", "dismantle_b", "sale_complete", "deploy_start", "base_established", "territory_lost",
         };
 
         /// <summary>True for recipes designed to loop seamlessly.</summary>
@@ -76,6 +77,12 @@ namespace Ironfront.Core.Audio
                 case "repair_work_a": return RepairWork(161);
                 case "repair_work_b": return RepairWork(162);
                 case "repair_complete": return RepairComplete(171);
+                case "dismantle_a": return Dismantle(181);
+                case "dismantle_b": return Dismantle(182);
+                case "sale_complete": return Chime(new[] { 1046.5f, 1318.51f, 1567.98f }, 0.06f, 0.5f, 0.55f);
+                case "deploy_start": return DeployHydraulics(191);
+                case "base_established": return Chime(new[] { 392f, 523.25f, 659.25f, 783.99f, 1046.5f }, 0.12f, 1.3f, 0.75f);
+                case "territory_lost": return TerritoryLost(201);
                 default: throw new ArgumentException("Unknown recipe " + name);
             }
         }
@@ -421,6 +428,68 @@ namespace Ironfront.Core.Audio
             }
             Mix(s, Chime(new[] { 880f, 1318.5f }, 0.08f, 0.45f, 0.55f), Len(0.12f), 1f);
             return Fade(Normalize(s, 0.6f));
+        }
+
+        /// <summary>Milestone 010: dismantling — heavy metal clanks and a wrench ratchet.</summary>
+        private static float[] Dismantle(int seed)
+        {
+            var n = new Noise(seed);
+            var s = new float[Len(0.9f)];
+            for (int c = 0; c < 3; c++)
+            {
+                int start = Len(0.05f + c * 0.27f + Math.Abs(n.Next()) * 0.04f);
+                float f = 210f + c * 47f + n.Next() * 30f;
+                for (int i = start; i < s.Length; i++)
+                {
+                    float t = T(i - start);
+                    s[i] += (Sin(2 * Math.PI * f * t) + 0.6f * Sin(2 * Math.PI * f * 2.76 * t) + n.Next() * 0.5f * Env(t, 0.0005f, 0.01f))
+                            * Env(t, 0.001f, 0.12f) * 0.7f;
+                }
+            }
+            for (int c = 0; c < 5; c++)
+            {
+                int start = Len(0.18f + c * 0.06f);
+                for (int i = start; i < Math.Min(s.Length, start + Len(0.02f)); i++)
+                    s[i] += n.Next() * Env(T(i - start), 0.0003f, 0.006f) * 0.6f;
+            }
+            return Fade(Normalize(s, 0.6f), 0.002f, 0.1f);
+        }
+
+        /// <summary>Milestone 010: MCV deployment — a hydraulic hiss over a rising motor hum.</summary>
+        private static float[] DeployHydraulics(int seed)
+        {
+            var n = new Noise(seed);
+            var s = new float[Len(1.8f)];
+            var lp = new LowPass(); var hp = new HighPass();
+            double phase = 0;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = T(i);
+                float f = 70f + 50f * Math.Min(1f, t / 1.4f);
+                phase += 2 * Math.PI * f / SampleRate;
+                float hum = (Sin(phase) + 0.4f * Sin(phase * 2)) * 0.5f * Math.Min(1f, t / 0.2f) * Math.Min(1f, (1.8f - t) / 0.3f);
+                float hiss = hp.Run(lp.Run(n.Next(), 4000f), 900f) * Env(t, 0.02f, 0.35f) * 0.8f;
+                s[i] = hum + hiss;
+            }
+            return Fade(Normalize(s, 0.6f), 0.005f, 0.2f);
+        }
+
+        /// <summary>Milestone 010: construction territory lost — a falling two-tone warning.</summary>
+        private static float[] TerritoryLost(int seed)
+        {
+            var s = new float[Len(0.9f)];
+            float[] notes = { 659.25f, 440f };
+            for (int k = 0; k < notes.Length; k++)
+            {
+                int start = Len(k * 0.32f);
+                for (int i = start; i < Math.Min(s.Length, start + Len(0.3f)); i++)
+                {
+                    float t = T(i - start);
+                    double ph = 2 * Math.PI * notes[k] * t;
+                    s[i] += (Sin(ph) * 0.7f + Sin(ph * 3) * 0.2f) * Env(t, 0.01f, 0.18f);
+                }
+            }
+            return Fade(Normalize(s, 0.5f));
         }
 
         // ---------------- Interface ----------------

@@ -671,3 +671,67 @@ studies; design and report documents.
 
 ### Relevant commit hash
 Milestone commit: `fd8ab51` (fd8ab51504c01e731459bf4c44fb6959e897dc91)
+
+## Milestone 010 — Construction Territory, Building Sales and Mobile Command Vehicles (2026-10-12)
+
+### Feature requested
+Faction construction territory around the Headquarters and Forward Command Centres:
+- full-footprint validation; overlapping zones combine; enemy exclusion zones; dynamic updates;
+- no territory from ordinary buildings;
+- a placement overlay that is readable with fog and does not reveal enemy bases.
+
+Selling buildings: timed dismantling, refund by health, cancel, no duplicates, queue/research rules, confirmation for
+critical structures, AI use. A Mobile Command Vehicle that deploys in 15 s into a Forward Command Centre (validation,
+vulnerability, exactly-once conversion, health rule, no teleport, no pack-up). Victory interactions. AI expansion with
+MCVs from legitimate knowledge only. Tests, multi-map AI-vs-AI studies, exploit review, presentation, design and report.
+
+### Changes implemented
+- **Pure core:**
+  - `Core/Territory/TerritoryMap` (union coverage, known-only exclusion, versioned changes);
+  - `Core/Economy/SaleRules` + `SaleProcess`; `Core/Construction/DeployProcess`;
+  - `Core/AI/ForwardBaseRules`; new `PlacementResult` values;
+  - CommanderSettings / snapshot / cost-table fields; planner integration.
+- **Runtime:**
+  - `TerritorySystem` + `TerritoryTracker` (anchors from registration events, per-faction sightings);
+  - territory-aware `BuildingPlacementController` (`Validate(…, faction)`, `ValidateDeployment`, `PlaceDeployed`);
+  - `BuildingSale` (+ `BuildingSaleFx`); `MobileCommandVehicle` (+ `McvFx`); `UnitMover.SetLocked`;
+  - `TerritoryOverlay` + `TerritoryOverlayPass` (render-graph pass after the fog); minimap territory outline;
+  - Sell / Cancel sale / Deploy [T] / Cancel deploy in the command panel; notifications; help and setup texts;
+  - Annihilation counts FCCs; the `EnemyCommander.ForwardBases` partial (MCV tasks, escort, retries, sales);
+  - `TerritorySettings` data; new sounds.
+- **Content:** `CommandContentBuilder` and `CommandModels` (MCV and FCC), icons, overlay materials, MCV in the factory list, HQ/critical-structure flags, regenerated difficulty assets.
+- **Docs:** `Docs/Milestone-010-Design.md`, `Docs/Milestone-010-Report.md`, `Docs/Balance/M010/`, `Docs/Screenshots/M010/`.
+
+### Tests attempted and results
+- **EditMode:** 279/279 (+15 in `Milestone010TerritoryTests`).
+- **PlayMode:** 88/88 (+14 in `Milestone010PlayModeTests`, covering the acceptance scenario in a real map, including the AI deploying its own MCV).
+- **Console:** clean.
+- **Visual check** in the running game (5 screenshots) found the overlay hidden by the fog; fixed and re-checked.
+- **AI-vs-AI:** four iterations; the final study has 12 matches on 4 maps:
+  - 9 decided, 3 timeouts (M009 on the same seeds: 1);
+  - Hard beat Normal 3 of 4;
+  - 20 of 24 commanders built forward bases (40 of 41 MCVs deployed, none lost);
+  - first forward base at a median of 696 s;
+  - median match length +31 % (1787 s against 1360 s).
+
+### Problems encountered
+- The fog-of-war pass darkened the overlay; solved with a post-fog render pass queued from script.
+- The AI economy stalled under territory rules:
+  - MCVs were bought only from surplus;
+  - home fields ran dry before the commander could save 5000;
+  - the escort blocked deployment;
+  - forward bases churned because harvesters haul from any field.
+- Each was fixed through a data and rule iteration (see the report).
+- `GetInstanceID` is obsolete in this Unity version.
+
+### Human interventions required
+- None.
+
+### Known limitations
+- Slower, more stalemate-prone AI matches; tuning options are listed in the report.
+- Exclusion zones apply only to enemy bases the faction has seen (deliberate, against information leaks).
+- The AI does not repair its MCVs and does not route around threats.
+- Acceptance playtest by a human still needed.
+
+### Relevant commit hash
+Milestone commit: pending

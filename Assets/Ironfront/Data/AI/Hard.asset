@@ -48,6 +48,10 @@ MonoBehaviour:
     VehicleRepairThreshold: 0.5
     BuildingRepairThreshold: 0.75
     ReconReplaceSeconds: 150
+    MaxForwardBases: 3
+    EarliestForwardBase: 180
+    ForwardBaseArmy: 3
+    MaxMcvLosses: 2
   visionRange: 22
   threatMemorySeconds: 40
   defendRadius: 30

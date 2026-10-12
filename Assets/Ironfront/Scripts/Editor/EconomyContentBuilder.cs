@@ -63,6 +63,7 @@ namespace Ironfront.EditorTools
             public CombatContentBuilder.Defs Combat;
             public ExpansionContentBuilder.Defs Expansion;
             public RepairContentBuilder.Defs Repair;
+            public CommandContentBuilder.Defs Command;
             public GameObject DepositPrefab;
             public Material GhostValid, GhostInvalid;
         }
@@ -117,6 +118,8 @@ namespace Ironfront.EditorTools
             c.MatchSetup = LoadOrCreate<MatchSetup>(MatchSetupPath);
             var combat = CombatContentBuilder.CreateDefinitions(unlit);
             var expansion = ExpansionContentBuilder.CreateDefinitions(c, combat);
+            var command = CommandContentBuilder.CreateDefinitions(c, unlit); // Milestone 010
+            CommandContentBuilder.MarkCritical(expansion.ResearchCentre);
 
             SetBuilding(c.Headquarters, "headquarters", "Headquarters", cost: 0, size: new Vector2(8f, 8f), apron: 3f,
                 powerOut: 20, powerDrain: 0, constructible: false, prereqs: new BuildingDefinition[0], units: new UnitDefinition[0]);
@@ -126,7 +129,7 @@ namespace Ironfront.EditorTools
                 powerOut: 50, powerDrain: 0, constructible: true, prereqs: new[] { c.Headquarters }, units: new UnitDefinition[0]);
             SetBuilding(c.VehicleFactory, "vehicle_factory", "Vehicle Factory", cost: 1300, size: new Vector2(8f, 7f), apron: 5f,
                 powerOut: 0, powerDrain: 30, constructible: true, prereqs: new[] { c.Headquarters },
-                units: new UnitDefinition[] { c.Harvester, expansion.Recon, combat.LightTank, combat.HeavyTank, expansion.Artillery });
+                units: new UnitDefinition[] { c.Harvester, expansion.Recon, combat.LightTank, combat.HeavyTank, expansion.Artillery, command.Mcv });
             SetBuildingCombat(c.Headquarters, maxHealth: 2000f, armour: 0.3f);
             SetBuildingCombat(c.Refinery, maxHealth: 1200f, armour: 0.2f);
             SetBuildingCombat(c.PowerPlant, maxHealth: 800f, armour: 0.2f);
@@ -154,6 +157,7 @@ namespace Ironfront.EditorTools
                 SetList(so.FindProperty("constructionOptions"), c.Refinery, c.PowerPlant, c.VehicleFactory,
                     expansion.ResearchCentre, expansion.GuardTower, expansion.AtTurret, repair.RepairPad);
                 so.FindProperty("repair").objectReferenceValue = repair.Settings;
+                so.FindProperty("territory").objectReferenceValue = command.Settings;
                 SetList(so.FindProperty("research"), expansion.Research);
                 so.FindProperty("fogOfWar").boolValue = true;
                 so.FindProperty("creditsPerOre").intValue = 1;
@@ -170,6 +174,7 @@ namespace Ironfront.EditorTools
             CombatContentBuilder.CreatePrefabs(combat, pal);
             ExpansionContentBuilder.CreatePrefabs(expansion, pal);
             RepairContentBuilder.CreatePrefab(repair, pal);
+            CommandContentBuilder.CreatePrefabs(command, pal);
             c.DepositPrefab = SavePrefab(BuildDeposit(pal), DepositPrefabPath);
 
             AssetDatabase.SaveAssets();
@@ -197,6 +202,7 @@ namespace Ironfront.EditorTools
             c.Combat = CombatContentBuilder.Load();
             c.Expansion = ExpansionContentBuilder.Load();
             c.Repair = RepairContentBuilder.Load();
+            c.Command = CommandContentBuilder.Load();
             c.LightTank = c.Combat.LightTank;
             c.HeavyTank = c.Combat.HeavyTank;
             c.Outpost = c.Combat.Outpost;
@@ -607,7 +613,7 @@ namespace Ironfront.EditorTools
         internal static void SetPrefab(Object def, GameObject prefab) =>
             Set(def, so => so.FindProperty("prefab").objectReferenceValue = prefab);
 
-        private static Material CreateTransparent(string name, Shader unlit, Color color)
+        internal static Material CreateTransparent(string name, Shader unlit, Color color)
         {
             var mat = RtsSandboxBuilder.CreateOrUpdateMaterial(name, unlit, color);
             mat.SetFloat("_Surface", 1f);

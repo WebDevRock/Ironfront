@@ -241,6 +241,52 @@ MonoBehaviour:
     maxVoices: 2
     minInterval: 0.5
     positional: 1
+  - id: 24
+    clips:
+    - {fileID: 8300000, guid: 9303e036d4af7834cae2ad68a70fc4ad, type: 3}
+    - {fileID: 8300000, guid: 20ba4bf67c6438a4cbf8b4eb882abbcc, type: 3}
+    category: 0
+    volume: 0.45
+    pitchJitter: 0.06
+    maxVoices: 3
+    minInterval: 0.5
+    positional: 1
+  - id: 25
+    clips:
+    - {fileID: 8300000, guid: 87561edbb9c35f746a00b73f35262319, type: 3}
+    category: 1
+    volume: 0.5
+    pitchJitter: 0
+    maxVoices: 1
+    minInterval: 0.3
+    positional: 0
+  - id: 26
+    clips:
+    - {fileID: 8300000, guid: 5b88cf20176a16449887a2d931b5fc5e, type: 3}
+    category: 0
+    volume: 0.55
+    pitchJitter: 0.02
+    maxVoices: 2
+    minInterval: 0.5
+    positional: 1
+  - id: 27
+    clips:
+    - {fileID: 8300000, guid: 68a04870fccd51747ae5aa99d0058184, type: 3}
+    category: 1
+    volume: 0.6
+    pitchJitter: 0
+    maxVoices: 1
+    minInterval: 1
+    positional: 0
+  - id: 28
+    clips:
+    - {fileID: 8300000, guid: 56c4a302c33e51a418fc3416cbe4ed23, type: 3}
+    category: 1
+    volume: 0.5
+    pitchJitter: 0
+    maxVoices: 1
+    minInterval: 2
+    positional: 0
   ambienceLoop: {fileID: 8300000, guid: 8017f88eeb1370a4f8646d73df674498, type: 3}
   engineLoop: {fileID: 8300000, guid: 8984f822e56ac244aa0c3af1c82ce127, type: 3}
   distantBattle:

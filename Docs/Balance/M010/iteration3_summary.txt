@@ -1,0 +1,47 @@
+map              seed diff          M009 |         M010 | MCVs  lost  FCC(first s)  end  deploy ok/try  sold  refunds
+dustfall_plains    11 NvN   F2 won 2048 |  F2 won 2302 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 3/0/3(587)/1 4/4 s4 r6000
+dustfall_plains    23 NvN  timeout 2700 | timeout 2700 | F1 1/0/1(2088)/0 2/2 s2 r3000 | F2 1/0/1(2103)/0 1/1 s1 r500
+dustfall_plains    61 HvN   F1 won 1205 |  F1 won 1761 | F1 2/0/2(707)/1 3/3 s3 r3500 | F2 1/0/1(1564)/1 2/2 s0 r0
+iron_pass          11 NvN   F2 won 1071 |  F2 won 2406 | F1 2/0/2(686)/0 3/3 s4 r4180 | F2 3/0/3(683)/1 5/5 s6 r7000
+iron_pass          23 NvN   F2 won 1770 |  F1 won 2177 | F1 3/0/3(540)/2 5/6 s2 r1314 | F2 1/0/1(733)/0 1/1 s4 r4000
+iron_pass          61 HvN   F1 won 1580 |  F1 won 1246 | F1 2/0/2(565)/1 2/2 s4 r3976 | F2 1/0/1(600)/0 1/1 s2 r375
+green_divide       11 NvN   F2 won 1329 |  F2 won 1787 | F1 1/0/1(796)/0 3/3 s4 r3756 | F2 1/0/1(1281)/0 1/2 s2 r3000
+green_divide       23 NvN   F1 won 1244 |   F2 won 912 | F1 0/0/0(-1)/0 0/0 s1 r458 | F2 0/0/0(-1)/0 0/0 s1 r500
+green_divide       61 HvN   F1 won 1360 |  F1 won 1410 | F1 3/0/3(447)/0 3/4 s6 r6758 | F2 2/0/2(618)/0 2/3 s4 r3805
+blackstone_basin   11 NvN   F1 won 1612 |  F2 won 2184 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 3/0/3(964)/2 6/7 s3 r3500
+blackstone_basin   23 NvN   F2 won 1698 | timeout 2700 | F1 1/0/1(1212)/0 2/2 s3 r3500 | F2 3/0/3(1156)/1 5/5 s4 r6000
+blackstone_basin   61 HvN   F1 won 1535 | timeout 2700 | F1 3/0/2(671)/0 3/8 s3 r5115 | F2 4/0/4(655)/0 7/8 s8 r12000
+
+Decided 9/12; median length 1787 s
+Both decided (9): median M009 1360 s, M010 1787 s
+MCVs per side: mean 1.71 (max 4), sides with an MCV 20/24
+Forward bases established per side: mean 1.67; sides with one 20/24; still standing at the end 10
+First forward base: median 696 s (range 447-2103)
+MCVs lost: 0; deploy attempts 72, refused 11
+Structures sold: 71, refunds 82237 credits
+Matches where only one side built a forward base: 2; that side won 2
+Hard vs Normal: Hard won 3/4
+Study: M010 iteration 3 (final) — 12 AI-vs-AI matches (10x time scale, seeded random starts)
+Outcomes: 9 decisive, 0 draws, 3 timeouts (limit 2700 s)
+Match length (decided): median 1787 s, mean 1798 s, min 912, max 2406
+First contact: median 128 s (range 106-141)
+Enemy base located (per commander): median 131 s (range 102-185), 24/24 commanders
+
+Per map:              n  decided  median s  max s  contact  income/side  recons/side  2nd refinery
+  blackstone_basin    3       1      2184   2700      130        44656          6.8  5/6
+  dustfall_plains     3       2      2032   2700      134        48389          5.2  4/6
+  green_divide        3       3      1410   1787      133        43903          4.3  6/6
+  iron_pass           3       3      2177   2406      125        54930          5.3  6/6
+
+Difficulty matchups (winner by difficulty):
+  Hard vs Normal   Hard 3, no result 1
+  Normal vs Normal Normal 6, no result 2
+
+Start position (Normal mirrors only): wins by slot id, per map
+  blackstone_basin   slot 2: 0W/1L  slot 5: 1W/0L
+  dustfall_plains    slot 3: 0W/1L  slot 6: 1W/0L
+  green_divide       slot 3: 0W/1L  slot 5: 0W/1L  slot 6: 1W/0L  slot 7: 1W/0L
+  iron_pass          slot 3: 0W/1L  slot 5: 1W/0L  slot 6: 1W/0L  slot 7: 0W/1L
+  Faction 1 vs faction 2 wins in mirrors: 1 / 5
+
+Economy of the winner vs loser (decisive matches): income ratio median 1.59

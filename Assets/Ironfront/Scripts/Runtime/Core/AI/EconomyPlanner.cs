@@ -20,6 +20,8 @@ namespace Ironfront.Core.AI
         StartResearch,
         // Milestone 009
         BuildRepairPad,
+        // Milestone 010
+        ProduceMcv,
     }
 
     public readonly struct AiAction
@@ -43,7 +45,7 @@ namespace Ironfront.Core.AI
                                       || Type == AiActionType.BuildResearchCentre || Type == AiActionType.BuildGuardTower || Type == AiActionType.BuildAtTurret
                                       || Type == AiActionType.BuildRepairPad;
         public bool IsProduction => Type == AiActionType.ProduceHarvester || Type == AiActionType.ProduceLightTank || Type == AiActionType.ProduceHeavyTank
-                                    || Type == AiActionType.ProduceRecon || Type == AiActionType.ProduceArtillery;
+                                    || Type == AiActionType.ProduceRecon || Type == AiActionType.ProduceArtillery || Type == AiActionType.ProduceMcv;
 
         public override string ToString() => Type == AiActionType.SaveFor ? $"Save for {Goal}: {Reason}" : $"{Type}: {Reason}";
     }
@@ -62,7 +64,7 @@ namespace Ironfront.Core.AI
             bool defending = state == StrategicState.Defend;
 
             // 1. Income first: without a refinery nothing else matters (unless there is no ore left anywhere).
-            if (s.Refineries == 0 && s.OreAvailable)
+            if (s.Refineries == 0 && s.OreAvailable && !s.RefineryBlockedByTerritory)
                 return BuyOrSave(s.Credits, cost.Refinery, AiActionType.BuildRefinery, "no refinery");
 
             // 2. Power for what we have and the next building.
@@ -89,15 +91,22 @@ namespace Ironfront.Core.AI
             if (s.Factories == 0)
                 return BuyOrSave(s.Credits, cost.Factory, AiActionType.BuildFactory, "no factory");
 
-            // 4b-4e. Milestone 007: scouting, defences, technology (each only when the content exists).
+            // 4b. Milestone 010: a forward base when the next ore field lies outside construction territory. It comes
+            //     before defences and technology: the home field runs dry within minutes on maps without a second field
+            //     in reach (M010 study), and without income the vehicle can never be afforded.
+            var forward = ForwardBaseRules.Next(s, state, cfg, cost);
+            if (forward.Type != AiActionType.None) return forward;
+
+            // 4c-4f. Milestone 007: scouting, defences, technology (each only when the content exists).
             var expansion = ExpansionRules.Next(s, state, cfg, cost);
             if (expansion.Type != AiActionType.None) return expansion;
 
             // 5. Expansion: a refinery near ore that is still available when the local fields are spent,
             //    or a second refinery once harvesters are saturated and credits allow.
-            if (s.Refineries < cfg.MaxRefineries && s.OreAvailable && !s.OreNearRefinery)
+            // (Milestone 010: only while an unclaimed field has a refinery site inside construction territory.)
+            if (s.Refineries < cfg.MaxRefineries && s.OreAvailable && !s.OreNearRefinery && !s.RefineryBlockedByTerritory)
                 return BuyOrSave(s.Credits, cost.Refinery, AiActionType.BuildRefinery, "local ore exhausted");
-            if (s.Refineries < cfg.MaxRefineries && s.Credits >= cost.Refinery + cfg.ExpansionCredits && s.OreAvailable)
+            if (s.Refineries < cfg.MaxRefineries && s.Credits >= cost.Refinery + cfg.ExpansionCredits && s.OreAvailable && !s.RefineryBlockedByTerritory)
                 return new AiAction(AiActionType.BuildRefinery, "expand income");
             if (s.Factories < cfg.MaxFactories && s.Credits >= cost.Factory + cfg.ExpansionCredits)
                 return new AiAction(AiActionType.BuildFactory, "second factory");

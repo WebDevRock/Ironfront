@@ -47,6 +47,16 @@ namespace Ironfront.Core.Combat
             return restored;
         }
 
+        /// <summary>
+        /// Milestone 010: sets the starting health of a structure created from a vehicle (health conversion). Clamped to
+        /// [1, Max]; refused once dead, and never used to heal in play (repairs use <see cref="Restore"/>).
+        /// </summary>
+        public void SetInitialFraction(float fraction)
+        {
+            if (IsDead || Max <= 0f) return;
+            Current = Math.Max(1f, Math.Min(Max, Max * fraction));
+        }
+
         /// <summary>Applies raw damage (armour is applied here). Returns the damage dealt.</summary>
         public float ApplyDamage(float rawDamage)
         {

@@ -19,6 +19,8 @@ namespace Ironfront.UI
             ("Right click", "Move  •  attack enemy  •  harvest ore  •  set factory rally point"),
             ("F, then click", "Attack-move (engage enemies on the way)"),
             ("X  /  H", "Stop  /  Hold position"),
+            ("R  /  T", "Repair at a Repair Pad  /  Deploy a Mobile Command Vehicle"),
+            ("Build", "Only inside your construction territory (around the HQ and Forward Command Centres)"),
             ("Ctrl + 1–9", "Assign control group"),
             ("1–9", "Select control group (press twice: centre the camera on it)"),
             ("Space", "Jump to the latest alert"),

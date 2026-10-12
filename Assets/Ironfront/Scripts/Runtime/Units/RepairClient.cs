@@ -73,6 +73,8 @@ namespace Ironfront.Units
             if (unit == null) return false;
             var h = unit.GetComponent<Health>();
             if (h == null || !h.IsAlive || h.IsStructure || h.FactionId != faction) return false;
+            var mcv = unit.GetComponent<MobileCommandVehicle>(); // Milestone 010: a deploying MCV cannot move
+            if (mcv != null && mcv.IsDeploying) return false;
             return unit.GetComponent<UnitMover>() != null && unit.GetComponent<UnitIdentity>() != null;
         }
 

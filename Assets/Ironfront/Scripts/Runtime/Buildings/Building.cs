@@ -31,6 +31,8 @@ namespace Ironfront.Buildings
         public BuildingDefinition Definition => definition;
         public int FactionId => Member.FactionId;
         public bool IsSelected { get; private set; }
+        /// <summary>Registered with its faction (counts for prerequisites, power and territory).</summary>
+        public bool IsRegistered => _registeredFaction != int.MinValue;
         public Footprint Footprint => definition != null ? definition.FootprintAt(transform.position, FacesSouth) : default;
 
         /// <summary>Buildings face north (+Z) or, rotated 180°, south (−Z).</summary>
@@ -56,12 +58,17 @@ namespace Ironfront.Buildings
 
         /// <summary>In-place repairs (Milestone 009); every structure has one.</summary>
         public BuildingRepair Repair { get; private set; }
+        /// <summary>Selling / dismantling (Milestone 010); every structure has one.</summary>
+        public BuildingSale Sale { get; private set; }
 
         private void Awake()
         {
             Repair = GetComponent<BuildingRepair>();
             if (Repair == null) Repair = gameObject.AddComponent<BuildingRepair>();
             if (GetComponent<Visuals.BuildingRepairFx>() == null) gameObject.AddComponent<Visuals.BuildingRepairFx>();
+            Sale = GetComponent<BuildingSale>();
+            if (Sale == null) Sale = gameObject.AddComponent<BuildingSale>();
+            if (GetComponent<Visuals.BuildingSaleFx>() == null) gameObject.AddComponent<Visuals.BuildingSaleFx>();
         }
 
         private void OnEnable()

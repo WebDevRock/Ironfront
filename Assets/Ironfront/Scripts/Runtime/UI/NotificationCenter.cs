@@ -65,6 +65,9 @@ namespace Ironfront.UI
             BuildingPlacementController.AnyBuildingPlaced += OnPlaced;
             VehicleFactory.AnyUnitProduced += OnProduced;
             OreDeposit.AnyDepleted += OnDepleted;
+            TerritorySystem.AnchorLost += OnAnchorLost;
+            BuildingSale.AnySold += OnSold;
+            Units.MobileCommandVehicle.AnyDeployFailed += OnDeployFailed;
             if (placement != null) placement.Message += OnPlacementMessage;
             _groups = FindAnyObjectByType<Selection.ControlGroupInput>();
             if (_groups != null) _groups.Feedback += OnGroupFeedback;
@@ -100,6 +103,9 @@ namespace Ironfront.UI
             BuildingPlacementController.AnyBuildingPlaced -= OnPlaced;
             VehicleFactory.AnyUnitProduced -= OnProduced;
             OreDeposit.AnyDepleted -= OnDepleted;
+            TerritorySystem.AnchorLost -= OnAnchorLost;
+            BuildingSale.AnySold -= OnSold;
+            Units.MobileCommandVehicle.AnyDeployFailed -= OnDeployFailed;
             if (placement != null) placement.Message -= OnPlacementMessage;
             if (_groups != null) _groups.Feedback -= OnGroupFeedback;
             if (_player != null)
@@ -202,8 +208,33 @@ namespace Ironfront.UI
 
         private void OnPlaced(Building b)
         {
-            if (b != null && b.FactionId == PlayerFaction && b.Definition != null)
+            if (b == null || b.FactionId != PlayerFaction || b.Definition == null) return;
+            if (b.Definition.TerritoryRadius > 0f)
+                Post($"{b.Definition.DisplayName} established: new construction territory", Kind.Good, location: b.transform.position);
+            else
                 Post($"Construction complete: {b.Definition.DisplayName}", Kind.Good);
+        }
+
+        // ---------- Milestone 010 ----------
+
+        private void OnAnchorLost(Building b)
+        {
+            if (b == null || b.FactionId != PlayerFaction || MatchFlowController.Current == null || MatchFlowController.Current.IsOver) return;
+            if (!Application.isPlaying || b.gameObject.scene.isLoaded == false) return; // scene unload
+            Post($"Construction territory lost: {b.Definition.DisplayName}", Kind.Danger, "territory-lost", 2f, b.transform.position);
+            Ironfront.Audio.GameAudio.PlayFlat(Ironfront.Audio.SoundId.TerritoryLost);
+        }
+
+        private void OnSold(Building b, int refund)
+        {
+            if (b != null && b.FactionId == PlayerFaction && b.Definition != null)
+                Post($"Sold {b.Definition.DisplayName}: +{refund} credits", Kind.Info);
+        }
+
+        private void OnDeployFailed(Units.MobileCommandVehicle m, Core.Construction.DeployCheck why)
+        {
+            if (m != null && m.FactionId == PlayerFaction && why != Core.Construction.DeployCheck.Busy)
+                Post($"Deployment failed: {Core.Construction.DeployProcess.Describe(why)}", Kind.Warning, "deploy-failed", 1f, m.transform.position);
         }
 
         private void OnProduced(VehicleFactory factory, GameObject unit)

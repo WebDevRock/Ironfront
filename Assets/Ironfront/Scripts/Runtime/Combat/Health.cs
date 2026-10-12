@@ -127,6 +127,9 @@ namespace Ironfront.Combat
             ApplyArmourBonus(MatchController.Current.GetFaction(FactionId).Research.ArmourBonus);
         }
 
+        /// <summary>Milestone 010: starting health of a deployed structure (see <see cref="HealthModel.SetInitialFraction"/>).</summary>
+        public void SetInitialFraction(float fraction) => _model?.SetInitialFraction(fraction);
+
         /// <summary>Sets armour to the definition value plus a research bonus (vehicles only).</summary>
         public void ApplyArmourBonus(float bonus)
         {

@@ -46,6 +46,9 @@ namespace Ironfront.Match
             }
 
             Buildings.RepairLedger.Reset(); // Milestone 009: repair spending is per match
+            Buildings.BuildingSale.ResetMatch();
+            Buildings.TerritorySystem.ResetMatch(); // Milestone 010: territory and sightings are per match
+            if (GetComponent<Buildings.TerritoryTracker>() == null) gameObject.AddComponent<Buildings.TerritoryTracker>();
             bool playerChosen = false;
             foreach (var f in setup.Factions)
             {

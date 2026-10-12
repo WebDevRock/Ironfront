@@ -122,7 +122,7 @@ namespace Ironfront.Construction
 
             Vector2 snapped = PlacementRules.Snap(new Vector2(ground.x, ground.z), gridSize);
             CurrentPosition = new Vector3(snapped.x, 0f, snapped.y);
-            CurrentResult = Validate(Pending, CurrentPosition);
+            CurrentResult = Validate(Pending, CurrentPosition, false, PlayerFactionId);
             UpdateGhost();
 
             var select = RtsInput.Select;
@@ -145,6 +145,92 @@ namespace Ironfront.Construction
             foreach (var b in Building.All)
                 if (b.Definition != null) structures.Add(b.Footprint);
             return Validate(definition, center, facesSouth, structures, includeUnits: true);
+        }
+
+        /// <summary>
+        /// Milestone 010: the full rules for <paramref name="factionId"/> — construction territory first (the whole
+        /// footprint inside the faction's territory and clear of known enemy exclusion zones), then the terrain, structure,
+        /// resource, unit and navigation rules. Used by the player's placement tool, the computer commander and TryPlace.
+        /// </summary>
+        public PlacementResult Validate(BuildingDefinition definition, Vector3 center, bool facesSouth, int factionId)
+        {
+            var territory = ValidateTerritory(definition, center, facesSouth, factionId);
+            return territory != PlacementResult.Valid ? territory : Validate(definition, center, facesSouth);
+        }
+
+        /// <summary>Territory part of placement: map bounds, own territory, known enemy exclusion.</summary>
+        public PlacementResult ValidateTerritory(BuildingDefinition definition, Vector3 center, bool facesSouth, int factionId)
+        {
+            var fp = definition.FootprintAt(center, facesSouth);
+            if (!PlacementRules.Contains(mapBounds, fp.Body) || (fp.HasApron && !PlacementRules.Contains(mapBounds, fp.Apron)))
+                return PlacementResult.OutOfBounds;
+            if (TerritorySystem.InKnownEnemyZone(factionId, fp, out _)) return PlacementResult.EnemyTerritory;
+            if (!TerritorySystem.Covers(factionId, fp)) return PlacementResult.OutsideTerritory;
+            return PlacementResult.Valid;
+        }
+
+        /// <summary>
+        /// Milestone 010: can a Forward Command Centre (<paramref name="definition"/>) be deployed at
+        /// <paramref name="center"/> by <paramref name="factionId"/>? Own territory is not required; known enemy exclusion
+        /// zones, terrain, structures, ore, other units (not <paramref name="ignore"/>, the deploying vehicle) and level,
+        /// walkable ground under the whole footprint are.
+        /// </summary>
+        public DeployCheck ValidateDeployment(BuildingDefinition definition, Vector3 center, int factionId, GameObject ignore, bool includeUnits = true)
+        {
+            var fp = definition.FootprintAt(center);
+            if (!PlacementRules.Contains(mapBounds, fp.Body)) return DeployCheck.OutOfBounds;
+            if (TerritorySystem.InKnownEnemyZone(factionId, fp, out _)) return DeployCheck.EnemyTerritory;
+
+            var structures = new List<Footprint>();
+            foreach (var b in Building.All)
+                if (b.Definition != null) structures.Add(b.Footprint);
+            Rect query = PlacementRules.Expand(fp.Body, Mathf.Max(clearance, resourceClearance));
+            var units = new List<Rect>();
+            if (includeUnits && unitLayers != 0)
+            {
+                var c = new Vector3(query.center.x, 5f, query.center.y);
+                foreach (var col in Physics.OverlapBox(c, new Vector3(query.width * 0.5f, 10f, query.height * 0.5f), Quaternion.identity, unitLayers, QueryTriggerInteraction.Ignore))
+                {
+                    if (ignore != null && col.transform.IsChildOf(ignore.transform)) continue;
+                    var bb = col.bounds;
+                    units.Add(new Rect(bb.min.x, bb.min.z, bb.size.x, bb.size.z));
+                }
+            }
+            var result = PlacementRules.Evaluate(fp, mapBounds, structures, OverlapRects(query, obstacleLayers), OverlapRects(query, resourceLayers),
+                units, clearance, resourceClearance);
+            if (result != PlacementResult.Valid) return DeployProcess.FromPlacement(result);
+
+            // Level, walkable ground under the centre and every corner (slopes, holes, obstacle carvings).
+            float tolerance = TerritorySettings.Current.DeployHeightTolerance;
+            if (!NavMesh.SamplePosition(center, out var mid, 1.5f, NavMesh.AllAreas)) return DeployCheck.UnevenGround;
+            var r = fp.Body;
+            foreach (var corner in new[] { new Vector3(r.xMin + 0.5f, 0f, r.yMin + 0.5f), new Vector3(r.xMax - 0.5f, 0f, r.yMin + 0.5f),
+                         new Vector3(r.xMin + 0.5f, 0f, r.yMax - 0.5f), new Vector3(r.xMax - 0.5f, 0f, r.yMax - 0.5f) })
+            {
+                var probe = new Vector3(corner.x, mid.position.y, corner.z);
+                if (!NavMesh.SamplePosition(probe, out var hit, 1.5f, NavMesh.AllAreas)) return DeployCheck.UnevenGround;
+                if (new Vector2(hit.position.x - probe.x, hit.position.z - probe.z).magnitude > 1f) return DeployCheck.UnevenGround;
+                if (Mathf.Abs(hit.position.y - mid.position.y) > tolerance) return DeployCheck.UnevenGround;
+            }
+            return DeployCheck.Valid;
+        }
+
+        /// <summary>
+        /// Milestone 010: places a deployed structure (Forward Command Centre) for <paramref name="factionId"/> without
+        /// charging — the vehicle was paid for. The same deployment validation runs here, so nothing bypasses it.
+        /// </summary>
+        public bool PlaceDeployed(BuildingDefinition definition, Vector3 center, int factionId, GameObject vehicle, out Building placed, out DeployCheck check)
+        {
+            placed = null;
+            check = definition == null || definition.Prefab == null ? DeployCheck.Busy
+                : ValidateDeployment(definition, center, factionId, vehicle, includeUnits: false);
+            if (check != DeployCheck.Valid) return false;
+            var go = FactionSpawner.Spawn(definition.Prefab, new Vector3(center.x, 0f, center.z), Quaternion.identity, factionId);
+            go.name = definition.DisplayName;
+            placed = go.GetComponent<Building>();
+            BuildingPlaced?.Invoke(placed);
+            AnyBuildingPlaced?.Invoke(placed);
+            return true;
         }
 
         /// <summary>
@@ -202,7 +288,7 @@ namespace Ironfront.Construction
                 return false;
             }
 
-            var result = Validate(definition, center, facesSouth);
+            var result = Validate(definition, center, facesSouth, factionId);
             if (result != PlacementResult.Valid)
             {
                 reason = PlacementRules.Describe(result);

@@ -24,7 +24,7 @@ namespace Ironfront.AI
     /// one economic step (<see cref="EconomyPlanner"/>) and manages its army. It acts only through the systems
     /// the player uses: building placement validation/purchase, factory queues and unit combat orders.
     /// </summary>
-    public class EnemyCommander : MonoBehaviour
+    public partial class EnemyCommander : MonoBehaviour
     {
         /// <summary>A deposit within this distance of a refinery dock counts as that refinery's local ore.</summary>
         public const float LocalOreRadius = 20f;
@@ -205,7 +205,8 @@ namespace Ironfront.AI
             SetupFactories();
 
             // Milestone 009: vehicles on a repair order are unavailable (any order would cancel their repair).
-            var all = OwnArmy().Where(u => !InRepair(u)).ToList();
+            // Milestone 010: an MCV escort is busy too.
+            var all = OwnArmy().Where(u => !InRepair(u) && !_escorts.Contains(u)).ToList();
             var scouts = all.Where(IsRecon).ToList();
             var army = all.Where(u => !IsRecon(u)).ToList();
             foreach (var dead in _unitKeys.Keys.Where(k => k == null).ToList()) _unitKeys.Remove(dead);
@@ -228,6 +229,8 @@ namespace Ironfront.AI
             ManageScouts(scouts);
             CounterArtillery(army, basePoints);
             ManageRepairs(army, scouts);
+            ManageForwardBases(army);
+            ManageSales(army, threats);
         }
 
         // ---------- Milestone 009: repairs (same pads, queues and prices as the player) ----------
@@ -245,6 +248,8 @@ namespace Ironfront.AI
         {
             var match = MatchController.Current;
             int credits = match.GetFaction(factionId).Wallet.Credits;
+            // Milestone 010: credits being saved for a forward base are not spent on repairs.
+            if (LastAction.Type == AiActionType.SaveFor && LastAction.Goal == AiActionType.ProduceMcv) credits -= _cost.Mcv;
             bool defending = State == StrategicState.Defend;
 
             // Important structures: repair in place while affordable, stop before production is starved.
@@ -409,6 +414,8 @@ namespace Ironfront.AI
             s.AttackStrength = _attackers.Sum(Strength);
             s.AttackStartStrength = _attackStartStrength;
             ChooseResearch(ref s, faction); // after the counts it depends on (harvesters)
+            var homeBuilding = Home();
+            if (homeBuilding != null) FillTerritorySnapshot(ref s, homeBuilding.transform.position);
             return s;
         }
 
@@ -470,7 +477,8 @@ namespace Ironfront.AI
             var def = action.Type == AiActionType.ProduceHarvester ? _harvesterDef
                 : action.Type == AiActionType.ProduceHeavyTank ? _heavyDef
                 : action.Type == AiActionType.ProduceRecon ? _reconDef
-                : action.Type == AiActionType.ProduceArtillery ? _artilleryDef : _lightDef;
+                : action.Type == AiActionType.ProduceArtillery ? _artilleryDef
+                : action.Type == AiActionType.ProduceMcv ? _mcvDef : _lightDef;
             if (def == null) return;
 
             VehicleFactory best = null;
@@ -519,6 +527,10 @@ namespace Ironfront.AI
                     // Beside the base, between it and the rally point: damaged units do not drive through the enemy.
                     candidates = SiteSearch.Ranked(home, home + enemyDir * 6f + new Vector3(enemyDir.z, 0f, -enemyDir.x) * 14f, 12f, 28f, 2f);
                     break;
+                case AiActionType.BuildGuardTower when UndefendedForwardBase() is Building fcc:
+                    // Milestone 010: guard the forward base, on its side facing home (inside its territory).
+                    candidates = SiteSearch.Ranked(fcc.transform.position, home, 10f, 22f, 2f);
+                    break;
                 case AiActionType.BuildGuardTower:
                 case AiActionType.BuildAtTurret:
                     // On the approach route from the enemy, a little in front of the base (at a pass if there is one).
@@ -527,7 +539,9 @@ namespace Ironfront.AI
                 default:
                     var deposit = DepositForNewRefinery(home);
                     if (deposit == null) return false;
-                    candidates = SiteSearch.Ranked(deposit.transform.position, home, 10f, 18f, 2f);
+                    // Towards the anchor whose territory holds the field (home, or a forward base).
+                    var anchor = NearestAnchor(deposit.transform.position, home);
+                    candidates = SiteSearch.Ranked(deposit.transform.position, anchor, 10f, 18f, 2f);
                     break;
             }
 
@@ -536,7 +550,8 @@ namespace Ironfront.AI
             foreach (var c in candidates)
             {
                 if (++checks > 500) break;
-                if (placement.Validate(def, c, facesSouth) == PlacementResult.Valid)
+                // Milestone 010: the faction's construction territory applies exactly as for the player.
+                if (placement.Validate(def, c, facesSouth, factionId) == PlacementResult.Valid)
                 {
                     site = c;
                     return true;
@@ -590,7 +605,8 @@ namespace Ironfront.AI
             // Milestone 008: ranked by ground travel distance; deposits the commander's units cannot reach are skipped.
             // Addendum: only ore fields this faction has actually seen.
             var reachable = OreDeposit.All.Where(d => !d.IsDepleted && Ironfront.Vision.VisionSystem.IsExplored(factionId, d.transform.position)
-                                                      && GroundDistance(home, d) < float.MaxValue).ToList();
+                                                      && GroundDistance(home, d) < float.MaxValue
+                                                      && RefinerySiteInTerritory(d.transform.position)).ToList(); // Milestone 010
             return reachable
                 .Where(d => refineries.Count == 0 || refineries.All(r => (r - d.transform.position).sqrMagnitude > 18f * 18f))
                 .OrderBy(d => GroundDistance(home, d))
@@ -835,6 +851,8 @@ namespace Ironfront.AI
             if (flow == null || flow.Victory != Ironfront.Core.Skirmish.VictoryMode.Annihilation) return null;
             foreach (var b in OwnStructures())
                 if (b.Definition.Id == "vehicle_factory") return b;
+            foreach (var b in OwnStructures())
+                if (b.Definition.Id == MatchFlowController.ForwardCommandId) return b;
             return null;
         }
 
@@ -1281,6 +1299,7 @@ namespace Ironfront.AI
             _reconDef = _factoryDef.ProducibleUnits.FirstOrDefault(u => u != null && u.Id == "recon");
             _repairPadDef = setup2.ConstructionOptions.FirstOrDefault(d => d != null && d.Id == "repair_pad");
             _artilleryDef = _factoryDef.ProducibleUnits.FirstOrDefault(u => u != null && u.Id == "rocket_artillery");
+            ResolveForwardDefinitions(); // Milestone 010
 
             _cost = new CostTable
             {
@@ -1299,8 +1318,34 @@ namespace Ironfront.AI
                 GuardTower = _towerDef != null ? _towerDef.Cost : 0,
                 AtTurret = _atDef != null ? _atDef.Cost : 0,
                 RepairPad = _repairPadDef != null ? _repairPadDef.Cost : 0,
+                Mcv = _mcvDef != null ? _mcvDef.Cost : 0,
             };
             return true;
+        }
+
+        private Building UndefendedForwardBase()
+        {
+            foreach (var b in OwnStructures())
+            {
+                if (!IsForwardBase(b)) continue;
+                var p = b.transform.position;
+                if (!OwnStructures().Any(o => (o.Definition.Id == "guard_tower" || o.Definition.Id == "at_turret") && (o.transform.position - p).sqrMagnitude < 30f * 30f))
+                    return b;
+            }
+            return null;
+        }
+
+        private Vector3 NearestAnchor(Vector3 p, Vector3 fallback)
+        {
+            float best = float.MaxValue;
+            Vector3 result = fallback;
+            foreach (var a in TerritorySystem.Map.AnchorsOf(factionId))
+            {
+                var c = new Vector3(a.Centre.x, 0f, a.Centre.y);
+                float d = (c - p).sqrMagnitude;
+                if (d < best) { best = d; result = c; }
+            }
+            return result;
         }
 
         private void Record(string message)

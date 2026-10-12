@@ -63,6 +63,7 @@ namespace Ironfront.Buildings
         public bool SetRepairing(bool on)
         {
             if (on && (_health == null || !_health.IsAlive || _health.Current >= _health.Max)) return false;
+            if (on && _building != null && _building.Sale != null && _building.Sale.IsDismantling) return false; // Milestone 010
             if (IsOn == on) return true;
             IsOn = on;
             if (on && _meter == null) _meter = CreateMeter();
