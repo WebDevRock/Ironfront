@@ -93,8 +93,8 @@ The project is intended to evaluate these questions through practical developmen
 | 006 | Visual identity and presentation | Complete |
 | 007 | Additional units, research and fog of war | Complete |
 | 008 | Multiple maps and configurable skirmishes | Complete |
-| 009 | Building and vehicle repair systems | Planned / in progress |
-| 010 | Construction territory, sales and forward bases | Planned / in progress |
+| 009 | Building and vehicle repair systems | Complete |
+| 010 | Construction territory, sales and forward bases | Complete |
 | Release | Windows release candidate and independent testing | Planned |
 
 The development plan may evolve as features are implemented and evaluated.
