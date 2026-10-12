@@ -670,4 +670,4 @@ studies; design and report documents.
 - Acceptance playtest by a human still needed.
 
 ### Relevant commit hash
-Milestone commit: pending
+Milestone commit: `fd8ab51` (fd8ab51504c01e731459bf4c44fb6959e897dc91)

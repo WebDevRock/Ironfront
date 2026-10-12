@@ -1,6 +1,6 @@
 # Milestone 009 — Report: Building Repairs, Vehicle Repair Pads and Queuing
 
-**Date:** 2026-10-12 · **Base:** `21c8334` (fog fix after M008) · **Design:** `Docs/Milestone-009-Design.md`
+**Date:** 2026-10-12 · **Base:** `21c8334` (fog fix after M008) · **Design:** `Docs/Milestone-009-Design.md`  · **Commit:** `fd8ab51`
 
 ## 1. What was delivered
 
