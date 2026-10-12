@@ -775,3 +775,39 @@ needs to be within a certain range of any building. not a fixed centre point …
 
 ### Relevant commit hash
 Commit: `7d30882`
+
+## Tooling — Headless AI-vs-AI studies (2026-10-12)
+
+### Feature requested
+Make the AI-vs-AI skirmish studies faster by running them without graphics, with no loss of testing quality. Tooling
+only: no gameplay, balance or AI changes. Set up only; do not run tests.
+
+### Changes implemented
+- **`Ironfront.Diagnostics.SkirmishStudy` (runtime):** the study's match loop moved out of the test assembly, unchanged —
+  plan parsing, per-match setup, seeding (`seed × 7919 + 1/2`), the second commander, tallies, trace, JSON line and
+  summary. Two adaptations so it also works in a player:
+  - scenes load by build-settings name instead of the Editor-only `LoadSceneAsyncInPlayMode`;
+  - faction 1's difficulty comes from the map catalog instead of `AssetDatabase`, which is the same three assets.
+- **`SkirmishStudyPlayModeTests`** now delegates to it, so the Editor and headless runs play identical matches.
+- **`SkirmishStudyRunner` (runtime):** started by `Ironfront.exe -batchmode -nographics -ironfrontSkirmishStudy
+  [-plan …] [-out dir] [-studyStep s]`, in the `MapBenchmarkRunner` pattern.
+  - Same time scale (10×) and limit (2700 s).
+  - `Time.captureDeltaTime` fixes every frame at 1/60 s × 10 of game time, and frames run back to back; without that,
+    game time would still follow the wall clock. Per-frame steps equal the Editor study's at 60 fps.
+  - Writes `skirmish_done.txt` and quits with exit code 0, or 1 on error.
+- **`Tools/SkirmishStudy/run_study.ps1`:** rebuilds the player when any Assets file is newer (via the open Editor,
+  else batch-mode Unity), runs it headless and reports the time. Its default plan is the 12-match comparison plan,
+  and it writes to `Temp/`, so the existing analysis works unchanged.
+
+### Tests attempted and results
+- Compiled cleanly (runtime, Editor and test assemblies); the script parses.
+- Not run, as instructed: no player build, no headless study, no test run. The first headless run is the real
+  check; `-nographics` side effects, if any, will show in `skirmish_player.log`, and `-Graphics` falls back to
+  `-batchmode` with a graphics device.
+
+### Human interventions required
+- None.
+
+### Known limitations
+- The headless player always plays at the fixed 1/60 s step. The Editor study's step varied with frame rate.
+- The speed-up has not been measured yet.
