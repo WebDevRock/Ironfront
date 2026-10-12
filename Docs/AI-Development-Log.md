@@ -559,3 +559,28 @@ and extended verification.
 
 ### Relevant commit hash
 Milestone commit: `62781b8` (62781b83bd4c8b4ecf37e995d6d2113ab1cc62c6)
+
+## Follow-up — Remove unused AI packages (2026-10-12)
+
+### Feature requested
+Director approved removing the unused `com.unity.ai.assistant` and `com.unity.ai.inference` packages (pending since
+Milestone 005), confirming the console errors are gone, re-running all tests and committing.
+
+### Changes implemented
+- Removed both entries from `Packages/manifest.json`; Unity re-resolved `packages-lock.json` (their exclusive
+  dependencies dropped). Checked first: no package and no project code depends on them; `com.unity.ai.navigation`
+  (NavMesh) and the `com.unity.pipeline` editor bridge are kept, along with the shared dependencies they still need.
+
+### Tests attempted and results
+- Compiles cleanly. EditMode **242/242**, PlayMode **64/64**.
+- Console after clearing and a full PlayMode run: **0 errors, 0 warnings**. The recurring
+  "Error reason is 'NoSubscription' ... generators.ai.unity.com" messages no longer appear.
+
+### Problems encountered
+- None. Bridge timeouts logged while packages re-resolved were from status polling, not the packages.
+
+### Human interventions required
+- Director approval for the removal.
+
+### Known limitations
+- None new.

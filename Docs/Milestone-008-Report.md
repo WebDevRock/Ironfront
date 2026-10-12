@@ -111,4 +111,4 @@ Fog costs ~0.3 ms on the 600 m maps (300² cells) and ~0.1 ms on the 400 m maps;
 3. Harvester auto-targeting and the end-game "ore left anywhere" check still use global deposit data (unchanged from M005–M007, both sides alike).
 4. Unoccupied starts keep their home fields as free expansions, so large maps hold a lot of ore; this is intended but contributes to long games.
 5. The study commander for faction 1 is added at runtime; the 10/5 faction-1 lean in mirrors should be re-checked with more seeds.
-6. Still pending from M005: removing the unused AI Assistant/Inference packages (their subscription errors appear in the console).
+6. ~~Unused AI Assistant/Inference packages~~ — **removed after director approval** (2026-10-12): console clean after a full test run; EditMode 242/242, PlayMode 64/64.
