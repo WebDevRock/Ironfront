@@ -27,6 +27,25 @@ namespace Ironfront.Core.AI
         public const int SurplusMargin = 1000;
         /// <summary>Refineries and forward bases are kept while any ore remains within this distance (metres).</summary>
         public const float ObsoleteRadius = 120f;
+        /// <summary>
+        /// Build range comes from every structure, so a field this close (metres from the nearest own structure) is reached
+        /// by building towards it — a power plant or two — rather than with a 5000-credit vehicle.
+        /// </summary>
+        public const float CreepMax = 45f;
+
+        /// <summary>
+        /// Extend the build range towards the nearest unclaimed ore field when it is within <see cref="CreepMax"/> of the
+        /// base and more refineries are wanted. Bought only when affordable with the reserve (cheap; never saved for).
+        /// </summary>
+        public static AiAction Creep(in CommanderSnapshot s, StrategicState state, in CommanderSettings cfg, in CostTable cost)
+        {
+            if (cost.PowerPlant <= 0 || state == StrategicState.Defend || s.Factories == 0) return None("");
+            if (!s.RefineryBlockedByTerritory || s.Refineries >= cfg.MaxRefineries) return None("");
+            if (s.CreepDistance <= 0f || s.CreepDistance > CreepMax) return None("");
+            return EconomyPlanner.Affordable(s.Credits, cost.PowerPlant, cfg.CreditReserve)
+                ? new AiAction(AiActionType.ExtendBuildRange, $"build towards ore {s.CreepDistance:0} m away")
+                : None("");
+        }
 
         public static AiAction Next(in CommanderSnapshot s, StrategicState state, in CommanderSettings cfg, in CostTable cost)
         {
@@ -39,6 +58,7 @@ namespace Ironfront.Core.AI
             if (s.MatchTime < cfg.EarliestForwardBase) return None("too early");
             if (!s.RefineryBlockedByTerritory || s.Refineries >= cfg.MaxRefineries) return None("no expansion needed");
             if (!s.ExpansionTargetKnown) return None("no explored ore field outside territory");
+            if (s.CreepDistance > 0f && s.CreepDistance <= CreepMax) return None("a field can be reached by building towards it");
             if (s.Factories == 0 || s.ArmyCount < cfg.ForwardBaseArmy) return None("army too small to escort");
 
             // Local ore gone and the next field a long haul away: the economy depends on a forward base, so save for it

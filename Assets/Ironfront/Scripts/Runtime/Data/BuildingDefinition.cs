@@ -42,8 +42,8 @@ namespace Ironfront.Data
         [Tooltip("Scales this structure's repair cost (Milestone 009; 1 = the RepairSettings cost).")]
         [SerializeField, Min(0f)] private float repairCostMultiplier = 1f;
         [Header("Milestone 010")]
-        [Tooltip("Construction territory this structure grants its owner (metres; 0 = none). Command structures only.")]
-        [SerializeField, Min(0f)] private float territoryRadius;
+        [Tooltip("Build range from this structure's footprint edge (metres; 0 = TerritorySettings.BuildRange). Every structure extends its owner's build area.")]
+        [SerializeField, Min(0f)] private float buildRangeOverride;
         [Tooltip("Other factions may not build or deploy within this radius once they have seen the structure (0 = none).")]
         [SerializeField, Min(0f)] private float exclusionRadius;
         [Tooltip("Whether the owner may sell (dismantle) this structure.")]
@@ -59,7 +59,10 @@ namespace Ironfront.Data
         public WeaponDefinition Weapon => weapon;
         public bool NeedsPower => needsPower;
         public float RepairCostMultiplier => repairCostMultiplier;
-        public float TerritoryRadius => territoryRadius;
+        /// <summary>This structure's build range: its override, else the match default.</summary>
+        public float BuildRange => buildRangeOverride > 0f ? buildRangeOverride : TerritorySettings.Current.BuildRange;
+        /// <summary>A command structure (HQ, Forward Command Centre): keeps other factions from building near it.</summary>
+        public bool IsCommandStructure => exclusionRadius > 0f;
         public float ExclusionRadius => exclusionRadius;
         public bool Sellable => sellable && SaleValue > 0;
         public bool SellConfirmation => sellConfirmation;

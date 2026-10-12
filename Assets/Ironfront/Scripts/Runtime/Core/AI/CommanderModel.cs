@@ -300,6 +300,8 @@ namespace Ironfront.Core.AI
         public int UndefendedForwardBases;
         /// <summary>Distance (metres) from the nearest own refinery to the best forward-base target field.</summary>
         public float ExpansionHaulDistance;
+        /// <summary>Distance (metres) from the nearest own structure to the closest unclaimed field out of build range (0 = none).</summary>
+        public float CreepDistance;
         public int ArmyCap(in CommanderSettings cfg) => cfg.MaxArmy + AttackEscalation;
 
         public int ArmyCount => LightTanks + HeavyTanks + Artillery;

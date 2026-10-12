@@ -1,0 +1,618 @@
+dustfall_plains seed 11 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+dustfall_plains seed 11 t=120 | F1 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   594 inc   4344 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 3.0 strength' | F2 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   812 inc   4062 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength'
+dustfall_plains seed 11 t=240 | F1 Attack   army  6 (8.5) atk  1/ 5 esc 0 cr  1250 inc  10800 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (96,-199)' | F2 Assemble army  5 (6.0) atk  0/ 0 esc 0 cr  1144 inc  10544 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.0 strength'
+dustfall_plains seed 11   F2 [04:24] Save for ProduceMcv: local ore exhausted: forward base (17/5000)
+dustfall_plains seed 11   F2 [04:58] Save for ProduceMcv: local ore exhausted: forward base (300/5000)
+dustfall_plains seed 11   F2 [05:37] Save for ProduceMcv: local ore exhausted: forward base (0/5000)
+dustfall_plains seed 11 t=360 | F1 Assemble army  2 (1.5) atk  1/ 0 esc 1 cr   412 inc  13831 harv 3 ref 1 fac 1 def 2/2 knownEnemy 7.0 obj 'Assemble: 2 units at rally, 1.5 strength' | F2 Attack   army  8 (9.2) atk  3/ 6 esc 0 cr   600 inc  13800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 2.0 obj 'Attack Vehicle Factory at (-189,94)'
+dustfall_plains seed 11   F2 [06:28] Save for ProduceMcv: local ore exhausted: forward base (300/5000)
+dustfall_plains seed 11 t=480 | F1 Assemble army  3 (3.7) atk  1/ 0 esc 1 cr   666 inc  16200 harv 2 ref 1 fac 1 def 2/2 knownEnemy 2.0 obj 'Assemble: 3 units at rally, 3.7 strength' | F2 Assemble army  3 (4.8) atk  4/ 0 esc 0 cr  2100 inc  16200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 2.0 obj 'Assemble: 3 units at rally, 4.8 strength'
+dustfall_plains seed 11   F2 [08:43] Save for ProduceMcv: local ore exhausted: forward base (350/5000)
+dustfall_plains seed 11   F1 [08:54] Save for ProduceMcv: local ore exhausted: forward base (222/5000)
+dustfall_plains seed 11 t=600 | F1 Assemble army  3 (3.7) atk  1/ 0 esc 1 cr  1022 inc  17600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.7 strength' | F2 Assemble army  3 (5.5) atk  4/ 0 esc 0 cr  1550 inc  18200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 5.5 strength'
+dustfall_plains seed 11   F1 [11:10] Save for ProduceMcv: local ore exhausted: forward base (822/5000)
+dustfall_plains seed 11 t=720 | F1 Assemble army  5 (6.7) atk  1/ 0 esc 1 cr  1422 inc  19400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.7 strength' | F2 Assemble army  3 (5.5) atk  4/ 0 esc 0 cr  3150 inc  19800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 5.5 strength'
+dustfall_plains seed 11 t=840 | F1 Assemble army  5 (6.7) atk  1/ 0 esc 1 cr  3222 inc  21200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.7 strength' | F2 Assemble army  3 (5.5) atk  4/ 0 esc 0 cr  4950 inc  21600 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 5.5 strength'
+dustfall_plains seed 11   F2 [14:16] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 11   F2 [15:02] Mobile Command Vehicle ready
+dustfall_plains seed 11   F2 [15:02] Forward base site chosen near ore at (0,-255)
+dustfall_plains seed 11   F2 [15:30] Deploying forward base at (15,-246)
+dustfall_plains seed 11   F2 [15:44] Forward base established at (16,-245)
+dustfall_plains seed 11   F1 [15:52] Save for ProduceMcv: local ore exhausted: forward base (2904/5000)
+dustfall_plains seed 11 t=960 | F1 Assemble army  6 (7.7) atk  1/ 0 esc 1 cr  2922 inc  22800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength' | F2 Assemble army  3 (5.5) atk  4/ 0 esc 0 cr   400 inc  23400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 7.0 obj 'Assemble: 3 units at rally, 5.5 strength'
+dustfall_plains seed 11   F2 [16:39] Built Guard Tower at (24,-239) - forward base defence
+dustfall_plains seed 11 t=1080 | F1 Assemble army  5 (4.4) atk  2/ 0 esc 2 cr  4722 inc  24600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 5.0 obj 'Assemble: 5 units at rally, 4.4 strength' | F2 Assemble army  4 (6.3) atk  4/ 0 esc 0 cr   250 inc  24600 harv 1 ref 1 fac 1 def 3/2 knownEnemy 4.0 obj 'Assemble: 4 units at rally, 6.3 strength'
+dustfall_plains seed 11   F1 [18:24] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 11   F1 [19:11] Mobile Command Vehicle ready
+dustfall_plains seed 11   F1 [19:11] Forward base site chosen near ore at (-255,0)
+dustfall_plains seed 11   F1 [19:40] Deploying forward base at (-246,15)
+dustfall_plains seed 11   F1 [19:55] Forward base established at (-246,15)
+dustfall_plains seed 11   F1 [19:56] Built Guard Tower at (-240,23) - forward base defence
+dustfall_plains seed 11 t=1200 | F1 Assemble army  4 (4.5) atk  2/ 0 esc 2 cr   537 inc  26400 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.5 strength' | F2 Assemble army  4 (6.3) atk  4/ 0 esc 0 cr   406 inc  25200 harv 1 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 6.3 strength'
+dustfall_plains seed 11   F1 [20:04] Save for ProduceMcv: local ore exhausted: forward base (537/5000)
+dustfall_plains seed 11 t=1320 | F1 Assemble army  4 (4.5) atk  2/ 0 esc 2 cr  2137 inc  28000 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.5 strength' | F2 Assemble army  5 (7.3) atk  4/ 0 esc 0 cr   436 inc  25800 harv 1 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.3 strength'
+dustfall_plains seed 11 t=1440 | F1 Assemble army  4 (4.5) atk  2/ 0 esc 2 cr  3537 inc  29400 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.5 strength' | F2 Assemble army  5 (7.3) atk  4/ 0 esc 0 cr   636 inc  26800 harv 2 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.3 strength'
+dustfall_plains seed 11   F2 [25:26] Save for ProduceMcv: local ore exhausted: forward base (586/5000)
+dustfall_plains seed 11   F1 [25:47] Save for ProduceMcv: local ore exhausted: forward base (3337/5000)
+dustfall_plains seed 11 t=1560 | F1 Assemble army  6 (7.5) atk  2/ 0 esc 2 cr  3537 inc  30800 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.5 strength' | F2 Assemble army  5 (7.3) atk  4/ 0 esc 0 cr   986 inc  28400 harv 3 ref 1 fac 1 def 3/2 knownEnemy 3.0 obj 'Assemble: 5 units at rally, 7.3 strength'
+dustfall_plains seed 11 t=1680 | F1 Assemble army  6 (7.5) atk  2/ 0 esc 2 cr  4937 inc  32200 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.5 strength' | F2 Assemble army  5 (7.3) atk  4/ 0 esc 0 cr  2586 inc  30000 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.3 strength'
+dustfall_plains seed 11   F1 [28:08] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 11   F1 [28:54] Mobile Command Vehicle ready
+dustfall_plains seed 11   F1 [28:54] Forward base site chosen near ore at (-125,-52)
+dustfall_plains seed 11   F1 [29:39] Deploy refused: Blocked by terrain
+dustfall_plains seed 11   F1 [29:42] Deploying forward base at (-138,-30)
+dustfall_plains seed 11   F2 [29:44] Save for ProduceMcv: local ore exhausted: forward base (1886/5000)
+dustfall_plains seed 11   F1 [29:57] Forward base established at (-138,-31)
+dustfall_plains seed 11   F1 [29:58] Built Guard Tower at (-144,-23) - forward base defence
+dustfall_plains seed 11 t=1800 | F1 Assemble army  6 (7.5) atk  2/ 0 esc 2 cr   487 inc  33600 harv 3 ref 1 fac 1 def 4/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.5 strength' | F2 Attack   army  8 (11.3) atk  5/ 6 esc 0 cr  2286 inc  31600 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-189,94)'
+dustfall_plains seed 11   F2 [31:53] Save for ProduceMcv: local ore exhausted: forward base (936/5000)
+dustfall_plains seed 11 t=1920 | F1 Attack   army  8 (9.3) atk  3/ 6 esc 2 cr   237 inc  34800 harv 3 ref 1 fac 1 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (96,-199)' | F2 Assemble army  3 (3.5) atk  5/ 0 esc 1 cr   936 inc  33000 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.5 strength'
+dustfall_plains seed 11   F2 [32:40] Save for ProduceMcv: local ore exhausted: forward base (136/5000)
+dustfall_plains seed 11 t=2040 | F1 Assemble army  4 (3.5) atk  3/ 0 esc 2 cr   671 inc  36200 harv 3 ref 1 fac 1 def 4/2 knownEnemy 3.5 obj 'Assemble: 4 units at rally, 3.5 strength' | F2 Assemble army  4 (4.5) atk  5/ 0 esc 1 cr   436 inc  34400 harv 2 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.5 strength'
+dustfall_plains seed 11   F2 [35:04] Save for ProduceMcv: local ore exhausted: forward base (50/5000)
+dustfall_plains seed 11 t=2160 | F1 Assemble army  4 (3.5) atk  3/ 0 esc 2 cr   363 inc  37400 harv 3 ref 1 fac 1 def 4/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 3.5 strength' | F2 Assemble army  4 (5.5) atk  5/ 0 esc 1 cr   650 inc  35600 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 5.5 strength'
+dustfall_plains seed 11   F2 [37:38] Save for ProduceMcv: local ore exhausted: forward base (450/5000)
+dustfall_plains seed 11 t=2280 | F1 Assemble army  5 (4.5) atk  3/ 0 esc 2 cr   813 inc  38800 harv 3 ref 1 fac 1 def 4/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 4.5 strength' | F2 Assemble army  6 (8.5) atk  5/ 0 esc 1 cr   504 inc  36854 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 8.5 strength'
+dustfall_plains seed 11 t=2400 | F1 Assemble army  6 (6.0) atk  3/ 0 esc 2 cr  1113 inc  40200 harv 3 ref 1 fac 1 def 4/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.0 strength' | F2 Assemble army  6 (8.5) atk  5/ 0 esc 1 cr  2250 inc  38600 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 8.5 strength'
+dustfall_plains seed 11   F2 [41:13] Save for ProduceMcv: local ore exhausted: forward base (1850/5000)
+dustfall_plains seed 11 t=2520 | F1 Assemble army  7 (7.5) atk  3/ 0 esc 2 cr   763 inc  41400 harv 3 ref 1 fac 1 def 4/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 7.5 strength' | F2 Attack   army  8 (11.5) atk  6/ 6 esc 1 cr  2450 inc  40200 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-189,94)'
+dustfall_plains seed 11   F2 [43:28] Save for ProduceMcv: local ore exhausted: forward base (1400/5000)
+dustfall_plains seed 11 t=2640 | F1 Attack   army  8 (10.0) atk  4/ 6 esc 2 cr   537 inc  42600 harv 3 ref 1 fac 1 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (96,-199)' | F2 Assemble army  4 (5.5) atk  6/ 0 esc 2 cr  1600 inc  41400 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 5.5 strength'
+dustfall_plains seed 11   F2 [44:18] Save for ProduceMcv: local ore exhausted: forward base (582/5000)
+dustfall_plains seed 11   F2 [44:35] Save for ProduceMcv: local ore exhausted: forward base (82/5000)
+dustfall_plains seed 11   F2 [44:45] Save for ProduceMcv: local ore exhausted: forward base (82/5000)
+dustfall_plains seed 11   F2 [44:54] Save for ProduceMcv: local ore exhausted: forward base (182/5000)
+dustfall_plains seed 23 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+dustfall_plains seed 23 t=120 | F1 Defend   army  1 (1.0) atk  0/ 0 esc 0 cr   341 inc   4091 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Defend base: 1 enemies near (-85,-194)' | F2 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   599 inc   4349 harv 3 ref 1 fac 1 def 0/0 knownEnemy 1.0 obj 'Assemble: 2 units at rally, 3.0 strength'
+dustfall_plains seed 23 t=240 | F1 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr   400 inc  10200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength' | F2 Attack   army  6 (8.5) atk  1/ 5 esc 0 cr  1111 inc  10661 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-92,-189)'
+dustfall_plains seed 23   F1 [04:27] Save for ProduceMcv: local ore exhausted: forward base (700/5000)
+dustfall_plains seed 23   F1 [04:44] Save for ProduceMcv: local ore exhausted: forward base (200/5000)
+dustfall_plains seed 23   F1 [05:00] Save for ProduceMcv: local ore exhausted: forward base (300/5000)
+dustfall_plains seed 23 t=360 | F1 Attack   army  8 (7.7) atk  2/ 6 esc 0 cr  1500 inc  13800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 2.5 obj 'Attack Vehicle Factory at (197,-96)' | F2 Defend   army  2 (2.5) atk  1/ 0 esc 1 cr   418 inc  14000 harv 3 ref 1 fac 1 def 2/1 knownEnemy 9.5 obj 'Defend base: 5 enemies near (186,-70)'
+dustfall_plains seed 23   F1 [07:19] Save for ProduceMcv: local ore exhausted: forward base (1500/5000)
+dustfall_plains seed 23 t=480 | F1 Assemble army  7 (6.9) atk  2/ 0 esc 1 cr  2100 inc  16200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 6.9 strength' | F2 Assemble army  1 (1.5) atk  1/ 0 esc 1 cr  1088 inc  16245 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.5 strength'
+dustfall_plains seed 23   F2 [08:49] Save for ProduceMcv: local ore exhausted: forward base (373/5000)
+dustfall_plains seed 23   F1 [09:07] Save for ProduceMcv: local ore exhausted: forward base (1600/5000)
+dustfall_plains seed 23 t=600 | F1 Attack   army  7 (8.6) atk  3/ 4 esc 1 cr  2200 inc  18200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 4.5 obj 'Attack Vehicle Factory at (197,-96)' | F2 Defend   army  3 (4.2) atk  1/ 0 esc 1 cr   547 inc  18074 harv 3 ref 1 fac 1 def 2/1 knownEnemy 9.0 obj 'Defend base: 1 enemies near (180,-100)'
+dustfall_plains seed 23   F2 [10:00] Save for ProduceMcv: local ore exhausted: forward base (637/5000)
+dustfall_plains seed 23   F2 [10:29] Save for ProduceMcv: local ore exhausted: forward base (73/5000)
+dustfall_plains seed 23 t=720 | F1 Assemble army  3 (2.2) atk  3/ 0 esc 2 cr  3800 inc  19800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 2.2 strength' | F2 Assemble army  6 (6.7) atk  1/ 0 esc 1 cr  1473 inc  20000 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.7 strength'
+dustfall_plains seed 23   F1 [12:46] Save for ProduceMcv: local ore exhausted: forward base (2600/5000)
+dustfall_plains seed 23 t=840 | F1 Assemble army  5 (6.2) atk  3/ 0 esc 2 cr  3800 inc  21600 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.2 strength' | F2 Assemble army  6 (6.7) atk  1/ 0 esc 1 cr  3273 inc  21800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.7 strength'
+dustfall_plains seed 23   F1 [15:13] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 23   F2 [15:54] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 23   F1 [15:59] Mobile Command Vehicle ready
+dustfall_plains seed 23   F1 [15:59] Forward base site chosen near ore at (0,-255)
+dustfall_plains seed 23 t=960 | F1 Assemble army  5 (6.2) atk  3/ 0 esc 2 cr   327 inc  23577 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.2 strength' | F2 Assemble army  6 (6.7) atk  1/ 0 esc 1 cr    73 inc  23600 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.7 strength'
+dustfall_plains seed 23   F1 [16:29] Deploying forward base at (-15,-246)
+dustfall_plains seed 23   F2 [16:39] Mobile Command Vehicle ready
+dustfall_plains seed 23   F2 [16:39] Forward base site chosen near ore at (52,-125)
+dustfall_plains seed 23   F1 [16:44] Forward base established at (-16,-244)
+dustfall_plains seed 23   F2 [17:18] Deploying forward base at (69,-120)
+dustfall_plains seed 23   F2 [17:33] Forward base established at (71,-120)
+dustfall_plains seed 23   F2 [17:34] Built Guard Tower at (81,-120) - forward base defence
+dustfall_plains seed 23 t=1080 | F1 Assemble army  5 (6.2) atk  3/ 0 esc 2 cr   350 inc  25000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.2 strength' | F2 Assemble army  5 (6.7) atk  1/ 0 esc 1 cr   487 inc  25000 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.7 strength'
+dustfall_plains seed 23   F1 [18:19] Built Guard Tower at (-24,-238) - forward base defence
+dustfall_plains seed 23 t=1200 | F1 Assemble army  5 (6.2) atk  3/ 0 esc 2 cr   700 inc  27200 harv 3 ref 2 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.2 strength' | F2 Assemble army  6 (7.7) atk  1/ 0 esc 1 cr   667 inc  26400 harv 3 ref 2 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+dustfall_plains seed 23   F1 [20:43] Save for ProduceMcv: local ore exhausted: forward base (500/5000)
+dustfall_plains seed 23   F1 [20:43] Selling Refinery: ore exhausted (refund about 500)
+dustfall_plains seed 23 t=1320 | F1 Assemble army  5 (6.2) atk  3/ 0 esc 2 cr  3400 inc  32300 harv 6 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.2 strength' | F2 Assemble army  6 (7.7) atk  1/ 0 esc 1 cr    67 inc  28200 harv 5 ref 2 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+dustfall_plains seed 23   F1 [22:45] Save for ProduceMcv: local ore exhausted: forward base (600/5000)
+dustfall_plains seed 23   F2 [23:03] Selling Refinery: ore exhausted (refund about 500)
+dustfall_plains seed 23   F1 [23:27] Save for ProduceMcv: local ore exhausted: forward base (1350/5000)
+dustfall_plains seed 23 t=1440 | F1 Assemble army  6 (6.1) atk  4/ 0 esc 3 cr  2359 inc  36309 harv 6 ref 1 fac 2 def 3/2 knownEnemy 10.5 obj 'Assemble: 6 units at rally, 6.1 strength' | F2 Defend   army  7 (9.7) atk  1/ 0 esc 1 cr   317 inc  30700 harv 6 ref 0 fac 1 def 3/2 knownEnemy 5.0 obj 'Defend: 7 units at rally, 9.7 strength'
+dustfall_plains seed 23   F1 [24:34] Save for ProduceMcv: local ore exhausted: forward base (450/5000)
+dustfall_plains seed 23 t=1560 | F1 Assemble army  7 (9.7) atk  4/ 0 esc 3 cr  3450 inc  40700 harv 6 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 9.7 strength' | F2 Recover  army  4 (6.7) atk  1/ 0 esc 1 cr   317 inc  30700 harv 6 ref 0 fac 1 def 3/2 knownEnemy 0.0 obj 'Recover: 4 units at rally, 6.7 strength'
+dustfall_plains seed 23   F1 [26:50] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 23   F2 [27:22] Selling Forward Command Centre: about to be lost (refund about 421)
+dustfall_plains seed 23   F2 [27:30] Save for ProduceMcv: local ore exhausted: forward base (738/5000)
+dustfall_plains seed 23   F1 [27:36] Mobile Command Vehicle ready
+dustfall_plains seed 23   F1 [27:36] Forward base site chosen near ore at (-125,-52)
+dustfall_plains seed 23   F1 [27:52] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+dustfall_plains seed 23 t=1680 | F1 Assemble army  4 (4.7) atk  4/ 0 esc 3 cr   604 inc  44804 harv 6 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.7 strength' | F2 Recover  army  4 (6.7) atk  1/ 0 esc 1 cr   738 inc  31121 harv 6 ref 0 fac 1 def 3/2 knownEnemy 0.0 obj 'Recover: 4 units at rally, 6.7 strength'
+dustfall_plains seed 23   F1 [28:09] Deploying forward base at (-120,-69)
+dustfall_plains seed 23   F1 [28:24] Forward base established at (-120,-70)
+dustfall_plains seed 23   F1 [28:44] Built Guard Tower at (-120,-80) - forward base defence
+dustfall_plains seed 23   F2 [29:10] Save for ProduceMcv: local ore exhausted: forward base (238/5000)
+dustfall_plains seed 23 t=1800 | F1 Assemble army  6 (5.7) atk  5/ 0 esc 4 cr   281 inc  49800 harv 6 ref 1 fac 2 def 4/2 knownEnemy 6.0 obj 'Assemble: 6 units at rally, 5.7 strength' | F2 Defend   army  3 (3.7) atk  1/ 0 esc 1 cr   238 inc  31121 harv 6 ref 0 fac 1 def 2/2 knownEnemy 4.0 obj 'Defend base: 1 enemies near (170,-92)'
+dustfall_plains seed 23   F2 [30:02] Save for ProduceMcv: local ore exhausted: forward base (238/5000)
+dustfall_plains seed 23   F1 [30:25] Selling Refinery: ore exhausted (refund about 500)
+dustfall_plains seed 23 t=1920 | F1 Assemble army  7 (8.6) atk  5/ 0 esc 4 cr   849 inc  53368 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.6 strength' | F2 Recover  army  3 (3.7) atk  1/ 0 esc 1 cr   238 inc  31121 harv 6 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 3 units at rally, 3.7 strength'
+dustfall_plains seed 23   F2 [33:50] Save for ProduceMcv: local ore exhausted: forward base (238/5000)
+dustfall_plains seed 23 t=2040 | F1 Attack   army  8 (12.0) atk  6/ 5 esc 4 cr   790 inc  57100 harv 6 ref 1 fac 2 def 4/2 knownEnemy 4.0 obj 'Attack Vehicle Factory at (197,-96)' | F2 Recover  army  2 (1.4) atk  1/ 0 esc 1 cr   238 inc  31121 harv 6 ref 0 fac 1 def 2/2 knownEnemy 9.0 obj 'Recover: 2 units at rally, 1.4 strength'
+dustfall_plains seed 61 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+dustfall_plains seed 61 t=120 | F1 Defend   army  1 (1.0) atk  0/ 0 esc 0 cr     0 inc   4600 harv 4 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Defend base: 1 enemies near (-192,-84)' | F2 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   750 inc   4000 harv 3 ref 1 fac 1 def 0/0 knownEnemy 1.0 obj 'Assemble: 1 units at rally, 1.0 strength'
+dustfall_plains seed 61 t=240 | F1 Assemble army  4 (5.0) atk  0/ 0 esc 0 cr   900 inc  12000 harv 4 ref 1 fac 1 def 2/2 knownEnemy 4.0 obj 'Assemble: 4 units at rally, 5.0 strength' | F2 Attack   army  6 (8.0) atk  1/ 5 esc 0 cr   450 inc  10400 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-197,-96)'
+dustfall_plains seed 61   F2 [04:24] Save for ProduceMcv: local ore exhausted: forward base (1394/5000)
+dustfall_plains seed 61 t=360 | F1 Attack   army  7 (8.6) atk  2/ 5 esc 0 cr   779 inc  15534 harv 4 ref 1 fac 1 def 2/2 knownEnemy 1.0 obj 'Attack Vehicle Factory at (96,-199)' | F2 Defend   army  1 (1.0) atk  1/ 0 esc 1 cr     1 inc  13800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 1.0 obj 'Defend: 1 units at rally, 1.0 strength'
+dustfall_plains seed 61   F2 [06:26] Save for ProduceMcv: local ore exhausted: forward base (101/5000)
+dustfall_plains seed 61   F1 [06:37] Save for ProduceMcv: local ore exhausted: forward base (545/5000)
+dustfall_plains seed 61   F2 [06:55] Save for ProduceMcv: local ore exhausted: forward base (197/5000)
+dustfall_plains seed 61   F2 [07:23] Save for ProduceMcv: local ore exhausted: forward base (377/5000)
+dustfall_plains seed 61 t=480 | F1 Assemble army  2 (2.0) atk  3/ 0 esc 0 cr   695 inc  18400 harv 4 ref 1 fac 1 def 2/2 knownEnemy 4.0 obj 'Assemble: 2 units at rally, 2.0 strength' | F2 Assemble army  3 (4.0) atk  1/ 0 esc 1 cr   977 inc  15999 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+dustfall_plains seed 61   F1 [09:43] Save for ProduceMcv: local ore exhausted: forward base (195/5000)
+dustfall_plains seed 61 t=600 | F1 Defend   army  3 (3.5) atk  3/ 0 esc 0 cr   395 inc  20400 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Defend: 3 units at rally, 3.5 strength' | F2 Assemble army  3 (4.0) atk  1/ 0 esc 1 cr  3178 inc  18200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 3.5 obj 'Assemble: 3 units at rally, 4.0 strength'
+dustfall_plains seed 61   F1 [10:03] Save for ProduceMcv: local ore exhausted: forward base (395/5000)
+dustfall_plains seed 61   F2 [10:47] Save for ProduceMcv: local ore exhausted: forward base (2378/5000)
+dustfall_plains seed 61 t=720 | F1 Assemble army  3 (3.5) atk  3/ 0 esc 0 cr  2795 inc  22800 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.5 strength' | F2 Assemble army  5 (7.0) atk  1/ 0 esc 1 cr  3170 inc  19816 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+dustfall_plains seed 61   F2 [13:46] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 61 t=840 | F1 Assemble army  3 (3.5) atk  3/ 0 esc 0 cr  4795 inc  24800 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.5 strength' | F2 Assemble army  5 (7.0) atk  1/ 0 esc 1 cr   354 inc  22000 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+dustfall_plains seed 61   F1 [14:18] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 61   F2 [14:32] Mobile Command Vehicle ready
+dustfall_plains seed 61   F2 [14:32] Forward base site chosen near ore at (0,-255)
+dustfall_plains seed 61   F2 [15:02] Deploying forward base at (15,-246)
+dustfall_plains seed 61   F1 [15:03] Mobile Command Vehicle ready
+dustfall_plains seed 61   F1 [15:03] Forward base site chosen near ore at (-255,0)
+dustfall_plains seed 61   F2 [15:17] Forward base established at (15,-246)
+dustfall_plains seed 61   F2 [15:18] Built Guard Tower at (23,-240) - forward base defence
+dustfall_plains seed 61   F1 [15:32] Deploying forward base at (-246,-15)
+dustfall_plains seed 61   F1 [15:47] Forward base established at (-246,-15)
+dustfall_plains seed 61   F1 [15:48] Built Guard Tower at (-240,-23) - forward base defence
+dustfall_plains seed 61 t=960 | F1 Assemble army  4 (4.5) atk  3/ 0 esc 0 cr   445 inc  26800 harv 4 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.5 strength' | F2 Assemble army  5 (7.0) atk  1/ 0 esc 1 cr   504 inc  24000 harv 3 ref 2 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+dustfall_plains seed 61   F1 [17:21] Save for ProduceMcv: local ore exhausted: forward base (45/5000)
+dustfall_plains seed 61   F1 [17:21] Selling Refinery: ore exhausted (refund about 500)
+dustfall_plains seed 61 t=1080 | F1 Assemble army  4 (4.5) atk  3/ 0 esc 0 cr  1345 inc  31900 harv 8 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.5 strength' | F2 Assemble army  5 (7.0) atk  1/ 0 esc 1 cr   654 inc  27000 harv 6 ref 2 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+dustfall_plains seed 61   F1 [18:46] Save for ProduceMcv: local ore exhausted: forward base (935/5000)
+dustfall_plains seed 61 t=1200 | F1 Assemble army  3 (4.8) atk  4/ 0 esc 0 cr  3345 inc  35700 harv 8 ref 1 fac 1 def 3/2 knownEnemy 4.0 obj 'Assemble: 3 units at rally, 4.8 strength' | F2 Assemble army  3 (3.6) atk  2/ 0 esc 2 cr   459 inc  30205 harv 6 ref 2 fac 2 def 3/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.6 strength'
+dustfall_plains seed 61   F1 [21:03] Queued Mobile Command Vehicle - local ore exhausted: forward base
+dustfall_plains seed 61   F1 [21:48] Mobile Command Vehicle ready
+dustfall_plains seed 61   F1 [21:48] Forward base site chosen near ore at (-52,-125)
+dustfall_plains seed 61 t=1320 | F1 Assemble army  1 (1.5) atk  4/ 0 esc 0 cr   395 inc  39500 harv 8 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.5 strength' | F2 Attack   army  8 (10.6) atk  3/ 6 esc 2 cr   804 inc  34000 harv 6 ref 2 fac 2 def 3/1 knownEnemy 5.5 obj 'Attack Vehicle Factory at (-183,-80)'
+dustfall_plains seed 61   F1 [22:28] Deploying forward base at (-69,-120)
+dustfall_plains seed 61   F1 [22:43] Forward base established at (-72,-120)
+dustfall_plains seed 61   F1 [22:56] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+dustfall_plains seed 61   F2 [23:05] Save for ProduceMcv: local ore exhausted: forward base (614/5000)
+dustfall_plains seed 61 t=1440 | F1 Attack   army 10 (13.6) atk  5/ 8 esc 0 cr   245 inc  45000 harv 8 ref 1 fac 2 def 3/2 knownEnemy 3.0 obj 'Attack Vehicle Factory at (60,-199)' | F2 Defend   army  2 (2.5) atk  4/ 0 esc 3 cr     4 inc  37400 harv 6 ref 2 fac 2 def 3/2 knownEnemy 9.5 obj 'Defend base: 5 enemies near (66,-181)'
+dustfall_plains seed 61   F1 [24:05] Built Guard Tower at (-82,-120) - forward base defence
+dustfall_plains seed 61   F1 [24:15] Selling Refinery: ore exhausted (refund about 500)
+dustfall_plains seed 61   F2 [24:36] Save for ProduceMcv: local ore exhausted: forward base (0/5000)
+dustfall_plains seed 61 t=1560 | F1 Attack   army 10 (11.1) atk  6/ 8 esc 1 cr  1176 inc  50809 harv 8 ref 1 fac 2 def 4/2 knownEnemy 1.0 obj 'Attack Vehicle Factory at (96,-199)' | F2 Defend   army  1 (1.0) atk  4/ 0 esc 3 cr     0 inc  40600 harv 6 ref 1 fac 2 def 3/2 knownEnemy 5.0 obj 'Defend base: 5 enemies near (59,-188)'
+dustfall_plains seed 61   F1 [26:01] Save for ProduceMcv: local ore exhausted: forward base (1243/5000)
+dustfall_plains seed 61   F2 [26:57] Save for ProduceMcv: local ore exhausted: forward base (100/5000)
+dustfall_plains seed 61   F1 [27:35] Save for ProduceMcv: local ore exhausted: forward base (41/5000)
+dustfall_plains seed 61 t=1680 | F1 Attack   army 12 (14.1) atk  7/10 esc 2 cr  1499 inc  54958 harv 8 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (96,-199)' | F2 Assemble army  1 (1.0) atk  4/ 0 esc 3 cr  1250 inc  43800 harv 6 ref 1 fac 1 def 3/2 knownEnemy 6.0 obj 'Assemble: 1 units at rally, 1.0 strength'
+dustfall_plains seed 61   F2 [28:28] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+iron_pass seed 11 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+iron_pass seed 11 t=120 | F1 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   930 inc   4180 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength' | F2 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   650 inc   4400 harv 3 ref 1 fac 1 def 0/0 knownEnemy 1.0 obj 'Assemble: 2 units at rally, 3.0 strength'
+iron_pass seed 11 t=240 | F1 Recover  army  3 (3.2) atk  1/ 0 esc 0 cr   500 inc  10000 harv 3 ref 1 fac 1 def 2/1 knownEnemy 4.0 obj 'Recover: 3 units at rally, 3.2 strength' | F2 Attack   army  4 (6.0) atk  1/ 2 esc 0 cr   187 inc  10087 harv 3 ref 1 fac 1 def 2/0 knownEnemy 4.0 obj 'Attack Vehicle Factory at (-144,128)'
+iron_pass seed 11 t=360 | F1 Assemble army  1 (1.9) atk  1/ 0 esc 0 cr   300 inc  12000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.9 strength' | F2 Assemble army  4 (4.0) atk  1/ 0 esc 1 cr   900 inc  13700 harv 3 ref 1 fac 1 def 2/1 knownEnemy 2.0 obj 'Assemble: 4 units at rally, 4.0 strength'
+iron_pass seed 11 t=480 | F1 Assemble army  3 (3.9) atk  1/ 0 esc 0 cr   850 inc  15000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.9 strength' | F2 Assemble army  5 (5.5) atk  1/ 0 esc 1 cr   500 inc  16500 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.5 strength'
+iron_pass seed 11   F2 [08:08] Save for ProduceMcv: local ore exhausted: forward base (500/5000)
+iron_pass seed 11   F1 [08:38] Save for ProduceMcv: local ore exhausted: forward base (350/5000)
+iron_pass seed 11   F2 [09:32] Save for ProduceMcv: local ore exhausted: forward base (400/5000)
+iron_pass seed 11 t=600 | F1 Assemble army  4 (5.4) atk  1/ 0 esc 0 cr  1950 inc  17200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 5.4 strength' | F2 Attack   army  8 (10.5) atk  2/ 6 esc 1 cr   800 inc  18200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-144,128)'
+iron_pass seed 11   F1 [10:35] Save for ProduceMcv: local ore exhausted: forward base (650/5000)
+iron_pass seed 11   F1 [10:49] Save for ProduceMcv: local ore exhausted: forward base (150/5000)
+iron_pass seed 11 t=720 | F1 Attack   army  4 (5.1) atk  2/ 3 esc 0 cr  1350 inc  19000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 4.0 obj 'Attack Vehicle Factory at (4,-164)' | F2 Defend   army  3 (3.0) atk  2/ 0 esc 2 cr   400 inc  20200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 5.5 obj 'Defend base: 2 enemies near (0,-120)'
+iron_pass seed 11   F2 [12:10] Save for ProduceMcv: local ore exhausted: forward base (300/5000)
+iron_pass seed 11   F1 [12:38] Save for ProduceMcv: local ore exhausted: forward base (300/5000)
+iron_pass seed 11   F1 [13:28] Save for ProduceMcv: local ore exhausted: forward base (576/5000)
+iron_pass seed 11 t=840 | F1 Assemble army  3 (4.5) atk  2/ 0 esc 0 cr   800 inc  20900 harv 3 ref 1 fac 1 def 2/2 knownEnemy 4.0 obj 'Assemble: 3 units at rally, 4.5 strength' | F2 Defend   army  3 (2.5) atk  2/ 0 esc 2 cr   684 inc  22384 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Defend: 3 units at rally, 2.5 strength'
+iron_pass seed 11   F2 [14:01] Save for ProduceMcv: local ore exhausted: forward base (684/5000)
+iron_pass seed 11 t=960 | F1 Assemble army  3 (4.5) atk  2/ 0 esc 0 cr  2900 inc  23000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.5 strength' | F2 Assemble army  5 (5.5) atk  2/ 0 esc 2 cr  2500 inc  24200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.5 strength'
+iron_pass seed 11   F2 [17:22] Save for ProduceMcv: local ore exhausted: forward base (1800/5000)
+iron_pass seed 11 t=1080 | F1 Assemble army  3 (4.5) atk  2/ 0 esc 0 cr  4100 inc  24200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.5 strength' | F2 Attack   army  8 (9.5) atk  3/ 6 esc 2 cr  2400 inc  26000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-144,128)'
+iron_pass seed 11   F1 [18:29] Save for ProduceMcv: local ore exhausted: forward base (3900/5000)
+iron_pass seed 11   F1 [18:40] Save for ProduceMcv: local ore exhausted: forward base (3100/5000)
+iron_pass seed 11   F1 [18:47] Save for ProduceMcv: local ore exhausted: forward base (2300/5000)
+iron_pass seed 11   F1 [19:00] Save for ProduceMcv: local ore exhausted: forward base (1500/5000)
+iron_pass seed 11   F1 [19:08] Save for ProduceMcv: local ore exhausted: forward base (700/5000)
+iron_pass seed 11 t=1200 | F1 Defend   army  2 (2.7) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 7.0 obj 'Defend base: 4 enemies near (-140,120)' | F2 Attack   army  6 (7.4) atk  3/ 4 esc 2 cr  4000 inc  27600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 3.0 obj 'Attack Vehicle Factory at (-144,128)'
+iron_pass seed 11   F2 [21:23] Save for ProduceMcv: local ore exhausted: forward base (900/5000)
+iron_pass seed 11 t=1320 | F1 Recover  army  1 (0.2) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.2 strength' | F2 Assemble army  7 (8.4) atk  3/ 0 esc 3 cr  1482 inc  29182 harv 3 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.4 strength'
+iron_pass seed 11 t=1440 | F1 Recover  army  1 (0.2) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.2 strength' | F2 Assemble army  7 (8.4) atk  3/ 0 esc 3 cr  2700 inc  30400 harv 3 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.4 strength'
+iron_pass seed 11 t=1560 | F1 Recover  army  1 (0.2) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.2 strength' | F2 Assemble army  7 (8.4) atk  3/ 0 esc 3 cr  4300 inc  32000 harv 3 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.4 strength'
+iron_pass seed 11   F2 [27:10] Queued Mobile Command Vehicle - local ore exhausted: forward base
+iron_pass seed 11   F2 [27:56] Mobile Command Vehicle ready
+iron_pass seed 11   F2 [27:56] Forward base site chosen near ore at (-113,-135)
+iron_pass seed 11 t=1680 | F1 Recover  army  1 (0.2) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.2 strength' | F2 Assemble army  4 (4.4) atk  3/ 0 esc 3 cr   250 inc  33400 harv 3 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.4 strength'
+iron_pass seed 11 t=1800 | F1 Recover  army  1 (0.2) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.2 strength' | F2 Assemble army  5 (5.9) atk  3/ 0 esc 3 cr   100 inc  34800 harv 3 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.9 strength'
+iron_pass seed 11   F2 [30:38] Deploying forward base at (-95,-137)
+iron_pass seed 11   F2 [30:53] Forward base established at (-95,-137)
+iron_pass seed 11   F2 [30:53] Built Guard Tower at (-85,-137) - forward base defence
+iron_pass seed 11   F2 [31:46] Selling Refinery: ore exhausted (refund about 500)
+iron_pass seed 11 t=1920 | F1 Recover  army  1 (0.2) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.2 strength' | F2 Assemble army  8 (9.9) atk  3/ 0 esc 3 cr   600 inc  36700 harv 3 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 8 units at rally, 9.9 strength'
+iron_pass seed 11 t=2040 | F1 Recover  army  1 (0.2) atk  2/ 0 esc 0 cr   200 inc  24800 harv 0 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.2 strength' | F2 Attack   army 10 (15.0) atk  4/ 7 esc 3 cr   961 inc  41300 harv 3 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-144,128)'
+iron_pass seed 11   F2 [35:33] Save for ProduceMcv: local ore exhausted: forward base (361/5000)
+iron_pass seed 23 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+iron_pass seed 23 t=120 | F1 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   802 inc   4052 harv 3 ref 1 fac 1 def 0/0 knownEnemy 1.0 obj 'Assemble: 1 units at rally, 1.0 strength' | F2 Defend   army  1 (1.0) atk  0/ 0 esc 0 cr   321 inc   4071 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Defend base: 1 enemies near (130,-138)'
+iron_pass seed 23 t=240 | F1 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr  1100 inc  10000 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength' | F2 Attack   army  6 (8.0) atk  1/ 5 esc 0 cr   500 inc  10000 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-144,-128)'
+iron_pass seed 23 t=360 | F1 Defend   army  4 (5.3) atk  2/ 0 esc 0 cr     0 inc  12400 harv 3 ref 1 fac 1 def 2/0 knownEnemy 4.0 obj 'Defend base: 1 enemies near (-162,-141)' | F2 Defend   army  3 (2.5) atk  1/ 0 esc 0 cr   100 inc  12400 harv 3 ref 0 fac 1 def 2/2 knownEnemy 8.0 obj 'Defend base: 2 enemies near (120,-132)'
+iron_pass seed 23 t=480 | F1 Assemble army  5 (6.0) atk  2/ 0 esc 0 cr   265 inc  15400 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.0 strength' | F2 Defend   army  0 (0.0) atk  1/ 0 esc 0 cr   100 inc  12400 harv 3 ref 0 fac 1 def 1/2 knownEnemy 0.0 obj 'Defend base: 1 enemies near (164,-138)'
+iron_pass seed 23   F1 [08:10] Save for ProduceMcv: local ore exhausted: forward base (147/5000)
+iron_pass seed 61 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+iron_pass seed 61 t=120 | F1 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   400 inc   4400 harv 4 ref 1 fac 1 def 1/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength' | F2 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   624 inc   4374 harv 3 ref 1 fac 1 def 0/0 knownEnemy 1.0 obj 'Assemble: 2 units at rally, 3.0 strength'
+iron_pass seed 61 t=240 | F1 Defend   army  5 (7.0) atk  0/ 0 esc 0 cr   100 inc  10800 harv 4 ref 1 fac 1 def 2/2 knownEnemy 2.0 obj 'Defend base: 2 enemies near (-126,5)' | F2 Attack   army  5 (6.1) atk  1/ 4 esc 0 cr   179 inc  10029 harv 3 ref 1 fac 1 def 2/1 knownEnemy 7.0 obj 'Attack Vehicle Factory at (-150,14)'
+iron_pass seed 61 t=360 | F1 Assemble army  5 (6.1) atk  0/ 0 esc 0 cr   401 inc  15100 harv 4 ref 1 fac 1 def 2/2 knownEnemy 1.0 obj 'Assemble: 5 units at rally, 6.1 strength' | F2 Assemble army  2 (2.0) atk  1/ 0 esc 0 cr   950 inc  13700 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 2.0 strength'
+iron_pass seed 61   F1 [06:52] Save for ProduceMcv: local ore exhausted: forward base (1001/5000)
+iron_pass seed 61 t=480 | F1 Defend   army  3 (2.0) atk  2/ 0 esc 1 cr  1101 inc  17800 harv 4 ref 1 fac 1 def 2/2 knownEnemy 5.0 obj 'Defend base: 2 enemies near (-148,-35)' | F2 Assemble army  5 (4.9) atk  1/ 0 esc 0 cr  1093 inc  16500 harv 3 ref 1 fac 1 def 2/2 knownEnemy 5.0 obj 'Assemble: 5 units at rally, 4.9 strength'
+iron_pass seed 61   F2 [08:06] Save for ProduceMcv: local ore exhausted: forward base (1063/5000)
+iron_pass seed 61   F1 [08:19] Save for ProduceMcv: local ore exhausted: forward base (101/5000)
+iron_pass seed 61 t=600 | F1 Assemble army  6 (4.9) atk  2/ 0 esc 1 cr  2165 inc  19864 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 4.9 strength' | F2 Assemble army  3 (2.8) atk  1/ 0 esc 0 cr  2947 inc  18384 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 2.8 strength'
+iron_pass seed 61   F2 [10:31] Save for ProduceMcv: local ore exhausted: forward base (1542/5000)
+iron_pass seed 61 t=720 | F1 Assemble army  6 (4.9) atk  2/ 0 esc 1 cr  3901 inc  21600 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 4.9 strength' | F2 Assemble army  5 (6.8) atk  1/ 0 esc 0 cr  3025 inc  20283 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.8 strength'
+iron_pass seed 61   F1 [12:55] Queued Mobile Command Vehicle - local ore exhausted: forward base
+iron_pass seed 61   F1 [13:41] Mobile Command Vehicle ready
+iron_pass seed 61   F1 [13:41] Forward base site chosen near ore at (-21,-21)
+iron_pass seed 61   F2 [13:43] Save for ProduceMcv: local ore exhausted: forward base (2821/5000)
+iron_pass seed 61 t=840 | F1 Assemble army  3 (2.8) atk  2/ 0 esc 1 cr   851 inc  24000 harv 4 ref 1 fac 1 def 2/2 knownEnemy 7.5 obj 'Assemble: 3 units at rally, 2.8 strength' | F2 Attack   army  8 (10.8) atk  2/ 6 esc 0 cr  3221 inc  22400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-150,14)'
+iron_pass seed 61   F1 [14:16] Deploying forward base at (-39,-19)
+iron_pass seed 61   F1 [14:31] Forward base established at (-39,-19)
+iron_pass seed 61   F2 [15:51] Queued Mobile Command Vehicle - local ore exhausted: forward base
+iron_pass seed 61 t=960 | F1 Assemble army  5 (3.3) atk  2/ 0 esc 1 cr     1 inc  26000 harv 4 ref 1 fac 1 def 2/2 knownEnemy 2.0 obj 'Assemble: 5 units at rally, 3.3 strength' | F2 Assemble army  3 (4.7) atk  2/ 0 esc 1 cr    21 inc  24200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.7 strength'
+iron_pass seed 61   F2 [16:37] Mobile Command Vehicle ready
+iron_pass seed 61   F2 [16:37] Forward base site chosen near ore at (-113,-135)
+iron_pass seed 61   F1 [16:40] Built Guard Tower at (-49,-19) - forward base defence
+iron_pass seed 61   F2 [17:11] Deploying forward base at (-95,-137)
+iron_pass seed 61   F2 [17:26] Forward base established at (-95,-137)
+iron_pass seed 61   F2 [17:28] Built Guard Tower at (-85,-137) - forward base defence
+iron_pass seed 61 t=1080 | F1 Assemble army  5 (3.3) atk  2/ 0 esc 1 cr   340 inc  28539 harv 4 ref 2 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 3.3 strength' | F2 Assemble army  4 (5.7) atk  2/ 0 esc 1 cr   921 inc  26000 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 5.7 strength'
+iron_pass seed 61   F1 [18:40] Save for ProduceMcv: local ore exhausted: forward base (401/5000)
+iron_pass seed 61   F1 [18:40] Selling Refinery: ore exhausted (refund about 500)
+iron_pass seed 61   F2 [18:41] Selling Refinery: ore exhausted (refund about 500)
+iron_pass seed 61 t=1200 | F1 Assemble army  5 (3.3) atk  2/ 0 esc 1 cr  4101 inc  34700 harv 8 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 3.3 strength' | F2 Assemble army  6 (8.2) atk  2/ 0 esc 1 cr  1021 inc  28700 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 8.2 strength'
+iron_pass seed 61   F1 [20:30] Queued Mobile Command Vehicle - local ore exhausted: forward base
+iron_pass seed 61   F1 [21:16] Mobile Command Vehicle ready
+iron_pass seed 61   F1 [21:16] Forward base site chosen near ore at (-113,135)
+iron_pass seed 61   F1 [21:46] Deploying forward base at (-117,118)
+iron_pass seed 61 t=1320 | F1 Assemble army  5 (5.0) atk  2/ 0 esc 1 cr   639 inc  39388 harv 8 ref 1 fac 1 def 3/2 knownEnemy 7.0 obj 'Assemble: 5 units at rally, 5.0 strength' | F2 Attack   army  8 (10.7) atk  4/ 6 esc 1 cr   892 inc  31769 harv 3 ref 1 fac 1 def 3/2 knownEnemy 3.5 obj 'Attack Vehicle Factory at (-150,14)'
+iron_pass seed 61   F1 [22:01] Forward base established at (-117,117)
+iron_pass seed 61   F1 [22:01] Built Guard Tower at (-123,109) - forward base defence
+iron_pass seed 61   F2 [23:50] Save for ProduceMcv: local ore exhausted: forward base (573/5000)
+iron_pass seed 61 t=1440 | F1 Assemble army  3 (3.4) atk  3/ 0 esc 1 cr   733 inc  45132 harv 8 ref 2 fac 2 def 4/2 knownEnemy 1.0 obj 'Assemble: 3 units at rally, 3.4 strength' | F2 Assemble army  4 (4.0) atk  4/ 0 esc 2 cr   773 inc  36900 harv 4 ref 1 fac 1 def 3/2 knownEnemy 4.0 obj 'Assemble: 4 units at rally, 4.0 strength'
+iron_pass seed 61   F1 [25:29] Selling Forward Command Centre: its ore is exhausted (refund about 2362)
+iron_pass seed 61   F1 [25:29] Selling Refinery: ore exhausted (refund about 500)
+iron_pass seed 61 t=1560 | F1 Attack   army 14 (18.4) atk  5/10 esc 2 cr   121 inc  57057 harv 8 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (4,-164)' | F2 Recover  army  0 (0.0) atk  4/ 0 esc 2 cr   273 inc  38300 harv 4 ref 0 fac 1 def 3/2 knownEnemy 6.0 obj 'Recover: 1 units at rally, 0.0 strength'
+iron_pass seed 61   F2 [26:28] Selling Forward Command Centre: about to be lost (refund about 567)
+green_divide seed 11 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+green_divide seed 11 t=120 | F1 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   650 inc   4400 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 3.0 strength' | F2 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   776 inc   4026 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength'
+green_divide seed 11 t=240 | F1 Attack   army  6 (8.0) atk  1/ 5 esc 0 cr   606 inc   9206 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (98,-205)' | F2 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr   200 inc   9200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+green_divide seed 11 t=360 | F1 Defend   army  1 (1.0) atk  1/ 0 esc 1 cr   300 inc  13000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 6.0 obj 'Defend base: 2 enemies near (-176,81)' | F2 Attack   army  6 (6.9) atk  2/ 4 esc 0 cr   827 inc  12727 harv 3 ref 1 fac 1 def 2/2 knownEnemy 1.0 obj 'Attack Vehicle Factory at (-201,98)'
+green_divide seed 11   F2 [06:04] Save for ProduceMcv: local ore exhausted: forward base (900/5000)
+green_divide seed 11   F2 [06:39] Save for ProduceMcv: local ore exhausted: forward base (100/5000)
+green_divide seed 11 t=480 | F1 Assemble army  2 (2.0) atk  1/ 0 esc 1 cr   334 inc  15400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 2.0 strength' | F2 Assemble army  6 (7.4) atk  2/ 0 esc 1 cr  1500 inc  14800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.4 strength'
+green_divide seed 11   F2 [08:21] Save for ProduceMcv: local ore exhausted: forward base (700/5000)
+green_divide seed 11   F1 [09:10] Save for ProduceMcv: local ore exhausted: forward base (397/5000)
+green_divide seed 11   F1 [09:33] Save for ProduceMcv: local ore exhausted: forward base (497/5000)
+green_divide seed 11 t=600 | F1 Defend   army  4 (4.5) atk  1/ 0 esc 1 cr   397 inc  17600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 2.0 obj 'Defend base: 1 enemies near (-176,81)' | F2 Attack   army  4 (6.4) atk  3/ 2 esc 1 cr  2500 inc  17200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-201,98)'
+green_divide seed 11   F1 [10:10] Save for ProduceMcv: local ore exhausted: forward base (97/5000)
+green_divide seed 11   F2 [10:49] Save for ProduceMcv: local ore exhausted: forward base (900/5000)
+green_divide seed 11   F2 [11:45] Save for ProduceMcv: local ore exhausted: forward base (0/5000)
+green_divide seed 11 t=720 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 2.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (8.9) atk  3/ 0 esc 2 cr   600 inc  19600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.9 strength'
+green_divide seed 11   F1 [13:39] Save for ProduceMcv: local ore exhausted: forward base (97/5000)
+green_divide seed 11 t=840 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (8.9) atk  3/ 0 esc 2 cr  1800 inc  20800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.9 strength'
+green_divide seed 11 t=960 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (8.9) atk  3/ 0 esc 2 cr  3600 inc  22600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.9 strength'
+green_divide seed 11   F2 [17:49] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 11 t=1080 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (8.9) atk  3/ 0 esc 2 cr     0 inc  24000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.9 strength'
+green_divide seed 11   F2 [18:34] Mobile Command Vehicle ready
+green_divide seed 11   F2 [18:34] Forward base site chosen near ore at (-55,-196)
+green_divide seed 11   F2 [19:14] Deploying forward base at (-37,-197)
+green_divide seed 11   F1 [19:24] Save for ProduceMcv: local ore exhausted: forward base (97/5000)
+green_divide seed 11   F2 [19:29] Forward base established at (-37,-197)
+green_divide seed 11   F2 [19:55] Built Guard Tower at (-27,-197) - forward base defence
+green_divide seed 11 t=1200 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (8.9) atk  3/ 0 esc 2 cr   350 inc  25200 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.9 strength'
+green_divide seed 11 t=1320 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (8.9) atk  3/ 0 esc 2 cr   900 inc  26200 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 8.9 strength'
+green_divide seed 11   F2 [22:23] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 11 t=1440 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (9.5) atk  3/ 0 esc 2 cr  1030 inc  28900 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 9.5 strength'
+green_divide seed 11 t=1560 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (9.5) atk  3/ 0 esc 2 cr   308 inc  31778 harv 5 ref 2 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 9.5 strength'
+green_divide seed 11   F1 [26:27] Save for ProduceMcv: local ore exhausted: forward base (97/5000)
+green_divide seed 11 t=1680 | F1 Recover  army  6 (6.5) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 6 units at rally, 6.5 strength' | F2 Assemble army  7 (9.5) atk  3/ 0 esc 2 cr   580 inc  35100 harv 6 ref 2 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 9.5 strength'
+green_divide seed 11   F1 [29:35] Save for ProduceMcv: local ore exhausted: forward base (97/5000)
+green_divide seed 11   F1 [29:56] Save for ProduceMcv: local ore exhausted: forward base (97/5000)
+green_divide seed 11 t=1800 | F1 Recover  army  5 (4.8) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 4.0 obj 'Recover: 5 units at rally, 4.8 strength' | F2 Attack   army  7 (9.3) atk  4/ 2 esc 2 cr  1330 inc  39300 harv 6 ref 2 fac 2 def 3/2 knownEnemy 5.5 obj 'Attack Vehicle Factory at (-201,98)'
+green_divide seed 11   F2 [31:07] Save for ProduceMcv: local ore exhausted: forward base (730/5000)
+green_divide seed 11   F2 [31:07] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+green_divide seed 11   F2 [31:07] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 11   F2 [31:08] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 11   F2 [31:21] Save for ProduceMcv: local ore exhausted: forward base (930/5000)
+green_divide seed 11 t=1920 | F1 Recover  army  5 (4.3) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 5 units at rally, 4.3 strength' | F2 Recover  army 12 (17.0) atk  4/ 0 esc 3 cr   930 inc  46000 harv 4 ref 0 fac 2 def 3/2 knownEnemy 2.0 obj 'Recover: 12 units at rally, 17.0 strength'
+green_divide seed 11   F1 [33:59] Save for ProduceMcv: local ore exhausted: forward base (97/5000)
+green_divide seed 11 t=2040 | F1 Recover  army  5 (4.3) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 5 units at rally, 4.3 strength' | F2 Recover  army 12 (17.0) atk  4/ 0 esc 3 cr   930 inc  46000 harv 2 ref 0 fac 2 def 3/2 knownEnemy 5.5 obj 'Recover: 12 units at rally, 17.0 strength'
+green_divide seed 11 t=2160 | F1 Recover  army  5 (4.3) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 5 units at rally, 4.3 strength' | F2 Recover  army 12 (17.0) atk  4/ 0 esc 3 cr   930 inc  46000 harv 2 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 12 units at rally, 17.0 strength'
+green_divide seed 11 t=2280 | F1 Recover  army  5 (4.3) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 5 units at rally, 4.3 strength' | F2 Recover  army 12 (17.0) atk  4/ 0 esc 3 cr   930 inc  46000 harv 2 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 12 units at rally, 17.0 strength'
+green_divide seed 11 t=2400 | F1 Recover  army  5 (4.3) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 5 units at rally, 4.3 strength' | F2 Recover  army 12 (17.0) atk  4/ 0 esc 3 cr   930 inc  46000 harv 2 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 12 units at rally, 17.0 strength'
+green_divide seed 11 t=2520 | F1 Recover  army  5 (4.3) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 5 units at rally, 4.3 strength' | F2 Recover  army 12 (17.0) atk  4/ 0 esc 3 cr   930 inc  46000 harv 2 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 12 units at rally, 17.0 strength'
+green_divide seed 11 t=2640 | F1 Recover  army  5 (4.3) atk  1/ 0 esc 1 cr    97 inc  17800 harv 3 ref 0 fac 1 def 2/2 knownEnemy 0.0 obj 'Recover: 5 units at rally, 4.3 strength' | F2 Recover  army 12 (17.0) atk  4/ 0 esc 3 cr   930 inc  46000 harv 2 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 12 units at rally, 17.0 strength'
+green_divide seed 23 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+green_divide seed 23 t=120 | F1 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   780 inc   4030 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength' | F2 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   595 inc   4345 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 3.0 strength'
+green_divide seed 23 t=240 | F1 Attack   army  6 (8.0) atk  1/ 5 esc 0 cr   600 inc   9200 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (203,-98)' | F2 Attack   army  7 (9.0) atk  1/ 6 esc 0 cr   157 inc   9257 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-98,-203)'
+green_divide seed 23   F2 [05:48] Save for ProduceMcv: local ore exhausted: forward base (0/5000)
+green_divide seed 23 t=360 | F1 Assemble army  3 (3.0) atk  2/ 0 esc 0 cr   800 inc  12000 harv 3 ref 1 fac 1 def 2/0 knownEnemy 8.0 obj 'Assemble: 3 units at rally, 3.0 strength' | F2 Attack   army  7 (7.2) atk  2/ 6 esc 1 cr   200 inc  13000 harv 3 ref 1 fac 1 def 2/1 knownEnemy 4.0 obj 'Attack Vehicle Factory at (-98,-203)'
+green_divide seed 23   F1 [06:18] Save for ProduceMcv: local ore exhausted: forward base (500/5000)
+green_divide seed 23   F1 [07:11] Save for ProduceMcv: local ore exhausted: forward base (0/5000)
+green_divide seed 23 t=480 | F1 Assemble army  3 (3.0) atk  2/ 0 esc 0 cr  1200 inc  14800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.0 strength' | F2 Assemble army  3 (3.2) atk  2/ 0 esc 1 cr  2600 inc  15400 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.2 strength'
+green_divide seed 23 t=600 | F1 Assemble army  3 (3.0) atk  2/ 0 esc 0 cr  3600 inc  17200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.0 strength' | F2 Assemble army  3 (3.2) atk  2/ 0 esc 1 cr  4703 inc  17503 harv 3 ref 1 fac 1 def 2/1 knownEnemy 1.0 obj 'Assemble: 3 units at rally, 3.2 strength'
+green_divide seed 23   F2 [10:05] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 23   F2 [10:51] Mobile Command Vehicle ready
+green_divide seed 23   F2 [10:51] Forward base site chosen near ore at (215,0)
+green_divide seed 23   F1 [11:01] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 23   F2 [11:14] Deploying forward base at (213,-18)
+green_divide seed 23   F2 [11:29] Forward base established at (213,-19)
+green_divide seed 23   F2 [11:30] Save for ProduceMcv: local ore exhausted: forward base (357/5000)
+green_divide seed 23   F1 [11:46] Mobile Command Vehicle ready
+green_divide seed 23   F1 [11:46] Forward base site chosen near ore at (-191,-191)
+green_divide seed 23 t=720 | F1 Assemble army  0 (0.0) atk  2/ 0 esc 0 cr   550 inc  19600 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.0 strength' | F2 Assemble army  4 (4.2) atk  2/ 0 esc 1 cr   957 inc  19600 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.2 strength'
+green_divide seed 23   F1 [12:10] Deploy refused: Blocked by terrain
+green_divide seed 23   F1 [12:17] Deploying forward base at (-177,-201)
+green_divide seed 23   F1 [12:32] Forward base established at (-177,-201)
+green_divide seed 23   F1 [12:33] Built Guard Tower at (-167,-203) - forward base defence
+green_divide seed 23 t=840 | F1 Assemble army  3 (3.0) atk  2/ 0 esc 0 cr   942 inc  20800 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.0 strength' | F2 Assemble army  4 (4.2) atk  2/ 0 esc 1 cr  2157 inc  20800 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.2 strength'
+green_divide seed 23   F2 [15:01] Built Guard Tower at (213,-29) - forward base defence
+green_divide seed 23   F2 [15:08] Save for ProduceMcv: local ore exhausted: forward base (857/5000)
+green_divide seed 23   F1 [15:10] Save for ProduceMcv: local ore exhausted: forward base (342/5000)
+green_divide seed 23   F1 [15:10] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 23 t=960 | F1 Assemble army  3 (3.0) atk  2/ 0 esc 0 cr  2042 inc  25300 harv 6 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 3.0 strength' | F2 Attack   army  7 (8.2) atk  3/ 6 esc 1 cr  1657 inc  22600 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-98,-203)'
+green_divide seed 23   F1 [16:19] Save for ProduceMcv: local ore exhausted: forward base (142/5000)
+green_divide seed 23   F1 [17:42] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+green_divide seed 23   F1 [17:52] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 23 t=1080 | F1 Assemble army  5 (6.5) atk  2/ 0 esc 0 cr   235 inc  30793 harv 6 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.5 strength' | F2 Assemble army  3 (4.2) atk  3/ 0 esc 1 cr  2857 inc  23800 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.2 strength'
+green_divide seed 23   F1 [18:38] Mobile Command Vehicle ready
+green_divide seed 23   F1 [18:38] Forward base site chosen near ore at (55,-196)
+green_divide seed 23   F2 [19:21] Save for ProduceMcv: local ore exhausted: forward base (2157/5000)
+green_divide seed 23 t=1200 | F1 Assemble army  2 (1.5) atk  2/ 0 esc 0 cr   592 inc  34000 harv 6 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 1.5 strength' | F2 Assemble army  6 (7.2) atk  3/ 0 esc 1 cr  2157 inc  24600 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.2 strength'
+green_divide seed 23 t=1320 | F1 Assemble army  2 (1.5) atk  2/ 0 esc 0 cr  1328 inc  36486 harv 6 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 1.5 strength' | F2 Assemble army  6 (7.2) atk  3/ 0 esc 1 cr  3557 inc  26000 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.2 strength'
+green_divide seed 23   F1 [22:33] Deploying forward base at (37,-197)
+green_divide seed 23   F1 [22:48] Forward base established at (37,-197)
+green_divide seed 23   F1 [22:56] Built Guard Tower at (27,-197) - forward base defence
+green_divide seed 23   F2 [22:58] Save for ProduceMcv: local ore exhausted: forward base (2257/5000)
+green_divide seed 23   F1 [23:15] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 23   F2 [23:28] Save for ProduceMcv: local ore exhausted: forward base (357/5000)
+green_divide seed 23   F2 [23:43] Save for ProduceMcv: local ore exhausted: forward base (357/5000)
+green_divide seed 23 t=1440 | F1 Recover  army  3 (3.7) atk  3/ 0 esc 1 cr   292 inc  39300 harv 6 ref 1 fac 2 def 4/2 knownEnemy 13.0 obj 'Recover: 3 units at rally, 3.7 strength' | F2 Attack   army 11 (12.2) atk  5/ 9 esc 1 cr   957 inc  27200 harv 3 ref 1 fac 1 def 3/1 knownEnemy 3.5 obj 'Attack Vehicle Factory at (-98,-203)'
+green_divide seed 23 t=1560 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 2.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  4 (4.7) atk  5/ 0 esc 2 cr  1757 inc  28000 harv 3 ref 1 fac 1 def 3/1 knownEnemy 9.0 obj 'Assemble: 4 units at rally, 4.7 strength'
+green_divide seed 23   F2 [27:22] Save for ProduceMcv: local ore exhausted: forward base (957/5000)
+green_divide seed 23 t=1680 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  6 (7.7) atk  5/ 0 esc 2 cr  1557 inc  29200 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+green_divide seed 23 t=1800 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  6 (7.7) atk  5/ 0 esc 2 cr  2357 inc  30000 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+green_divide seed 23 t=1920 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  6 (7.7) atk  5/ 0 esc 2 cr  3557 inc  31200 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+green_divide seed 23 t=2040 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  6 (7.7) atk  5/ 0 esc 2 cr  4557 inc  32200 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+green_divide seed 23   F2 [34:49] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 23   F2 [35:35] Mobile Command Vehicle ready
+green_divide seed 23   F2 [35:35] Forward base site chosen near ore at (152,63)
+green_divide seed 23 t=2160 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  3 (2.7) atk  5/ 0 esc 2 cr   507 inc  33600 harv 3 ref 1 fac 1 def 3/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 2.7 strength'
+green_divide seed 23   F2 [36:33] Deploy refused: Blocked by terrain
+green_divide seed 23   F2 [36:38] Deploying forward base at (148,46)
+green_divide seed 23   F2 [36:53] Forward base established at (148,46)
+green_divide seed 23   F2 [36:53] Built Guard Tower at (156,44) - forward base defence
+green_divide seed 23 t=2280 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  6 (7.7) atk  5/ 0 esc 2 cr   307 inc  34800 harv 3 ref 1 fac 1 def 4/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+green_divide seed 23 t=2400 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  6 (7.7) atk  5/ 0 esc 2 cr  1057 inc  36000 harv 3 ref 1 fac 1 def 4/1 knownEnemy 9.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+green_divide seed 23 t=2520 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  6 (7.7) atk  5/ 0 esc 2 cr   807 inc  37200 harv 3 ref 1 fac 1 def 4/1 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength'
+green_divide seed 23 t=2640 | F1 Recover  army  8 (8.7) atk  3/ 0 esc 1 cr   452 inc  44160 harv 0 ref 0 fac 2 def 4/2 knownEnemy 0.0 obj 'Recover: 8 units at rally, 8.7 strength' | F2 Assemble army  7 (9.2) atk  5/ 0 esc 2 cr   457 inc  38400 harv 3 ref 1 fac 1 def 4/1 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 9.2 strength'
+green_divide seed 61 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+green_divide seed 61 t=120 | F1 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr  1000 inc   4600 harv 4 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength' | F2 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   777 inc   4027 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength'
+green_divide seed 61 t=240 | F1 Assemble army  4 (6.0) atk  0/ 0 esc 0 cr   374 inc  10574 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 6.0 strength' | F2 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr   300 inc   9200 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+green_divide seed 61   F1 [04:49] Save for ProduceMcv: local ore exhausted: forward base (544/5000)
+green_divide seed 61   F2 [05:55] Save for ProduceMcv: local ore exhausted: forward base (400/5000)
+green_divide seed 61 t=360 | F1 Defend   army  3 (4.7) atk  1/ 0 esc 0 cr  1250 inc  14400 harv 4 ref 1 fac 1 def 2/2 knownEnemy 8.5 obj 'Defend: 3 units at rally, 4.7 strength' | F2 Assemble army  8 (11.2) atk  1/ 0 esc 0 cr   400 inc  12800 harv 3 ref 1 fac 1 def 2/0 knownEnemy 5.0 obj 'Assemble: 8 units at rally, 11.2 strength'
+green_divide seed 61   F1 [06:00] Save for ProduceMcv: local ore exhausted: forward base (1250/5000)
+green_divide seed 61   F1 [06:35] Save for ProduceMcv: local ore exhausted: forward base (787/5000)
+green_divide seed 61   F1 [06:53] Save for ProduceMcv: local ore exhausted: forward base (350/5000)
+green_divide seed 61 t=480 | F1 Recover  army  4 (4.6) atk  3/ 0 esc 1 cr  1950 inc  17000 harv 4 ref 1 fac 1 def 2/2 knownEnemy 7.0 obj 'Recover: 4 units at rally, 4.6 strength' | F2 Defend   army  5 (6.5) atk  2/ 0 esc 1 cr    92 inc  15400 harv 3 ref 1 fac 1 def 2/1 knownEnemy 5.0 obj 'Defend base: 3 enemies near (81,-176)'
+green_divide seed 61   F2 [08:01] Save for ProduceMcv: local ore exhausted: forward base (92/5000)
+green_divide seed 61   F1 [09:38] Save for ProduceMcv: local ore exhausted: forward base (308/5000)
+green_divide seed 61 t=600 | F1 Assemble army  3 (5.0) atk  3/ 0 esc 1 cr   908 inc  19600 harv 4 ref 1 fac 1 def 2/2 knownEnemy 2.0 obj 'Assemble: 3 units at rally, 5.0 strength' | F2 Assemble army  2 (2.8) atk  3/ 0 esc 2 cr  1013 inc  17800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 3.0 obj 'Assemble: 2 units at rally, 2.8 strength'
+green_divide seed 61   F2 [10:30] Save for ProduceMcv: local ore exhausted: forward base (329/5000)
+green_divide seed 61 t=720 | F1 Assemble army  3 (5.0) atk  3/ 0 esc 1 cr  2708 inc  21400 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 5.0 strength' | F2 Assemble army  3 (4.3) atk  3/ 0 esc 2 cr  1529 inc  19600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.3 strength'
+green_divide seed 61   F2 [13:49] Save for ProduceMcv: local ore exhausted: forward base (1929/5000)
+green_divide seed 61 t=840 | F1 Assemble army  3 (5.0) atk  3/ 0 esc 1 cr  4708 inc  23400 harv 4 ref 1 fac 1 def 2/2 knownEnemy 4.5 obj 'Assemble: 3 units at rally, 5.0 strength' | F2 Assemble army  5 (7.3) atk  3/ 0 esc 2 cr  1929 inc  21400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.3 strength'
+green_divide seed 61   F1 [14:36] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 61   F1 [15:22] Mobile Command Vehicle ready
+green_divide seed 61   F1 [15:22] Forward base site chosen near ore at (-191,-191)
+green_divide seed 61 t=960 | F1 Assemble army  0 (0.0) atk  3/ 0 esc 1 cr   973 inc  25115 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 5.0 strength' | F2 Assemble army  5 (7.3) atk  3/ 0 esc 2 cr  3597 inc  23068 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.3 strength'
+green_divide seed 61   F1 [16:20] Deploy refused: Blocked by terrain
+green_divide seed 61   F1 [16:24] Deploying forward base at (-201,-177)
+green_divide seed 61   F1 [16:39] Forward base established at (-201,-177)
+green_divide seed 61   F1 [16:40] Built Guard Tower at (-207,-169) - forward base defence
+green_divide seed 61   F2 [17:09] Save for ProduceMcv: local ore exhausted: forward base (2429/5000)
+green_divide seed 61 t=1080 | F1 Defend   army  3 (5.0) atk  3/ 0 esc 1 cr   208 inc  27000 harv 4 ref 2 fac 1 def 3/2 knownEnemy 7.0 obj 'Defend base: 2 enemies near (-182,-190)' | F2 Attack   army  8 (10.8) atk  4/ 6 esc 2 cr  2629 inc  24000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-203,-98)'
+green_divide seed 61   F1 [18:09] Selling Refinery: ore exhausted (refund about 430)
+green_divide seed 61   F1 [18:09] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+green_divide seed 61   F1 [18:10] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 61   F1 [18:21] Save for ProduceMcv: local ore exhausted: forward base (638/5000)
+green_divide seed 61   F1 [18:45] Save for ProduceMcv: local ore exhausted: forward base (138/5000)
+green_divide seed 61 t=1200 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Assemble army  3 (4.6) atk  4/ 0 esc 3 cr  4029 inc  25400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.6 strength'
+green_divide seed 61   F2 [21:56] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 61 t=1320 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Assemble army  3 (4.6) atk  4/ 0 esc 3 cr    29 inc  26400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.6 strength'
+green_divide seed 61   F2 [22:41] Mobile Command Vehicle ready
+green_divide seed 61   F2 [22:41] Forward base site chosen near ore at (-55,-196)
+green_divide seed 61   F2 [23:22] Deploying forward base at (-37,-197)
+green_divide seed 61   F2 [23:37] Forward base established at (-37,-197)
+green_divide seed 61   F2 [23:37] Built Guard Tower at (-27,-197) - forward base defence
+green_divide seed 61 t=1440 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Assemble army  3 (4.6) atk  4/ 0 esc 3 cr   829 inc  27600 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.6 strength'
+green_divide seed 61   F2 [24:13] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 61 t=1560 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Assemble army  3 (4.6) atk  4/ 0 esc 3 cr   429 inc  30500 harv 3 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.6 strength'
+green_divide seed 61 t=1680 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Assemble army  4 (6.1) atk  4/ 0 esc 3 cr   629 inc  33300 harv 5 ref 2 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 6.1 strength'
+green_divide seed 61   F2 [29:33] Save for ProduceMcv: local ore exhausted: forward base (629/5000)
+green_divide seed 61 t=1800 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Assemble army  5 (7.1) atk  4/ 0 esc 3 cr  1429 inc  36700 harv 6 ref 2 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.1 strength'
+green_divide seed 61   F2 [31:16] Queued Mobile Command Vehicle - local ore exhausted: forward base
+green_divide seed 61   F2 [31:56] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+green_divide seed 61   F2 [31:56] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 61   F2 [31:58] Selling Refinery: ore exhausted (refund about 500)
+green_divide seed 61 t=1920 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Assemble army  6 (8.1) atk  4/ 0 esc 3 cr   529 inc  42300 harv 6 ref 2 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 8.1 strength'
+green_divide seed 61   F2 [32:03] Mobile Command Vehicle ready
+green_divide seed 61   F2 [32:03] Forward base site chosen near ore at (0,-55)
+green_divide seed 61   F2 [32:51] Deploying forward base at (6,-71)
+green_divide seed 61   F2 [33:06] Forward base established at (6,-71)
+green_divide seed 61   F1 [33:15] Save for ProduceMcv: local ore exhausted: forward base (138/5000)
+green_divide seed 61 t=2040 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Recover  army 10 (13.6) atk  4/ 0 esc 3 cr    45 inc  46200 harv 6 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 10 units at rally, 13.6 strength'
+green_divide seed 61 t=2160 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Recover  army 10 (13.6) atk  4/ 0 esc 3 cr    45 inc  46200 harv 6 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 10 units at rally, 13.6 strength'
+green_divide seed 61 t=2280 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Recover  army 10 (13.6) atk  4/ 0 esc 3 cr    45 inc  46200 harv 6 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 10 units at rally, 13.6 strength'
+green_divide seed 61 t=2400 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Recover  army 10 (13.6) atk  4/ 0 esc 3 cr    45 inc  46200 harv 6 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 10 units at rally, 13.6 strength'
+green_divide seed 61 t=2520 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Recover  army 10 (13.6) atk  4/ 0 esc 3 cr    45 inc  46200 harv 6 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 10 units at rally, 13.6 strength'
+green_divide seed 61 t=2640 | F1 Recover  army  7 (10.9) atk  3/ 0 esc 1 cr   138 inc  31030 harv 3 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 7 units at rally, 10.9 strength' | F2 Recover  army 10 (13.6) atk  4/ 0 esc 3 cr    45 inc  46200 harv 6 ref 0 fac 2 def 3/2 knownEnemy 0.0 obj 'Recover: 10 units at rally, 13.6 strength'
+blackstone_basin seed 11 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+blackstone_basin seed 11 t=120 | F1 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   650 inc   4400 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 3.0 strength' | F2 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   650 inc   4400 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 3.0 strength'
+blackstone_basin seed 11 t=240 | F1 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr   500 inc   8600 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength' | F2 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr   500 inc   8600 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+blackstone_basin seed 11   F2 [04:01] Save for ProduceMcv: local ore exhausted: forward base (500/5000)
+blackstone_basin seed 11   F1 [04:01] Save for ProduceMcv: local ore exhausted: forward base (500/5000)
+blackstone_basin seed 11   F2 [05:31] Save for ProduceMcv: local ore exhausted: forward base (300/5000)
+blackstone_basin seed 11   F1 [05:42] Save for ProduceMcv: local ore exhausted: forward base (300/5000)
+blackstone_basin seed 11 t=360 | F1 Attack   army  7 (10.0) atk  1/ 6 esc 0 cr   700 inc  10200 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (152,-142)' | F2 Attack   army  7 (10.0) atk  1/ 6 esc 0 cr   900 inc  10400 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-152,142)'
+blackstone_basin seed 11   F1 [06:41] Save for ProduceMcv: local ore exhausted: forward base (100/5000)
+blackstone_basin seed 11 t=480 | F1 Attack   army  7 (7.1) atk  2/ 5 esc 0 cr  1100 inc  11600 harv 3 ref 1 fac 1 def 2/0 knownEnemy 2.0 obj 'Attack Vehicle Factory at (152,-142)' | F2 Defend   army  1 (2.0) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 7.0 obj 'Defend base: 5 enemies near (140,-111)'
+blackstone_basin seed 11 t=600 | F1 Assemble army  5 (5.3) atk  2/ 0 esc 1 cr  2900 inc  13400 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.3 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11 t=720 | F1 Assemble army  5 (5.3) atk  2/ 0 esc 1 cr  4500 inc  15000 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.3 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11   F1 [12:23] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 11   F1 [13:08] Mobile Command Vehicle ready
+blackstone_basin seed 11   F1 [13:08] Forward base site chosen near ore at (-38,62)
+blackstone_basin seed 11   F1 [13:45] Deploy refused: Blocked by terrain
+blackstone_basin seed 11   F1 [13:49] Deploying forward base at (-53,76)
+blackstone_basin seed 11 t=840 | F1 Assemble army  2 (1.8) atk  2/ 0 esc 1 cr   839 inc  16800 harv 3 ref 1 fac 1 def 2/0 knownEnemy 2.0 obj 'Assemble: 2 units at rally, 1.8 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11   F1 [14:04] Forward base established at (-53,76)
+blackstone_basin seed 11   F1 [14:04] Built Guard Tower at (-55,86) - forward base defence
+blackstone_basin seed 11   F1 [15:07] Save for ProduceMcv: local ore exhausted: forward base (966/5000)
+blackstone_basin seed 11 t=960 | F1 Assemble army  5 (5.3) atk  2/ 0 esc 1 cr  1566 inc  18000 harv 3 ref 1 fac 1 def 3/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.3 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11 t=1080 | F1 Assemble army  5 (5.3) atk  2/ 0 esc 1 cr  2975 inc  19409 harv 3 ref 1 fac 1 def 3/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.3 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11 t=1200 | F1 Assemble army  5 (5.3) atk  2/ 0 esc 1 cr  4566 inc  21000 harv 3 ref 1 fac 1 def 3/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.3 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11   F1 [20:42] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 11   F1 [21:27] Mobile Command Vehicle ready
+blackstone_basin seed 11   F1 [21:27] Forward base site chosen near ore at (-2,77)
+blackstone_basin seed 11 t=1320 | F1 Assemble army  2 (1.5) atk  2/ 0 esc 1 cr   158 inc  22042 harv 3 ref 1 fac 1 def 3/0 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 1.5 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11   F1 [22:10] Deploy refused: Blocked by terrain
+blackstone_basin seed 11   F1 [22:14] Deploying forward base at (-19,88)
+blackstone_basin seed 11   F1 [22:29] Forward base established at (-19,88)
+blackstone_basin seed 11   F1 [22:30] Built Guard Tower at (-29,90) - forward base defence
+blackstone_basin seed 11 t=1440 | F1 Assemble army  5 (5.3) atk  2/ 0 esc 1 cr   916 inc  23200 harv 3 ref 1 fac 1 def 4/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.3 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11   F1 [24:16] Selling Refinery: ore exhausted (refund about 500)
+blackstone_basin seed 11 t=1560 | F1 Assemble army  6 (6.8) atk  2/ 0 esc 1 cr   466 inc  27100 harv 3 ref 1 fac 1 def 4/0 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.8 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11 t=1680 | F1 Assemble army  6 (8.3) atk  2/ 0 esc 1 cr   518 inc  29970 harv 3 ref 1 fac 1 def 4/0 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 8.3 strength' | F2 Recover  army  1 (0.4) atk  1/ 0 esc 1 cr   398 inc  11648 harv 2 ref 0 fac 1 def 2/0 knownEnemy 0.0 obj 'Recover: 1 units at rally, 0.4 strength'
+blackstone_basin seed 11 t=1800 | F1 Attack   army  7 (10.2) atk  3/ 2 esc 1 cr   745 inc  32500 harv 3 ref 1 fac 1 def 4/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (152,-142)' | F2 Defend   army  0 (0.0) atk  1/ 0 esc 1 cr   398 inc  11648 harv 0 ref 0 fac 1 def 1/0 knownEnemy 5.5 obj 'Defend base: 2 enemies near (138,-118)'
+blackstone_basin seed 23 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+blackstone_basin seed 23 t=120 | F1 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   761 inc   4011 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength' | F2 Assemble army  1 (1.0) atk  0/ 0 esc 0 cr   761 inc   4011 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 1.0 strength'
+blackstone_basin seed 23 t=240 | F1 Attack   army  6 (8.0) atk  1/ 5 esc 0 cr   450 inc   8600 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-18,150)' | F2 Attack   army  6 (8.0) atk  1/ 5 esc 0 cr     0 inc   8600 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (22,-162)'
+blackstone_basin seed 23   F2 [04:01] Save for ProduceMcv: local ore exhausted: forward base (0/5000)
+blackstone_basin seed 23   F1 [04:01] Save for ProduceMcv: local ore exhausted: forward base (450/5000)
+blackstone_basin seed 23   F2 [05:16] Save for ProduceMcv: local ore exhausted: forward base (400/5000)
+blackstone_basin seed 23   F1 [05:54] Save for ProduceMcv: local ore exhausted: forward base (150/5000)
+blackstone_basin seed 23 t=360 | F1 Assemble army  4 (4.0) atk  1/ 0 esc 0 cr   150 inc  10600 harv 2 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.0 strength' | F2 Assemble army  3 (4.0) atk  1/ 0 esc 0 cr  1400 inc  11000 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23 t=480 | F1 Assemble army  4 (4.0) atk  1/ 0 esc 0 cr  1950 inc  12400 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 4.0 strength' | F2 Assemble army  3 (4.0) atk  1/ 0 esc 0 cr  3200 inc  12800 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23   F1 [08:57] Save for ProduceMcv: local ore exhausted: forward base (1350/5000)
+blackstone_basin seed 23   F2 [09:56] Save for ProduceMcv: local ore exhausted: forward base (96/5000)
+blackstone_basin seed 23 t=600 | F1 Attack   army  3 (4.0) atk  2/ 2 esc 0 cr  2150 inc  14000 harv 3 ref 1 fac 1 def 2/0 knownEnemy 7.0 obj 'Attack Vehicle Factory at (-18,150)' | F2 Assemble army  6 (5.8) atk  1/ 0 esc 0 cr   219 inc  14600 harv 3 ref 1 fac 2 def 2/0 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 5.8 strength'
+blackstone_basin seed 23   F1 [11:14] Save for ProduceMcv: local ore exhausted: forward base (50/5000)
+blackstone_basin seed 23 t=720 | F1 Assemble army  3 (2.6) atk  2/ 0 esc 0 cr   650 inc  15800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 2.6 strength' | F2 Assemble army  3 (4.0) atk  2/ 0 esc 0 cr  1419 inc  15800 harv 3 ref 1 fac 2 def 2/0 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23 t=840 | F1 Assemble army  3 (2.6) atk  2/ 0 esc 0 cr  2050 inc  17200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 2.6 strength' | F2 Assemble army  3 (4.0) atk  2/ 0 esc 0 cr  3219 inc  17600 harv 3 ref 1 fac 2 def 2/0 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23   F2 [15:57] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 23 t=960 | F1 Assemble army  3 (2.6) atk  2/ 0 esc 0 cr  3650 inc  18800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 2.6 strength' | F2 Assemble army  3 (4.0) atk  2/ 0 esc 0 cr    19 inc  19400 harv 3 ref 1 fac 2 def 2/0 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23   F2 [16:43] Mobile Command Vehicle ready
+blackstone_basin seed 23   F2 [16:43] Forward base site chosen near ore at (-124,129)
+blackstone_basin seed 23   F2 [17:11] Deploying forward base at (-109,135)
+blackstone_basin seed 23   F1 [17:19] Save for ProduceMcv: local ore exhausted: forward base (2834/5000)
+blackstone_basin seed 23   F2 [17:26] Forward base established at (-107,136)
+blackstone_basin seed 23   F2 [17:27] Built Guard Tower at (-101,144) - forward base defence
+blackstone_basin seed 23 t=1080 | F1 Assemble army  5 (6.6) atk  2/ 0 esc 0 cr  3434 inc  20400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.6 strength' | F2 Assemble army  3 (4.0) atk  2/ 0 esc 0 cr   492 inc  20800 harv 3 ref 1 fac 2 def 3/0 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23   F2 [19:05] Selling Refinery: ore exhausted (refund about 500)
+blackstone_basin seed 23 t=1200 | F1 Assemble army  5 (6.6) atk  2/ 0 esc 0 cr  4927 inc  21893 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.6 strength' | F2 Assemble army  3 (4.0) atk  2/ 0 esc 0 cr   629 inc  22700 harv 3 ref 1 fac 2 def 3/0 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23   F1 [20:01] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 23   F1 [20:47] Mobile Command Vehicle ready
+blackstone_basin seed 23   F1 [20:47] Forward base site chosen near ore at (124,-129)
+blackstone_basin seed 23   F1 [21:18] Deploying forward base at (109,-135)
+blackstone_basin seed 23   F1 [21:33] Forward base established at (109,-135)
+blackstone_basin seed 23 t=1320 | F1 Assemble army  5 (6.6) atk  2/ 0 esc 0 cr   519 inc  23400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.6 strength' | F2 Assemble army  3 (4.0) atk  2/ 0 esc 0 cr  1082 inc  26803 harv 3 ref 1 fac 2 def 3/1 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.0 strength'
+blackstone_basin seed 23   F1 [22:07] Built Guard Tower at (103,-143) - forward base defence
+blackstone_basin seed 23 t=1440 | F1 Assemble army  5 (6.6) atk  2/ 0 esc 0 cr  1045 inc  26926 harv 5 ref 2 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 6.6 strength' | F2 Attack   army  6 (8.5) atk  3/ 5 esc 0 cr  1131 inc  30552 harv 3 ref 1 fac 2 def 3/1 knownEnemy 0.0 obj 'Attack Vehicle Factory at (22,-162)'
+blackstone_basin seed 23   F1 [24:01] Selling Refinery: ore exhausted (refund about 500)
+blackstone_basin seed 23   F1 [24:29] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+blackstone_basin seed 23   F2 [24:38] Save for ProduceMcv: local ore exhausted: forward base (79/5000)
+blackstone_basin seed 23   F2 [24:38] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+blackstone_basin seed 23   F1 [24:50] Save for ProduceMcv: local ore exhausted: forward base (949/5000)
+blackstone_basin seed 23   F2 [25:15] Save for ProduceMcv: local ore exhausted: forward base (529/5000)
+blackstone_basin seed 23   F2 [25:44] Save for ProduceMcv: local ore exhausted: forward base (229/5000)
+blackstone_basin seed 23 t=1560 | F1 Attack   army  5 (8.9) atk  3/ 2 esc 0 cr  2493 inc  34544 harv 6 ref 1 fac 1 def 3/2 knownEnemy 6.5 obj 'Attack Vehicle Factory at (-18,150)' | F2 Assemble army  5 (5.5) atk  3/ 0 esc 1 cr   429 inc  35200 harv 3 ref 1 fac 2 def 3/2 knownEnemy 4.0 obj 'Assemble: 5 units at rally, 5.5 strength'
+blackstone_basin seed 23   F2 [26:28] Save for ProduceMcv: local ore exhausted: forward base (329/5000)
+blackstone_basin seed 23   F1 [27:34] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 23 t=1680 | F1 Assemble army  3 (5.0) atk  3/ 0 esc 1 cr   681 inc  37800 harv 6 ref 1 fac 1 def 3/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 5.0 strength' | F2 Assemble army  6 (6.5) atk  3/ 0 esc 1 cr  1129 inc  36400 harv 3 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.5 strength'
+blackstone_basin seed 23   F1 [28:19] Mobile Command Vehicle ready
+blackstone_basin seed 23   F1 [28:19] Forward base site chosen near ore at (150,-15)
+blackstone_basin seed 23   F1 [29:17] Deploying forward base at (137,-28)
+blackstone_basin seed 23   F1 [29:32] Forward base established at (137,-28)
+blackstone_basin seed 23   F1 [29:52] Built Guard Tower at (131,-36) - forward base defence
+blackstone_basin seed 23 t=1800 | F1 Assemble army  4 (6.5) atk  3/ 0 esc 1 cr   744 inc  40753 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 6.5 strength' | F2 Assemble army  6 (6.5) atk  3/ 0 esc 1 cr  2329 inc  37600 harv 3 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.5 strength'
+blackstone_basin seed 23   F1 [31:13] Save for ProduceMcv: local ore exhausted: forward base (91/5000)
+blackstone_basin seed 23 t=1920 | F1 Assemble army  6 (8.5) atk  3/ 0 esc 1 cr  1091 inc  43600 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 8.5 strength' | F2 Assemble army  6 (6.5) atk  3/ 0 esc 1 cr  3729 inc  39000 harv 3 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.5 strength'
+blackstone_basin seed 23   F2 [33:36] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 23 t=2040 | F1 Assemble army  6 (8.5) atk  3/ 0 esc 1 cr  3397 inc  45906 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 8.5 strength' | F2 Assemble army  6 (6.5) atk  3/ 0 esc 1 cr   329 inc  40600 harv 3 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.5 strength'
+blackstone_basin seed 23   F2 [34:21] Mobile Command Vehicle ready
+blackstone_basin seed 23   F2 [34:21] Forward base site chosen near ore at (-22,8)
+blackstone_basin seed 23   F2 [35:09] Deploying forward base at (-21,26)
+blackstone_basin seed 23   F2 [35:24] Forward base established at (-21,26)
+blackstone_basin seed 23   F2 [35:40] Built Guard Tower at (-15,34) - forward base defence
+blackstone_basin seed 23   F1 [35:41] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+blackstone_basin seed 23 t=2160 | F1 Attack   army  8 (12.0) atk  4/ 6 esc 1 cr  1397 inc  50700 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-18,150)' | F2 Assemble army  6 (7.2) atk  3/ 0 esc 1 cr   675 inc  42200 harv 3 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.2 strength'
+blackstone_basin seed 23   F1 [36:16] Save for ProduceMcv: local ore exhausted: forward base (518/5000)
+blackstone_basin seed 23   F1 [37:42] Save for ProduceMcv: local ore exhausted: forward base (418/5000)
+blackstone_basin seed 23 t=2280 | F1 Attack   army  9 (11.6) atk  6/ 7 esc 2 cr   618 inc  52500 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-18,150)' | F2 Assemble army  3 (3.5) atk  4/ 0 esc 2 cr     0 inc  43800 harv 3 ref 2 fac 2 def 4/2 knownEnemy 3.0 obj 'Assemble: 3 units at rally, 3.5 strength'
+blackstone_basin seed 23   F2 [38:14] Selling Forward Command Centre: about to be lost (refund about 617)
+blackstone_basin seed 23 t=2400 | F1 Attack   army  7 (6.5) atk  6/ 5 esc 2 cr  2818 inc  54700 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-18,150)' | F2 Defend   army  0 (0.0) atk  4/ 0 esc 2 cr   206 inc  45249 harv 2 ref 1 fac 1 def 2/1 knownEnemy 8.5 obj 'Defend base: 3 enemies near (-14,144)'
+blackstone_basin seed 23   F1 [41:41] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 23 t=2520 | F1 Assemble army  6 (5.3) atk  6/ 0 esc 3 cr    18 inc  56900 harv 6 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 5.3 strength' | F2 Assemble army  0 (0.0) atk  4/ 0 esc 2 cr   521 inc  46364 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Defend base: 2 enemies near (-15,145)'
+blackstone_basin seed 23   F1 [42:27] Mobile Command Vehicle ready
+blackstone_basin seed 23   F1 [42:27] Forward base site chosen near ore at (-160,-10)
+blackstone_basin seed 23   F1 [43:43] Deploying forward base at (-146,-23)
+blackstone_basin seed 23   F1 [43:58] Forward base established at (-146,-23)
+blackstone_basin seed 23   F1 [43:58] Built Guard Tower at (-138,-29) - forward base defence
+blackstone_basin seed 23 t=2640 | F1 Assemble army  4 (5.2) atk  6/ 0 esc 3 cr   523 inc  59100 harv 6 ref 1 fac 2 def 4/2 knownEnemy 1.5 obj 'Assemble: 4 units at rally, 5.2 strength' | F2 Assemble army  2 (2.5) atk  4/ 0 esc 2 cr   254 inc  47697 harv 3 ref 1 fac 1 def 2/1 knownEnemy 2.0 obj 'Assemble: 2 units at rally, 2.5 strength'
+blackstone_basin seed 61 t=0 | F1 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-' | F2 Develop  army  0 (0.0) atk  0/ 0 esc 0 cr  2000 inc      0 harv 0 ref 0 fac 0 def 0/0 knownEnemy 0.0 obj '-'
+blackstone_basin seed 61 t=120 | F1 Assemble army  0 (0.0) atk  0/ 0 esc 0 cr   200 inc   4600 harv 4 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Defend base: 1 enemies near (-123,-154)' | F2 Assemble army  2 (3.0) atk  0/ 0 esc 0 cr   637 inc   4387 harv 3 ref 1 fac 1 def 0/0 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 3.0 strength'
+blackstone_basin seed 61   F1 [03:34] Save for ProduceMcv: local ore exhausted: forward base (700/5000)
+blackstone_basin seed 61 t=240 | F1 Assemble army  3 (4.0) atk  0/ 0 esc 0 cr   700 inc   8800 harv 4 ref 1 fac 1 def 2/2 knownEnemy 1.0 obj 'Assemble: 3 units at rally, 4.0 strength' | F2 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr   950 inc   8600 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+blackstone_basin seed 61   F2 [04:01] Save for ProduceMcv: local ore exhausted: forward base (950/5000)
+blackstone_basin seed 61   F1 [05:21] Save for ProduceMcv: local ore exhausted: forward base (900/5000)
+blackstone_basin seed 61 t=360 | F1 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr  1700 inc  11200 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength' | F2 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr  2750 inc  10400 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength'
+blackstone_basin seed 61   F2 [07:22] Save for ProduceMcv: local ore exhausted: forward base (2050/5000)
+blackstone_basin seed 61 t=480 | F1 Assemble army  5 (7.0) atk  0/ 0 esc 0 cr  3617 inc  13117 harv 4 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 7.0 strength' | F2 Attack   army  8 (11.0) atk  1/ 6 esc 0 cr  2506 inc  12056 harv 3 ref 1 fac 1 def 2/0 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-150,-160)'
+blackstone_basin seed 61   F1 [08:11] Save for ProduceMcv: local ore exhausted: forward base (389/5000)
+blackstone_basin seed 61   F1 [08:21] Save for ProduceMcv: local ore exhausted: forward base (389/5000)
+blackstone_basin seed 61 t=600 | F1 Assemble army  3 (5.2) atk  1/ 0 esc 1 cr  1989 inc  15200 harv 4 ref 1 fac 2 def 2/2 knownEnemy 3.5 obj 'Assemble: 3 units at rally, 5.2 strength' | F2 Assemble army  2 (3.5) atk  1/ 0 esc 1 cr   715 inc  13600 harv 3 ref 1 fac 1 def 2/0 knownEnemy 2.0 obj 'Assemble: 2 units at rally, 3.5 strength'
+blackstone_basin seed 61   F1 [10:23] Save for ProduceMcv: local ore exhausted: forward base (353/5000)
+blackstone_basin seed 61 t=720 | F1 Assemble army  6 (7.7) atk  1/ 0 esc 1 cr  1557 inc  17200 harv 4 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.7 strength' | F2 Assemble army  0 (0.0) atk  1/ 0 esc 1 cr   392 inc  15200 harv 3 ref 1 fac 1 def 2/1 knownEnemy 0.0 obj 'Assemble: 1 units at rally, 0.4 strength'
+blackstone_basin seed 61   F1 [12:58] Save for ProduceMcv: local ore exhausted: forward base (357/5000)
+blackstone_basin seed 61 t=840 | F1 Attack   army  6 (8.7) atk  2/ 3 esc 1 cr  1157 inc  19200 harv 4 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-152,142)' | F2 Defend   army  0 (0.0) atk  1/ 0 esc 1 cr    92 inc  16800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 6.0 obj 'Defend base: 3 enemies near (-143,105)'
+blackstone_basin seed 61 t=960 | F1 Assemble army  6 (7.8) atk  2/ 0 esc 2 cr  2757 inc  20800 harv 4 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.8 strength' | F2 Assemble army  0 (0.0) atk  1/ 0 esc 1 cr   992 inc  18600 harv 3 ref 1 fac 1 def 1/2 knownEnemy 0.0 obj 'Defend base: 1 enemies near (-155,106)'
+blackstone_basin seed 61 t=1080 | F1 Assemble army  6 (7.8) atk  2/ 0 esc 2 cr  4357 inc  22400 harv 4 ref 1 fac 2 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 7.8 strength' | F2 Assemble army  0 (0.0) atk  1/ 0 esc 1 cr   992 inc  19800 harv 3 ref 1 fac 1 def 1/2 knownEnemy 0.0 obj 'Defend base: 1 enemies near (-155,106)'
+blackstone_basin seed 61   F1 [19:11] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 61   F1 [19:57] Mobile Command Vehicle ready
+blackstone_basin seed 61   F1 [19:57] Forward base site chosen near ore at (38,-62)
+blackstone_basin seed 61 t=1200 | F1 Assemble army  3 (3.3) atk  2/ 0 esc 2 cr   307 inc  23800 harv 4 ref 1 fac 2 def 2/2 knownEnemy 1.5 obj 'Assemble: 3 units at rally, 3.3 strength' | F2 Defend   army  1 (1.5) atk  1/ 0 esc 1 cr   192 inc  21000 harv 3 ref 1 fac 1 def 1/2 knownEnemy 0.0 obj 'Defend: 1 units at rally, 1.5 strength'
+blackstone_basin seed 61   F1 [21:09] Deploying forward base at (21,-73)
+blackstone_basin seed 61   F1 [21:24] Forward base established at (21,-73)
+blackstone_basin seed 61   F2 [21:27] Save for ProduceMcv: local ore exhausted: forward base (442/5000)
+blackstone_basin seed 61   F1 [21:47] Built Guard Tower at (13,-79) - forward base defence
+blackstone_basin seed 61 t=1320 | F1 Attack   army  8 (8.8) atk  3/ 7 esc 2 cr    57 inc  25400 harv 4 ref 1 fac 2 def 3/2 knownEnemy 4.5 obj 'Attack Vehicle Factory at (-152,142)' | F2 Defend   army  3 (4.0) atk  1/ 0 esc 1 cr    42 inc  22200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 3.0 obj 'Defend base: 3 enemies near (-144,107)'
+blackstone_basin seed 61   F2 [22:06] Save for ProduceMcv: local ore exhausted: forward base (242/5000)
+blackstone_basin seed 61   F2 [22:23] Save for ProduceMcv: local ore exhausted: forward base (142/5000)
+blackstone_basin seed 61   F1 [23:44] Selling Refinery: ore exhausted (refund about 500)
+blackstone_basin seed 61 t=1440 | F1 Assemble army  3 (4.6) atk  3/ 0 esc 3 cr   557 inc  26900 harv 4 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 3 units at rally, 4.6 strength' | F2 Assemble army  4 (3.4) atk  1/ 0 esc 1 cr   942 inc  23600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 3.4 strength'
+blackstone_basin seed 61   F2 [25:41] Save for ProduceMcv: local ore exhausted: forward base (542/5000)
+blackstone_basin seed 61 t=1560 | F1 Assemble army  4 (5.6) atk  3/ 0 esc 3 cr  1007 inc  30300 harv 4 ref 1 fac 2 def 3/2 knownEnemy 5.5 obj 'Assemble: 4 units at rally, 5.6 strength' | F2 Assemble army  6 (6.4) atk  1/ 0 esc 1 cr   742 inc  24800 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.4 strength'
+blackstone_basin seed 61 t=1680 | F1 Assemble army  7 (10.6) atk  3/ 0 esc 3 cr   357 inc  35700 harv 4 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 10.6 strength' | F2 Assemble army  6 (6.4) atk  1/ 0 esc 1 cr  1942 inc  26000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 6 units at rally, 6.4 strength'
+blackstone_basin seed 61   F2 [28:54] Save for ProduceMcv: local ore exhausted: forward base (1142/5000)
+blackstone_basin seed 61   F1 [29:01] Save for ProduceMcv: local ore exhausted: forward base (157/5000)
+blackstone_basin seed 61 t=1800 | F1 Assemble army  5 (6.2) atk  4/ 0 esc 4 cr  2070 inc  39813 harv 4 ref 1 fac 2 def 3/2 knownEnemy 4.0 obj 'Assemble: 5 units at rally, 6.2 strength' | F2 Attack   army  4 (5.3) atk  2/ 2 esc 1 cr  1742 inc  27200 harv 3 ref 1 fac 1 def 2/2 knownEnemy 2.0 obj 'Attack Vehicle Factory at (-142,-132)'
+blackstone_basin seed 61   F1 [30:14] Save for ProduceMcv: local ore exhausted: forward base (0/5000)
+blackstone_basin seed 61   F2 [31:04] Save for ProduceMcv: local ore exhausted: forward base (1142/5000)
+blackstone_basin seed 61 t=1920 | F1 Assemble army  7 (11.0) atk  4/ 0 esc 4 cr  2852 inc  43300 harv 4 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 7 units at rally, 11.0 strength' | F2 Assemble army  5 (5.6) atk  2/ 0 esc 2 cr  1542 inc  28400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.6 strength'
+blackstone_basin seed 61   F1 [33:00] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 61   F1 [33:45] Mobile Command Vehicle ready
+blackstone_basin seed 61   F1 [33:45] Forward base site chosen near ore at (124,-129)
+blackstone_basin seed 61 t=2040 | F1 Assemble army  4 (6.0) atk  4/ 0 esc 4 cr   202 inc  46100 harv 4 ref 1 fac 2 def 3/2 knownEnemy 0.0 obj 'Assemble: 4 units at rally, 6.0 strength' | F2 Assemble army  5 (5.6) atk  2/ 0 esc 2 cr  2542 inc  29400 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 5 units at rally, 5.6 strength'
+blackstone_basin seed 61   F2 [34:19] Save for ProduceMcv: local ore exhausted: forward base (642/5000)
+blackstone_basin seed 61   F1 [35:03] Deploying forward base at (108,-132)
+blackstone_basin seed 61   F1 [35:18] Forward base established at (108,-132)
+blackstone_basin seed 61   F1 [35:36] Built Guard Tower at (100,-126) - forward base defence
+blackstone_basin seed 61 t=2160 | F1 Assemble army  8 (13.5) atk  4/ 0 esc 4 cr   279 inc  48500 harv 4 ref 1 fac 2 def 4/2 knownEnemy 2.0 obj 'Assemble: 8 units at rally, 13.5 strength' | F2 Assemble army  3 (3.8) atk  3/ 0 esc 3 cr  1242 inc  30000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 5.0 obj 'Assemble: 3 units at rally, 3.8 strength'
+blackstone_basin seed 61   F2 [36:23] Save for ProduceMcv: local ore exhausted: forward base (242/5000)
+blackstone_basin seed 61 t=2280 | F1 Assemble army  8 (12.8) atk  4/ 0 esc 4 cr   600 inc  50900 harv 4 ref 2 fac 2 def 4/2 knownEnemy 3.0 obj 'Assemble: 8 units at rally, 12.8 strength' | F2 Assemble army  2 (3.0) atk  3/ 0 esc 3 cr   392 inc  31000 harv 3 ref 1 fac 1 def 2/2 knownEnemy 0.0 obj 'Assemble: 2 units at rally, 3.0 strength'
+blackstone_basin seed 61   F1 [38:09] Selling Refinery: ore exhausted (refund about 500)
+blackstone_basin seed 61   F1 [38:55] Save for ProduceMcv: local ore exhausted: forward base (1050/5000)
+blackstone_basin seed 61   F1 [38:55] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+blackstone_basin seed 61   F1 [38:55] Selling Forward Command Centre: its ore is exhausted (refund about 2500)
+blackstone_basin seed 61   F1 [39:03] Queued Mobile Command Vehicle - local ore exhausted: forward base
+blackstone_basin seed 61   F2 [39:28] Save for ProduceMcv: local ore exhausted: forward base (492/5000)
+blackstone_basin seed 61   F1 [39:49] Mobile Command Vehicle ready
+blackstone_basin seed 61   F1 [39:49] Forward base site chosen near ore at (150,-15)
+blackstone_basin seed 61 t=2400 | F1 Attack   army  8 (11.8) atk  5/ 5 esc 4 cr   250 inc  62000 harv 5 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Attack Vehicle Factory at (-152,142)' | F2 Defend   army  0 (0.0) atk  3/ 0 esc 3 cr    92 inc  31600 harv 3 ref 1 fac 1 def 2/2 knownEnemy 9.0 obj 'Defend base: 3 enemies near (-154,106)'
+blackstone_basin seed 61   F1 [41:33] Deploy refused: Blocked by terrain
+blackstone_basin seed 61   F1 [41:35] Deploy refused: Blocked by terrain
+blackstone_basin seed 61   F1 [41:37] Deploy refused: Blocked by terrain
+blackstone_basin seed 61   F1 [41:37] Forward site (127,-29) abandoned: no valid position
+blackstone_basin seed 61 t=2520 | F1 Assemble army  9 (14.0) atk  5/ 0 esc 4 cr   392 inc  64689 harv 5 ref 1 fac 2 def 4/2 knownEnemy 0.0 obj 'Assemble: 9 units at rally, 14.0 strength' | F2 Assemble army  0 (0.0) atk  3/ 0 esc 3 cr   292 inc  32200 harv 3 ref 1 fac 1 def 1/2 knownEnemy 0.0 obj 'Defend base: 2 enemies near (-151,111)'

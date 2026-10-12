@@ -1,0 +1,23 @@
+map              seed diff          M009 |         M010 | MCVs  lost  FCC(first s)  end  deploy ok/try  sold  refunds
+dustfall_plains    11 NvN   F2 won 2048 | timeout 2700 | F1 2/0/2(1195)/2 3/4 s0 r0 | F2 1/0/1(945)/1 1/1 s0 r0
+dustfall_plains    23 NvN  timeout 2700 |  F1 won 2101 | F1 2/0/2(1004)/1 2/2 s3 r3500 | F2 1/0/1(1054)/0 1/1 s2 r921
+dustfall_plains    61 HvN   F1 won 1205 |  F1 won 1737 | F1 2/0/2(948)/1 3/3 s3 r3500 | F2 1/0/1(918)/0 2/2 s1 r2500
+iron_pass          11 NvN   F2 won 1071 |  F2 won 2149 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 1/0/1(1853)/1 2/2 s1 r500
+iron_pass          23 NvN   F2 won 1770 |   F1 won 560 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 0/0/0(-1)/0 0/0 s0 r0
+iron_pass          61 HvN   F1 won 1580 |  F1 won 1641 | F1 2/0/2(872)/1 3/3 s3 r3362 | F2 1/0/1(1047)/0 2/2 s2 r500
+green_divide       11 NvN   F2 won 1329 | timeout 2700 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 1/0/1(1169)/0 2/2 s4 r4000
+green_divide       23 NvN   F1 won 1244 | timeout 2700 | F1 2/0/2(753)/1 5/6 s3 r3500 | F2 2/0/2(689)/2 4/5 s0 r0
+green_divide       61 HvN   F1 won 1360 | timeout 2700 | F1 1/0/1(1000)/0 3/4 s3 r3430 | F2 2/0/2(1417)/1 4/4 s4 r4000
+blackstone_basin   11 NvN   F1 won 1612 |  F1 won 1835 | F1 2/0/2(845)/2 4/6 s1 r500 | F2 0/0/0(-1)/0 0/0 s0 r0
+blackstone_basin   23 NvN   F2 won 1698 | timeout 2700 | F1 3/0/3(1294)/1 6/6 s3 r5500 | F2 2/0/2(1046)/0 2/2 s3 r3449
+blackstone_basin   61 HvN   F1 won 1535 |  F1 won 2590 | F1 3/0/2(1285)/0 6/9 s4 r6000 | F2 0/0/0(-1)/0 0/0 s0 r0
+
+Decided 7/12; median length 1835 s
+Both decided (6): median M009 1558 s, M010 1786 s
+MCVs per side: mean 1.29 (max 3), sides with an MCV 18/24
+Forward bases established per side: mean 1.25; sides with one 18/24; still standing at the end 14
+First forward base: median 1025 s (range 689-1853)
+MCVs lost: 0; deploy attempts 64, refused 9
+Structures sold: 40, refunds 45162 credits
+Matches where only one side built a forward base: 3; that side won 3
+Hard vs Normal: Hard won 3/4

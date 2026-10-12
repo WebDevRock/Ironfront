@@ -45,6 +45,8 @@ namespace Ironfront.Tests
             _artillery = factoryDef.ProducibleUnits.First(u => u.Id == "rocket_artillery");
             _match.PlayerFaction.Wallet.Add(20000);
             _match.PlayerFaction.RegisterStructure("test_generator", 400, 0); // keep power healthy unless a test says otherwise
+            // Milestone 010: structures must be built within range of another; the plant links the factory to the HQ.
+            Place("power_plant", new Vector3(-40f, 0f, -25f));
             _factory = Place("vehicle_factory", new Vector3(-38f, 0f, -12f)).GetComponent<VehicleFactory>(); // tech prerequisite
             yield return null;
         }
@@ -127,9 +129,9 @@ namespace Ironfront.Tests
         [UnityTest]
         public IEnumerator GuardTower_ShredsLightVehicles()
         {
-            var tower = Place("guard_tower", new Vector3(-21f, 0f, -24f)).GetComponent<DefenceTurret>();
+            var tower = Place("guard_tower", new Vector3(-21f, 0f, -27f)).GetComponent<DefenceTurret>(); // within build range of the refinery
             Assert.IsNotNull(tower);
-            var recon = Spawn(_recon, new Vector3(-21f, 0f, -14f), Enemy, armed: false);
+            var recon = Spawn(_recon, new Vector3(-21f, 0f, -17f), Enemy, armed: false);
             var health = recon.GetComponent<Health>();
             Time.timeScale = 2f;
             yield return Until(() => !health.IsAlive, 10f);

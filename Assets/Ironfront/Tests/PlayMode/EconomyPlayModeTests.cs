@@ -252,6 +252,9 @@ namespace Ironfront.Tests
         [UnityTest]
         public IEnumerator Factory_CanBeSelected_AndQueueCancelRefunds()
         {
+            // Milestone 010: the factory site is within build range of the power plant, not of the HQ.
+            Assert.IsTrue(_placement.TryPlace(Def("power_plant"), PowerPlantSite, _player.Id, out _, out var plantReason), plantReason);
+            _player.Wallet.Add(Def("power_plant").Cost); // the queue checks below assume the starting credits
             Assert.IsTrue(_placement.TryPlace(Def("vehicle_factory"), FactorySite, _player.Id, out var b, out var reason), reason);
             yield return null;
             var factory = b.GetComponent<VehicleFactory>();

@@ -19,8 +19,7 @@ namespace Ironfront.EditorTools
         public const string CentrePath = RtsSandboxBuilder.DataDir + "/Buildings/ForwardCommandCentre.asset";
         public const string SettingsPath = RtsSandboxBuilder.DataDir + "/TerritorySettings.asset";
 
-        public const float HqTerritory = 55f, HqExclusion = 70f;
-        public const float CentreTerritory = 40f, CentreExclusion = 50f;
+        public const float HqExclusion = 70f, CentreExclusion = 50f;
         public const int McvCost = 5000;
 
         public sealed class Defs
@@ -53,13 +52,13 @@ namespace Ironfront.EditorTools
             EconomyContentBuilder.Set(d.ForwardCommand, so =>
             {
                 so.FindProperty("sightRange").floatValue = 30f;
-                so.FindProperty("territoryRadius").floatValue = CentreTerritory;
+                so.FindProperty("buildRangeOverride").floatValue = 0f; // the default build range, like every structure
                 so.FindProperty("exclusionRadius").floatValue = CentreExclusion;
                 so.FindProperty("sellable").boolValue = true;
                 so.FindProperty("sellConfirmation").boolValue = true;
                 so.FindProperty("saleValueOverride").intValue = McvCost;
                 so.FindProperty("description").stringValue =
-                    "Deployed from a Mobile Command Vehicle. Grants construction territory around it so a forward base can be built. " +
+                    "Deployed from a Mobile Command Vehicle far from home. Like every structure it extends your build range, so a forward base can grow around it. " +
                     "Does not replace the Headquarters: in Headquarters mode losing the HQ still loses the match.";
             });
 
@@ -77,7 +76,7 @@ namespace Ironfront.EditorTools
             // Territory and sale rules of the existing structures.
             EconomyContentBuilder.Set(c.Headquarters, so =>
             {
-                so.FindProperty("territoryRadius").floatValue = HqTerritory;
+                so.FindProperty("buildRangeOverride").floatValue = 0f;
                 so.FindProperty("exclusionRadius").floatValue = HqExclusion;
                 so.FindProperty("sellable").boolValue = false; // the victory condition in Headquarters mode
             });
@@ -88,6 +87,8 @@ namespace Ironfront.EditorTools
             {
                 so.FindProperty("fillMaterial").objectReferenceValue = EconomyContentBuilder.CreateTransparent("TerritoryFill", unlit, new Color(0.25f, 0.85f, 1f, 0.18f));
                 so.FindProperty("edgeMaterial").objectReferenceValue = EconomyContentBuilder.CreateTransparent("TerritoryEdge", unlit, new Color(0.45f, 0.95f, 1f, 0.95f));
+                so.FindProperty("overlayCell").floatValue = 1f;
+                so.FindProperty("buildRange").floatValue = 10f;
                 so.FindProperty("enemyEdgeMaterial").objectReferenceValue = EconomyContentBuilder.CreateTransparent("TerritoryEnemyEdge", unlit, new Color(1f, 0.3f, 0.2f, 0.9f));
             });
             return d;

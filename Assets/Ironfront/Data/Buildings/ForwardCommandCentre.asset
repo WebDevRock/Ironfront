@@ -26,12 +26,12 @@ MonoBehaviour:
   maxHealth: 2500
   armour: 0.3
   icon: {fileID: 21300000, guid: 2d742feaabaac2d4891d2bab5b5d930c, type: 3}
-  description: 'Deployed from a Mobile Command Vehicle. Grants construction territory around it so a forward base can be built. Does not replace the Headquarters: in Headquarters mode losing the HQ still loses the match.'
+  description: 'Deployed from a Mobile Command Vehicle far from home. Like every structure it extends your build range, so a forward base can grow around it. Does not replace the Headquarters: in Headquarters mode losing the HQ still loses the match.'
   sightRange: 30
   weapon: {fileID: 0}
   needsPower: 0
   repairCostMultiplier: 1
-  territoryRadius: 40
+  buildRangeOverride: 0
   exclusionRadius: 50
   sellable: 1
   sellConfirmation: 1

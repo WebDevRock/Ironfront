@@ -22,6 +22,8 @@ namespace Ironfront.Core.AI
         BuildRepairPad,
         // Milestone 010
         ProduceMcv,
+        /// <summary>A cheap structure (power plant) placed towards an ore field to bring it within build range.</summary>
+        ExtendBuildRange,
     }
 
     public readonly struct AiAction
@@ -43,7 +45,7 @@ namespace Ironfront.Core.AI
 
         public bool IsConstruction => Type == AiActionType.BuildRefinery || Type == AiActionType.BuildPowerPlant || Type == AiActionType.BuildFactory
                                       || Type == AiActionType.BuildResearchCentre || Type == AiActionType.BuildGuardTower || Type == AiActionType.BuildAtTurret
-                                      || Type == AiActionType.BuildRepairPad;
+                                      || Type == AiActionType.BuildRepairPad || Type == AiActionType.ExtendBuildRange;
         public bool IsProduction => Type == AiActionType.ProduceHarvester || Type == AiActionType.ProduceLightTank || Type == AiActionType.ProduceHeavyTank
                                     || Type == AiActionType.ProduceRecon || Type == AiActionType.ProduceArtillery || Type == AiActionType.ProduceMcv;
 
@@ -94,6 +96,8 @@ namespace Ironfront.Core.AI
             // 4b. Milestone 010: a forward base when the next ore field lies outside construction territory. It comes
             //     before defences and technology: the home field runs dry within minutes on maps without a second field
             //     in reach (M010 study), and without income the vehicle can never be afforded.
+            var creep = ForwardBaseRules.Creep(s, state, cfg, cost);
+            if (creep.Type != AiActionType.None) return creep;
             var forward = ForwardBaseRules.Next(s, state, cfg, cost);
             if (forward.Type != AiActionType.None) return forward;
 

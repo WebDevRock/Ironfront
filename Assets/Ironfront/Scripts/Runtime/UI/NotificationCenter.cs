@@ -209,8 +209,8 @@ namespace Ironfront.UI
         private void OnPlaced(Building b)
         {
             if (b == null || b.FactionId != PlayerFaction || b.Definition == null) return;
-            if (b.Definition.TerritoryRadius > 0f)
-                Post($"{b.Definition.DisplayName} established: new construction territory", Kind.Good, location: b.transform.position);
+            if (b.Definition.Id == MatchFlowController.ForwardCommandId)
+                Post($"{b.Definition.DisplayName} established: build around it", Kind.Good, location: b.transform.position);
             else
                 Post($"Construction complete: {b.Definition.DisplayName}", Kind.Good);
         }
@@ -221,6 +221,7 @@ namespace Ironfront.UI
         {
             if (b == null || b.FactionId != PlayerFaction || MatchFlowController.Current == null || MatchFlowController.Current.IsOver) return;
             if (!Application.isPlaying || b.gameObject.scene.isLoaded == false) return; // scene unload
+            if (b.Definition.Id != MatchFlowController.ForwardCommandId) return; // every structure is an anchor now: announce the forward base only
             Post($"Construction territory lost: {b.Definition.DisplayName}", Kind.Danger, "territory-lost", 2f, b.transform.position);
             Ironfront.Audio.GameAudio.PlayFlat(Ironfront.Audio.SoundId.TerritoryLost);
         }

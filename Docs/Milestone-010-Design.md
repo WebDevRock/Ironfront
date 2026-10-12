@@ -15,35 +15,48 @@ building repairs working; see `Docs/Milestone-009-Report.md`).
 | Victory | `MatchFlowController`: Headquarters mode (HQ destroyed = defeat), Annihilation (no HQ/factory and no armed unit). | Headquarters mode unchanged; Annihilation counts FCCs as production structures (§7). |
 | AI | `EnemyCommander` + pure planners (`EconomyPlanner`, `ExpansionRules`, `StrategyRules`, `RepairPlanner`), perception and `EnemyIntel` (only what it has seen). Refineries at any explored ore field, anywhere. | Must respect territory. Remote fields need a forward base: new pure `ForwardBaseRules`; MCV escort/deploy execution in the commander. |
 | Fog | Per-faction `VisibilityGrid`; full-screen fog pass before post-processing; `VisionSystem.CanSee/IsExplored`. | Exclusion zones apply only to enemy command structures the faction **has seen** (§2.4), so territory never reveals hidden bases. |
-| Maps | 400–600 m skirmish maps, bases cleared to ~46 m, home ore fields ~29 m from the HQ (refinery sites up to ~47 m); 100 m sandbox `RTS_Match`. | HQ radius 55 m covers every existing base layout; FCC radius 40 m. |
+| Maps | 400–600 m skirmish maps, bases cleared to ~46 m, home ore fields ~29 m from the HQ (refinery sites up to ~47 m); 100 m sandbox `RTS_Match`. | Revised: a 10 m build range from every structure; the home refinery site (~10 m from the HQ) is in range from the start. |
 | UI | Placement ghost (green/red), `PlacementHint`, `EconomyHud` construction menu, `SelectionHud`, M009 `RepairHud` panel (self-installing). | Territory overlay during placement, reason text, Sell / Deploy buttons in the M009 command panel, minimap territory outline. |
 
 ## 2. Construction territory
 
-### D1. Data
-`BuildingDefinition` gains `territoryRadius` and `exclusionRadius` (0 = none). Only command structures have them:
+> **Revised after the director's playtest (2026-10-12).** The first version gave fixed circles around command
+> structures only (HQ 55 m, FCC 40 m). The director asked for the build area to stem from the **nearest building**,
+> with a much smaller range. The rules below are the revised ones. The brief's "ordinary structures must not extend
+> territory" is deliberately superseded.
 
-| Structure | Territory radius | Enemy exclusion radius |
+### D1. Data
+* `TerritorySettings.buildRange`: **10 m**, measured edge to edge. Every structure grants it.
+  `BuildingDefinition.buildRangeOverride` can change it per structure (0 = the default; none is set).
+* `BuildingDefinition.exclusionRadius`, on command structures only:
+
+| Structure | Build range | Enemy exclusion radius |
 |---|---|---|
-| Headquarters | 55 m | 70 m |
-| Forward Command Centre | 40 m | 50 m |
-| every other structure | 0 (never an anchor) | 0 |
+| Headquarters | 10 m | 70 m |
+| Forward Command Centre | 10 m | 50 m |
+| every other structure | 10 m | 0 |
 
 ### D2. Model (`Core/Territory/TerritoryMap`, pure)
-Anchors: (id, faction, centre, territory radius, exclusion radius). Each faction's buildable area is the **union** of
-its own anchors' circles. The map is never shared between factions.
-* `Covers(faction, rect)`: the **whole footprint** (body and apron) must lie in the union. If one circle contains all four
-  corners, the rectangle is inside it (circles are convex). Otherwise boundary and interior points are sampled every
-  0.5 m, and each must lie in some circle of that faction (overlapping zones combine).
+Anchors: (id, faction, footprint rectangle, build range, exclusion radius). Every structure is an anchor.
+* `Covers(faction, rect)`: true when the **gap** between the new footprint (body and apron) and the nearest of that
+  faction's structures is at most that structure's range (exact rectangle–rectangle distance). So a placement only has
+  to reach into the shaded area, and each new structure extends the area: bases grow outwards building by building.
+* `Gap(faction, rect)`: how far outside the range a footprint is (≤ 0 inside), and which structure is nearest.
 * `Excluded(faction, rect, isKnown)`: true if the footprint intersects the exclusion circle of any other faction's
-  anchor that `isKnown` accepts (exact rectangle–circle distance test).
+  command structure that `isKnown` accepts (exact rectangle–circle distance test).
+* `Outline(area, range)`: the rounded outline of a grown footprint, for the overlay and minimap.
 * Updated through `Add/Remove`; increments a `Version` the overlay uses to rebuild only on change.
+* Never shared between factions.
 
 ### D3. Runtime (`Buildings/TerritorySystem`)
-Static registry listening to `Building.AnyRegistrationChanged`: a building with a territory radius becomes an anchor
-when it registers with its faction and stops being one when it unregisters (destroyed, sold or unloaded). A territory
-change raises `Changed(faction)`. No per-frame work. Buildings left outside a reduced territory keep working and
-never become anchors (only definitions with a radius do).
+A static registry. A structure becomes an anchor:
+* **as soon as it is placed** (`BuildingPlacementController.TryPlace` / `PlaceDeployed`), so two placements in the same
+  frame can build on each other;
+* or when it registers with its faction (scene start).
+
+It stops being one when it is disabled or destroyed, also before it registered (sold, destroyed, unloaded). Territory
+changes raise `Changed(faction)`; there is no per-frame work. Structures cut off when a neighbour is sold or destroyed
+keep working and keep their own range.
 
 ### D4. Fog-safe exclusion
 An enemy command structure's exclusion zone blocks construction and deployment for a faction **only once that faction
@@ -52,18 +65,22 @@ remembers sightings for the match. Without this, an "enemy territory" rejection 
 would get hidden knowledge. A structure stays "known" after it is destroyed, until it is removed from the registry.
 
 ### D5. Placement order
-bounds → **territory** (outside own territory → `OutsideTerritory`; inside a known enemy zone → `EnemyTerritory`) →
-structures/obstacles/ore/units → NavMesh. Territory is checked first so that a distant site says *"Outside your
-construction territory"* rather than something about a rock.
+bounds → **territory** (inside a known enemy zone → `EnemyTerritory`; too far from own structures →
+`OutsideTerritory`, "Too far from your structures (outside build range)") → structures/obstacles/ore/units → NavMesh.
 
 ## 3. Construction territory UI
-* **Overlay** (`TerritoryOverlay`, shown only in placement or deploy mode): a translucent cyan fill over the faction's
-  buildable area (one mesh of 2 m cells, so overlapping circles never double-tint), a bright cyan boundary ribbon along
-  the outer edge of the union, and red boundary ribbons around **known** enemy exclusion zones. Rebuilt only when the
-  territory version changes. It uses unlit, high-contrast colours so it stays readable under the explored-but-dimmed fog.
-* **Ghost**: green/red as before. `PlacementHint` shows the reason: "Outside your construction territory",
+* **Overlay** (`TerritoryOverlay`, shown only in placement or deploy mode):
+  - a translucent cyan fill over the build area: every structure's footprint grown by 10 m, in 1 m cells, so overlaps
+    never double-tint;
+  - a bright cyan ribbon along the outer edge of the union;
+  - red ribbons around **known** enemy exclusion zones.
+
+  It is drawn after the fog of war by `TerritoryOverlayPass`, so it stays readable over unexplored ground, and is rebuilt
+  only when the territory changes.
+* **Ghost**: green/red as before. `PlacementHint` shows the reason: "Too far from your structures (outside build range)",
   "Inside enemy territory", "Too close to another structure", "Blocked by terrain", "Too close to an ore deposit"…
-* **Minimap**: the player's territory boundary drawn as a dotted line.
+* **MCV selected:** the FCC footprint at the vehicle, and a dashed outline of the 10 m area it would grant.
+* **Minimap**: the outline of the player's build area, dotted.
 * Enemy territory is never drawn unless that structure has been seen.
 
 ## 4. Building sales
@@ -130,7 +147,7 @@ Own territory is **not** required.
 * FCCs cannot be packed up again.
 
 ## 7. Forward Command Centre
-`forward_command`: 9 × 9 m, 2500 HP, armour 0.3, +10 power, sight 30 m, territory 40 m / exclusion 50 m,
+`forward_command`: 9 × 9 m, 2500 HP, armour 0.3, +10 power, sight 30 m, build range 10 m like every structure / exclusion 50 m,
 sale value 5000. Not in the construction menu (only from an MCV). It can be attacked, repaired in place and sold.
 It does not produce MCVs or units.
 

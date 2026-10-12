@@ -32,7 +32,7 @@ MonoBehaviour:
   weapon: {fileID: 11400000, guid: d372ed51bd64a62428f905f8998041f2, type: 2}
   needsPower: 0
   repairCostMultiplier: 1
-  territoryRadius: 0
+  buildRangeOverride: 0
   exclusionRadius: 0
   sellable: 1
   sellConfirmation: 0

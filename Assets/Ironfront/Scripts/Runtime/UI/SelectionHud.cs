@@ -99,8 +99,8 @@ namespace Ironfront.UI
                 if (b.Repair != null && b.Repair.IsOn)
                     text += b.Repair.State == BuildingRepair.Status.PausedNoCredits ? "\nRepair: paused (insufficient credits)" : "\nRepair: on";
                 // Milestone 010: territory and sale.
-                if (b.Definition != null && b.Definition.TerritoryRadius > 0f)
-                    text += $"\nConstruction territory: {b.Definition.TerritoryRadius:0} m radius";
+                if (b.Definition != null && b.FactionId == Ironfront.Vision.VisionSystem.LocalFaction)
+                    text += $"\nBuild range: {b.Definition.BuildRange:0} m around it";
                 if (b.Sale != null && b.Sale.IsDismantling)
                     text += $"\nSelling: {b.Sale.Progress01 * 100f:0}% (refund about {b.Sale.EstimatedRefund})";
                 return text;

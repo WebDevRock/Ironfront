@@ -88,13 +88,34 @@ namespace Ironfront.AI
 
         // ---------- Territory knowledge for the snapshot ----------
 
+        private OreDeposit _creepTarget;
+
+        /// <summary>Distance from a point to the nearest own structure's footprint.</summary>
+        private float DistanceToOwnStructures(Vector3 p)
+        {
+            float best = float.MaxValue;
+            var q = new Vector2(p.x, p.z);
+            foreach (var a in TerritorySystem.Map.AnchorsOf(factionId))
+                best = Mathf.Min(best, Core.Territory.TerritoryMap.DistanceToRect(q, a.Area));
+            return best;
+        }
+
+        /// <summary>Sites for a structure that extends the build range towards the creep target: about 16 m short of the
+        /// field (room for its refinery), the closest valid one first.</summary>
+        private List<Vector3> CreepCandidates(Vector3 home) =>
+            _creepTarget == null ? new List<Vector3>() : SiteSearch.Ranked(_creepTarget.transform.position, home, 16f, 60f, 2f);
+
         private bool IsForwardBase(Building b) => b != null && b.Definition != null && b.Definition.Id == MatchFlowController.ForwardCommandId;
 
-        /// <summary>Could a refinery for this deposit stand inside our territory (deposit within reach of an anchor)?</summary>
+        /// <summary>
+        /// Could a refinery for this deposit stand within our build range? Refineries go 10-18 m from the deposit towards
+        /// the nearest structure and are ~7 m across, so the deposit may lie up to the range + 12 m from a structure.
+        /// </summary>
         private bool RefinerySiteInTerritory(Vector3 deposit)
         {
+            var p = new Vector2(deposit.x, deposit.z);
             foreach (var a in TerritorySystem.Map.AnchorsOf(factionId))
-                if ((new Vector2(deposit.x, deposit.z) - a.Centre).magnitude <= a.Radius + 4f) return true;
+                if (Core.Territory.TerritoryMap.DistanceToRect(p, a.Area) <= a.Range + 12f) return true;
             return false;
         }
 
@@ -135,13 +156,21 @@ namespace Ironfront.AI
         {
             var unclaimed = UnclaimedDeposits(home);
             s.RefineryBlockedByTerritory = unclaimed.Count > 0 && !unclaimed.Any(d => RefinerySiteInTerritory(d.transform.position));
-            var targets = _mcvDef == null ? new List<OreDeposit>()
-                : unclaimed.Where(d => !RefinerySiteInTerritory(d.transform.position) && AcceptableForwardTarget(home, d)).ToList();
-            s.ExpansionTargetKnown = targets.Count > 0;
+            var targets = unclaimed.Where(d => !RefinerySiteInTerritory(d.transform.position) && AcceptableForwardTarget(home, d)).ToList();
+            s.ExpansionTargetKnown = _mcvDef != null && targets.Count > 0;
             var refineries = OwnStructures().Where(b => b.Definition.Id == "refinery").Select(b => b.FrontPoint).ToList();
             if (refineries.Count == 0) refineries.Add(home);
             s.ExpansionHaulDistance = targets.Count == 0 ? 0f
                 : targets.Min(d => refineries.Min(r => Vector3.Distance(r, d.transform.position)));
+            // The closest such field to any own structure: reachable by building towards it.
+            _creepTarget = null;
+            float best = float.MaxValue;
+            foreach (var d in targets)
+            {
+                float gap = DistanceToOwnStructures(d.transform.position);
+                if (gap < best) { best = gap; _creepTarget = d; }
+            }
+            s.CreepDistance = _creepTarget != null ? best : 0f;
             foreach (var b in OwnStructures())
             {
                 if (!IsForwardBase(b)) continue;
@@ -369,7 +398,7 @@ namespace Ironfront.AI
                     if (SaleRules.AiShouldSellForwardBase(h.Current / h.Max, attacked, near)) { sell = true; why = "about to be lost"; }
                     else
                     {
-                        float reach = b.Definition.TerritoryRadius + 4f;
+                        float reach = 40f; // the forward base and the structures around it
                         float oreReach = ForwardBaseRules.ObsoleteRadius;
                         bool ore = OreDeposit.All.Any(d => !d.IsDepleted && (d.transform.position - p).sqrMagnitude <= oreReach * oreReach);
                         int factories = own.Count(o => o.Definition.Id == "vehicle_factory" && (o.transform.position - p).sqrMagnitude <= reach * reach);

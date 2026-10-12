@@ -31,7 +31,7 @@ MonoBehaviour:
   weapon: {fileID: 0}
   needsPower: 0
   repairCostMultiplier: 1
-  territoryRadius: 55
+  buildRangeOverride: 0
   exclusionRadius: 70
   sellable: 0
   sellConfirmation: 0

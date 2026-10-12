@@ -6,6 +6,54 @@ Milestone 009 status checked first: committed, EditMode 264/264, PlayMode 74/74.
 repairs are unchanged. Milestone 010 builds on them: the MCV uses Repair Pads, and the Forward Command Centre (FCC) can
 be repaired in place.
 
+## Revision after the director's playtest: build range from every structure (2026-10-12)
+
+**Request:** "the allowed build area needs to stem from the nearest building so each placement needs to be within a
+certain range of any building, not a fixed centre point … the range needs to reduce significantly."
+
+**Changed:**
+* **The rule.** Every structure, not only the HQ and FCC, extends its owner's build area by **10 m from its footprint
+  edge** (`TerritorySettings.buildRange`, overridable per structure; none is overridden). A new structure is valid
+  when the gap between its footprint and the nearest own structure is at most 10 m. It replaces the fixed 55 m and
+  40 m circles, so bases grow outwards building by building. The brief's "ordinary structures must not extend
+  territory" is deliberately superseded.
+* **Kept:** enemy exclusion zones around command structures you have seen (HQ 70 m, FCC 50 m), the MCV and FCC (now a
+  structure with the same 10 m range, far from home), sales, victory rules and the fog-safe rules.
+* **Fixed:** a structure now extends the range the moment it is placed rather than a frame later, so two placements
+  in the same frame can build on each other. It loses its range when disabled or destroyed, even before it ever
+  registered.
+* **Overlay and minimap:** the fill and outline are every structure's footprint grown by 10 m (1 m cells, rounded
+  outline). An MCV shows the 10 m area the centre would grant. Placement hint: "Too far from your structures (outside
+  build range)". Screenshot: `m10_6_build_range.png`.
+* **AI:** with a 10 m range the second ore field at home is out of reach on Iron Pass and Green Divide. A study run with
+  the new rule alone (`iteration4_buildrange_*`) built 25 refineries instead of 44, earned 17 % less income, and 5 of
+  12 matches timed out. The commander now **builds towards** an unclaimed field within 45 m of its structures (a power
+  plant about 16 m short of the field, then the refinery), as a player would, and uses an MCV only for fields further
+  away.
+* **Tests:**
+  - EditMode 280/280. The territory tests were rewritten for edge-to-edge range, creeping bases and outlines, and one
+    was added for building towards ore.
+  - PlayMode 88/88. The Milestone 010 tests now check the range boundary, building outwards from a forward base, and
+    that structures keep their own range after the centre is sold. The AI test now checks that every structure it builds
+    is within range of another.
+  - Three older Economy/Milestone 007 tests placed structures at fixed coordinates more than 10 m from anything. They
+    now place a power plant first, or move the guard tower 3 m (with its target moved by the same amount); what they test
+    is unchanged.
+
+**Study with the revised rules** (`iteration5_buildrange_creep_*`, same 12 matches):
+- **Decided:** 9 of 12 (the circle version: 9; M009: 11).
+- **Length:** matches decided in both this study and M009 have a median of 1572 s, against 1454 s (+8 %; the circle
+  version was +31 %).
+- **Difficulty:** Hard beat Normal in both of its decided matches; its other two matches timed out.
+- **Forward bases:** 16 of 24 sides built one, first at a median of 946 s.
+- **MCVs:** none lost; 39 of 47 deploy attempts succeeded.
+- **Economy:** 32 refineries and 40.7k income per side (circles 44 and 48k; M009 50k).
+- **Timeouts:** Green Divide 61, Blackstone 23 and Blackstone 61. Two of them are Hard vs Normal stalemates, and
+  Blackstone's small fields remain the weak point.
+
+The sections below describe the first version (circles) and its study. Where they conflict with this revision, the
+revision applies.
+
 ## 1. What was delivered
 
 | Area | Delivered |
@@ -123,8 +171,9 @@ spent 15,000 credits on MCVs while its army stayed small.
 
 | Data | Value |
 |---|---|
-| HQ territory / exclusion | 55 m / 70 m (`Headquarters.asset`) |
-| FCC territory / exclusion | 40 m / 50 m; 2500 HP; +10 power; sale value 5000 (`ForwardCommandCentre.asset`) |
+| Build range (every structure) | 10 m edge to edge (`TerritorySettings.asset`; first version: HQ 55 m / FCC 40 m circles) |
+| HQ exclusion | 70 m (`Headquarters.asset`) |
+| FCC exclusion | 50 m; 2500 HP; +10 power; sale value 5000 (`ForwardCommandCentre.asset`) |
 | MCV | 5000 cr, 45 s, 2000 HP, armour 0.35, 3.5 m/s (`MobileCommandVehicle.asset`) |
 | Sale | 8 s, 50 % of value × health, 3 s confirmation window (`TerritorySettings.asset`) |
 | Deployment | 15 s, FCC health ≥ 10 %, ground tolerance 0.6 m (`TerritorySettings.asset`) |

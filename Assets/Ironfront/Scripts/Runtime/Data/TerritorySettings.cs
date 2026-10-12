@@ -3,12 +3,16 @@ using UnityEngine;
 namespace Ironfront.Data
 {
     /// <summary>
-    /// Milestone 010 balance and presentation data: building sales, MCV deployment and the territory overlay. Territory
-    /// radii live on the command structures' <see cref="BuildingDefinition"/>s.
+    /// Milestone 010 balance and presentation data: the build range every structure grants, building sales, MCV deployment
+    /// and the territory overlay. Exclusion radii live on the command structures' <see cref="BuildingDefinition"/>s.
     /// </summary>
     [CreateAssetMenu(menuName = "Ironfront/Territory Settings", fileName = "TerritorySettings")]
     public class TerritorySettings : ScriptableObject
     {
+        [Header("Build range")]
+        [Tooltip("New structures must come within this distance (metres, edge to edge) of one of the owner's structures.")]
+        [SerializeField, Min(1f)] private float buildRange = 10f;
+
         [Header("Building sales")]
         [Tooltip("Seconds of dismantling before the refund is paid.")]
         [SerializeField, Min(0.5f)] private float sellSeconds = 8f;
@@ -28,8 +32,9 @@ namespace Ironfront.Data
         [SerializeField] private Material fillMaterial;
         [SerializeField] private Material edgeMaterial;
         [SerializeField] private Material enemyEdgeMaterial;
-        [SerializeField, Min(0.5f)] private float overlayCell = 2f;
+        [SerializeField, Min(0.5f)] private float overlayCell = 1f;
 
+        public float BuildRange => buildRange;
         public float SellSeconds => sellSeconds;
         public float RefundFraction => refundFraction;
         public float ConfirmSeconds => confirmSeconds;

@@ -1,0 +1,47 @@
+map              seed diff          M009 |         M010 | MCVs  lost  FCC(first s)  end  deploy ok/try  sold  refunds
+dustfall_plains    11 NvN   F2 won 2048 |  F2 won 2277 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 3/0/3(815)/1 4/4 s4 r5888
+dustfall_plains    23 NvN  timeout 2700 |  F1 won 2031 | F1 1/0/1(1510)/1 1/1 s1 r500 | F2 2/0/2(1003)/0 3/3 s4 r3500
+dustfall_plains    61 HvN   F1 won 1205 |   F1 won 932 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 0/0/0(-1)/0 0/0 s0 r0
+iron_pass          11 NvN   F2 won 1071 |  F2 won 1024 | F1 0/0/0(-1)/0 0/0 s1 r500 | F2 0/0/0(-1)/0 0/0 s0 r0
+iron_pass          23 NvN   F2 won 1770 |  F2 won 1839 | F1 1/0/1(1532)/1 2/2 s1 r500 | F2 2/0/2(738)/0 2/2 s5 r6346
+iron_pass          61 HvN   F1 won 1580 |   F1 won 963 | F1 1/0/1(626)/1 2/2 s1 r500 | F2 0/0/0(-1)/0 0/0 s0 r0
+green_divide       11 NvN   F2 won 1329 |  F2 won 1306 | F1 0/0/0(-1)/0 0/0 s0 r0 | F2 3/0/2(660)/0 2/2 s4 r6000
+green_divide       23 NvN   F1 won 1244 |  F1 won 2553 | F1 3/0/3(956)/1 8/10 s4 r6000 | F2 1/0/1(851)/0 2/2 s4 r4000
+green_divide       61 HvN   F1 won 1360 | timeout 2700 | F1 1/0/1(1811)/0 1/2 s2 r2693 | F2 2/0/2(1791)/0 2/2 s3 r5500
+blackstone_basin   11 NvN   F1 won 1612 |  F1 won 2293 | F1 2/0/2(936)/2 3/5 s0 r0 | F2 0/0/0(-1)/0 0/0 s0 r0
+blackstone_basin   23 NvN   F2 won 1698 | timeout 2700 | F1 1/0/1(1638)/0 1/2 s2 r3000 | F2 1/0/1(2647)/1 1/1 s1 r500
+blackstone_basin   61 HvN   F1 won 1535 | timeout 2700 | F1 1/0/1(670)/0 1/3 s2 r3000 | F2 3/0/3(622)/1 4/4 s2 r3000
+
+Decided 9/12; median length 1839 s
+Both decided (8): median M009 1454 s, M010 1572 s
+MCVs per side: mean 1.17 (max 3), sides with an MCV 16/24
+Forward bases established per side: mean 1.12; sides with one 16/24; still standing at the end 9
+First forward base: median 946 s (range 622-2647)
+MCVs lost: 0; deploy attempts 47, refused 8
+Structures sold: 41, refunds 51427 credits
+Matches where only one side built a forward base: 4; that side won 4
+Hard vs Normal: Hard won 2/4
+Study: M010 build range + creep — 12 AI-vs-AI matches (10x time scale, seeded random starts)
+Outcomes: 9 decisive, 0 draws, 3 timeouts (limit 2700 s)
+Match length (decided): median 1839 s, mean 1691 s, min 932, max 2553
+First contact: median 125 s (range 106-139)
+Enemy base located (per commander): median 130 s (range 93-185), 24/24 commanders
+
+Per map:              n  decided  median s  max s  contact  income/side  recons/side  2nd refinery
+  blackstone_basin    3       1      2293   2700      131        32580          5.7  4/6
+  dustfall_plains     3       3      2031   2277      117        40103          4.3  3/6
+  green_divide        3       2      1930   2700      132        47765          5.7  6/6
+  iron_pass           3       3      1024   1839      119        42264          4.2  6/6
+
+Difficulty matchups (winner by difficulty):
+  Hard vs Normal   Hard 2, no result 2
+  Normal vs Normal Normal 7, no result 1
+
+Start position (Normal mirrors only): wins by slot id, per map
+  blackstone_basin   slot 2: 1W/0L  slot 5: 0W/1L
+  dustfall_plains    slot 3: 0W/1L  slot 5: 1W/0L  slot 6: 1W/0L  slot 7: 0W/1L
+  green_divide       slot 3: 0W/1L  slot 5: 1W/0L  slot 6: 1W/0L  slot 7: 0W/1L
+  iron_pass          slot 3: 0W/1L  slot 5: 0W/1L  slot 6: 1W/0L  slot 7: 1W/0L
+  Faction 1 vs faction 2 wins in mirrors: 3 / 4
+
+Economy of the winner vs loser (decisive matches): income ratio median 1.81

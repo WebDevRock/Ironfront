@@ -9,10 +9,11 @@ using UnityEngine;
 namespace Ironfront.Buildings
 {
     /// <summary>
-    /// Construction territory at runtime (Milestone 010). Command structures — those whose definition has a territory or
-    /// exclusion radius (Headquarters, Forward Command Centre) — become anchors of the pure <see cref="TerritoryMap"/>
-    /// while they are registered with their faction, and stop being anchors when they unregister (destroyed, sold,
-    /// unloaded). Driven by <see cref="Building.AnyRegistrationChanged"/>: no per-frame recalculation.
+    /// Construction territory at runtime (Milestone 010, build range from every structure after the director's playtest).
+    /// Every structure becomes an anchor of the pure <see cref="TerritoryMap"/> — its footprint plus its build range —
+    /// while it is registered with its faction, and stops being one when it unregisters (destroyed, sold, unloaded).
+    /// Command structures also carry their exclusion radius. Driven by <see cref="Building.AnyRegistrationChanged"/>:
+    /// no per-frame recalculation.
     /// An enemy anchor's exclusion zone only applies to a faction that has seen that structure (sampled twice a second by
     /// <see cref="TerritoryTracker"/>), so territory rules never reveal a hidden base.
     /// </summary>
@@ -59,7 +60,40 @@ namespace Ironfront.Buildings
             foreach (var b in Building.All) OnRegistrationChanged(b);
         }
 
-        public static bool IsAnchorDefinition(Data.BuildingDefinition d) => d != null && (d.TerritoryRadius > 0f || d.ExclusionRadius > 0f);
+        public static bool IsAnchorDefinition(Data.BuildingDefinition d) => d != null;
+
+        /// <summary>
+        /// A structure was just placed: it extends the build range at once, not a frame later when it registers with its
+        /// faction (two placements in the same frame — the computer, tests — can build on each other).
+        /// </summary>
+        public static void OnPlaced(Building b)
+        {
+            Hook();
+            Add(b);
+        }
+
+        /// <summary>A structure was disabled or destroyed (also before it ever registered): its range goes with it.</summary>
+        public static void OnDisabled(Building b)
+        {
+            if (b == null || !s_hooked || !s_ids.TryGetValue(b, out int id) || !s_map.Contains(id)) return;
+            s_map.Remove(id);
+            s_buildings.Remove(id);
+            s_ids.Remove(b);
+            s_known.RemoveWhere(k => k.anchor == id);
+            Changed?.Invoke(b.FactionId);
+            AnchorLost?.Invoke(b);
+        }
+
+        private static void Add(Building b)
+        {
+            if (b == null || !IsAnchorDefinition(b.Definition) || !b.isActiveAndEnabled) return;
+            int id = IdOf(b);
+            if (s_map.Contains(id)) return;
+            s_buildings[id] = b;
+            s_map.Add(new TerritoryAnchor(id, b.FactionId, b.Footprint.Body, b.Definition.BuildRange, b.Definition.ExclusionRadius));
+            Changed?.Invoke(b.FactionId);
+            AnchorGained?.Invoke(b);
+        }
 
         private static void OnRegistrationChanged(Building b)
         {
@@ -68,9 +102,8 @@ namespace Ironfront.Buildings
             if (b.IsRegistered && b.isActiveAndEnabled)
             {
                 if (s_map.Contains(id)) return;
-                var p = b.transform.position;
                 s_buildings[id] = b;
-                s_map.Add(new TerritoryAnchor(id, b.FactionId, new Vector2(p.x, p.z), b.Definition.TerritoryRadius, b.Definition.ExclusionRadius));
+                s_map.Add(new TerritoryAnchor(id, b.FactionId, b.Footprint.Body, b.Definition.BuildRange, b.Definition.ExclusionRadius));
                 Changed?.Invoke(b.FactionId);
                 AnchorGained?.Invoke(b);
             }
@@ -87,9 +120,8 @@ namespace Ironfront.Buildings
         /// <summary>Does the faction own construction territory at all?</summary>
         public static bool HasTerritory(int faction) => Map.HasTerritory(faction);
 
-        /// <summary>Is the whole footprint (body and apron) inside the faction's territory?</summary>
-        public static bool Covers(int faction, in Footprint fp) =>
-            Map.Covers(faction, fp.Body) && (!fp.HasApron || s_map.Covers(faction, fp.Apron));
+        /// <summary>Is the footprint (body and apron) within build range of one of the faction's structures?</summary>
+        public static bool Covers(int faction, in Footprint fp) => Map.Covers(faction, fp.HasApron ? Union(fp.Body, fp.Apron) : fp.Body);
 
         public static bool CoversPoint(int faction, Vector3 p) => Map.Covers(faction, new Vector2(p.x, p.z));
 

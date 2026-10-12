@@ -735,3 +735,40 @@ MCVs from legitimate knowledge only. Tests, multi-map AI-vs-AI studies, exploit 
 
 ### Relevant commit hash
 Milestone commit: `7cadc75` (7cadc758382684699da4661633b434710d4957c1)
+
+## Follow-up — Build range from every structure (2026-10-12)
+
+### Feature requested
+Director playtest of Milestone 010: "the allowed build area needs to stem from the nearest building so each placement
+needs to be within a certain range of any building. not a fixed centre point … the range needs to reduce significantly."
+
+### Changes implemented
+- **The rule.** `TerritoryMap` anchors are now every structure's footprint with a build range (10 m, edge to edge,
+  `TerritorySettings.buildRange`, overridable per definition). A placement is valid when its gap to the nearest own
+  structure is at most the range. Exclusion zones around seen enemy command structures are unchanged.
+- **Range timing.** Structures extend the range the moment they are placed and lose it when disabled, even before
+  registration.
+- **Overlay and minimap** show grown footprints. Hint text, selection text and notifications were updated.
+- **AI:** it builds a power plant towards an unclaimed field within 45 m (`ForwardBaseRules.Creep`,
+  `AiActionType.ExtendBuildRange`); MCVs are used for fields further away.
+- **Docs:** design §2–3 rewritten; report revision section; studies `Docs/Balance/M010/iteration4_*` and
+  `iteration5_*`; screenshot `m10_6_build_range.png`.
+
+### Tests attempted and results
+- **EditMode:** 280/280 (territory tests rewritten, building towards ore added).
+- **PlayMode:** 88/88 (M010 tests updated; three older tests repositioned to respect the range).
+- **AI-vs-AI study, 12 matches:**
+  - with the new rule alone, 7 of 12 decided (the AI stopped reaching its second field);
+  - with building towards ore, 9 of 12 decided, and the median of matches decided in both studies was +8 % against M009.
+
+### Problems encountered
+- The Editor's command bridge stopped responding after a cancelled study left it in play mode during recompiles.
+  Restarted with the director's approval.
+- A test filter combining several classes with ';' matched no tests; the classes were run as a full suite instead.
+
+### Human interventions required
+- The design change and the approval to restart the Editor.
+
+### Known limitations
+- 3 of 12 AI matches still time out, Blackstone being the weak map.
+- The 10 m range is a starting value for playtesting.

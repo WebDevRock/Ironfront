@@ -228,6 +228,7 @@ namespace Ironfront.Construction
             var go = FactionSpawner.Spawn(definition.Prefab, new Vector3(center.x, 0f, center.z), Quaternion.identity, factionId);
             go.name = definition.DisplayName;
             placed = go.GetComponent<Building>();
+            TerritorySystem.OnPlaced(placed);
             BuildingPlaced?.Invoke(placed);
             AnyBuildingPlaced?.Invoke(placed);
             return true;
@@ -304,6 +305,7 @@ namespace Ironfront.Construction
             var go = FactionSpawner.Spawn(definition.Prefab, new Vector3(center.x, 0f, center.z), BuildingDefinition.Facing(facesSouth), factionId);
             go.name = definition.DisplayName;
             placed = go.GetComponent<Building>();
+            TerritorySystem.OnPlaced(placed); // its build range applies immediately
 
             reason = $"{definition.DisplayName} constructed (-{definition.Cost})";
             if (factionId == PlayerFactionId) Message?.Invoke(reason); // computer factions build silently

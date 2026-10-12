@@ -17,8 +17,9 @@ namespace Ironfront.UI
     /// Construction territory overlay (Milestone 010), shown only while placing a structure or while a Mobile Command
     /// Vehicle is selected:
     /// <list type="bullet">
-    /// <item>a translucent cyan fill over the player's buildable area (2 m cells, so overlapping circles never
-    /// double-tint) and a bright ribbon along the outer edge of the union;</item>
+    /// <item>a translucent cyan fill over the player's build range — every structure's footprint grown by its build range
+    /// (1 m cells, so overlapping ranges never double-tint) — and a bright ribbon along the outer edge of the union. A new
+    /// structure may be placed where its footprint reaches into this area;</item>
     /// <item>red ribbons around the exclusion zones of enemy command structures the player has <b>seen</b> (never
     /// unseen ones, so the overlay reveals nothing);</item>
     /// <item>with an MCV selected: the Forward Command Centre footprint at the vehicle (cyan valid / red invalid) and the
@@ -167,7 +168,7 @@ namespace Ironfront.UI
                     var c = mcv.SiteCentre;
                     var size = def.FootprintSize;
                     BuildRect(_deploy.sharedMesh, new Rect(c.x - size.x * 0.5f, c.z - size.y * 0.5f, size.x, size.y));
-                    BuildRing(_deployRing.sharedMesh, new Vector2(c.x, c.z), def.TerritoryRadius, dashed: true);
+                    BuildOutline(_deployRing.sharedMesh, new Rect(c.x - size.x * 0.5f, c.z - size.y * 0.5f, size.x, size.y), def.BuildRange, dashed: true);
                 }
             }
         }
@@ -191,41 +192,39 @@ namespace Ironfront.UI
             map.CopyAnchors(player, _anchors);
             float cell = TerritorySettings.Current.OverlayCell;
 
-            // Fill: one quad per covered cell.
+            // Fill: one quad per cell within range of a structure (each structure marks only the cells near it).
             var v = new List<Vector3>();
             var t = new List<int>();
-            if (_anchors.Count > 0)
+            var cells = new HashSet<(int, int)>();
+            foreach (var a in _anchors)
             {
-                float xMin = float.MaxValue, xMax = float.MinValue, zMin = float.MaxValue, zMax = float.MinValue;
-                foreach (var a in _anchors)
-                {
-                    xMin = Mathf.Min(xMin, a.Centre.x - a.Radius); xMax = Mathf.Max(xMax, a.Centre.x + a.Radius);
-                    zMin = Mathf.Min(zMin, a.Centre.y - a.Radius); zMax = Mathf.Max(zMax, a.Centre.y + a.Radius);
-                }
-                xMin = Mathf.Floor(xMin / cell) * cell;
-                zMin = Mathf.Floor(zMin / cell) * cell;
-                for (float x = xMin; x < xMax; x += cell)
-                    for (float z = zMin; z < zMax; z += cell)
+                var grown = new Rect(a.Area.xMin - a.Range, a.Area.yMin - a.Range, a.Area.width + 2f * a.Range, a.Area.height + 2f * a.Range);
+                for (int ix = Mathf.FloorToInt(grown.xMin / cell); ix * cell < grown.xMax; ix++)
+                    for (int iz = Mathf.FloorToInt(grown.yMin / cell); iz * cell < grown.yMax; iz++)
                     {
-                        var c = new Vector2(x + cell * 0.5f, z + cell * 0.5f);
-                        if (!map.Covers(player, c)) continue;
-                        float y = GroundY(c.x, c.y) + Lift * 0.5f;
-                        int i0 = v.Count;
-                        v.Add(new Vector3(x, y, z)); v.Add(new Vector3(x, y, z + cell)); v.Add(new Vector3(x + cell, y, z + cell)); v.Add(new Vector3(x + cell, y, z));
-                        t.Add(i0); t.Add(i0 + 1); t.Add(i0 + 2); t.Add(i0); t.Add(i0 + 2); t.Add(i0 + 3);
+                        var c = new Vector2((ix + 0.5f) * cell, (iz + 0.5f) * cell);
+                        if (TerritoryMap.DistanceToRect(c, a.Area) <= a.Range) cells.Add((ix, iz));
                     }
             }
-            FillCells = v.Count / 4;
+            foreach (var (ix, iz) in cells)
+            {
+                float x = ix * cell, z = iz * cell;
+                float y = GroundY(x + cell * 0.5f, z + cell * 0.5f) + Lift * 0.5f;
+                int i0 = v.Count;
+                v.Add(new Vector3(x, y, z)); v.Add(new Vector3(x, y, z + cell)); v.Add(new Vector3(x + cell, y, z + cell)); v.Add(new Vector3(x + cell, y, z));
+                t.Add(i0); t.Add(i0 + 1); t.Add(i0 + 2); t.Add(i0); t.Add(i0 + 2); t.Add(i0 + 3);
+            }
+            FillCells = cells.Count;
             Apply(_fill.sharedMesh, v, t);
 
-            // Edge: arcs of each circle not inside another of the player's circles.
+            // Edge: each structure's grown outline, except where it runs inside another structure's range.
             v.Clear(); t.Clear();
             EdgeSegments = 0;
             foreach (var a in _anchors)
-                EdgeSegments += AddArc(v, t, a.Centre, a.Radius, p =>
+                EdgeSegments += AddPolyline(v, t, TerritoryMap.Outline(a.Area, a.Range, 1.5f), p =>
                 {
                     foreach (var o in _anchors)
-                        if (o.Id != a.Id && (p - o.Centre).sqrMagnitude < (o.Radius - 0.05f) * (o.Radius - 0.05f)) return false;
+                        if (o.Id != a.Id && TerritoryMap.DistanceToRect(p, o.Area) < o.Range - 0.05f) return false;
                     return true;
                 }, dashed: false);
             Apply(_edge.sharedMesh, v, t);
@@ -242,12 +241,28 @@ namespace Ironfront.UI
             Apply(_enemy.sharedMesh, v, t);
         }
 
-        private void BuildRing(Mesh mesh, Vector2 centre, float radius, bool dashed)
+        private void BuildOutline(Mesh mesh, Rect area, float range, bool dashed)
         {
             var v = new List<Vector3>();
             var t = new List<int>();
-            if (radius > 0f) AddArc(v, t, centre, radius, _ => true, dashed);
+            if (range > 0f) AddPolyline(v, t, TerritoryMap.Outline(area, range, 1.5f), _ => true, dashed);
             Apply(mesh, v, t);
+        }
+
+        /// <summary>Ribbon segments along a closed polyline; segments whose midpoint <paramref name="include"/> rejects are skipped.</summary>
+        private int AddPolyline(List<Vector3> v, List<int> t, List<Vector2> pts, System.Func<Vector2, bool> include, bool dashed)
+        {
+            int n = 0;
+            for (int i = 0; i < pts.Count; i++)
+            {
+                if (dashed && i % 2 == 1) continue;
+                var p0 = pts[i];
+                var p1 = pts[(i + 1) % pts.Count];
+                if (!include((p0 + p1) * 0.5f)) continue;
+                AddSegment(v, t, p0, p1);
+                n++;
+            }
+            return n;
         }
 
         private void BuildRect(Mesh mesh, Rect r)

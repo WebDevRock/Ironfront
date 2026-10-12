@@ -137,24 +137,24 @@ namespace Ironfront.Tests
             Assert.AreEqual(PlacementResult.OutsideTerritory, _placement.Validate(factory, far, false, Player));
             int before = Credits;
             Assert.IsFalse(_placement.TryPlace(factory, far, Player, out _, out var reason));
-            StringAssert.Contains("Outside your construction territory", reason);
+            StringAssert.Contains("outside build range", reason);
             Assert.AreEqual(before, Credits, "nothing is charged");
 
-            // A footprint whose centre is inside but whose corner sticks out is refused too.
-            var hqDef = Building.All.First(b => b.FactionId == Player && b.Definition.Id == "headquarters").Definition;
-            Assert.AreEqual(55f, hqDef.TerritoryRadius);
-            float radius = hqDef.TerritoryRadius;
-            var dir = (Vector3.zero - _hq).normalized;
-            bool foundEdge = false;
-            for (float d = radius - 4f; d > radius - 6f; d -= 0.5f)
+            // The range is measured from the nearest structure's edge: just inside it is allowed, just beyond it refused.
+            float range = TerritorySettings.Current.BuildRange;
+            Assert.AreEqual(10f, range);
+            var plantDef = Def("power_plant");
+            bool inside = false, outside = false;
+            foreach (var c in SiteSearch.Ranked(_hq, Towards(_hq, 0.5f), 18f, 30f, 1f))
             {
-                var c = _hq + dir * d;
-                c = new Vector3(Mathf.Round(c.x), 0f, Mathf.Round(c.z));
-                if (!TerritorySystem.CoversPoint(Player, c)) continue;
-                var r = _placement.Validate(factory, c, false, Player);
-                if (r == PlacementResult.OutsideTerritory) { foundEdge = true; break; }
+                if (_placement.Validate(plantDef, c) != PlacementResult.Valid) continue; // terrain, structures, ore
+                float gap = TerritorySystem.Map.Gap(Player, plantDef.FootprintAt(c).Body, out _);
+                var r = _placement.Validate(plantDef, c, false, Player);
+                if (gap > 0.5f && gap < 3f) { Assert.AreEqual(PlacementResult.OutsideTerritory, r, $"{gap:0.0} m beyond the range"); outside = true; }
+                if (gap < -0.5f && gap > -3f) { Assert.AreEqual(PlacementResult.Valid, r, $"{-gap:0.0} m inside the range"); inside = true; }
+                if (inside && outside) break;
             }
-            Assert.IsTrue(foundEdge, "centre inside the territory, footprint partly outside: refused");
+            Assert.IsTrue(inside && outside, "found sites on both sides of the range boundary");
 
             // Inside: built.
             var b = Place("vehicle_factory", Player, 18f);
@@ -175,8 +175,8 @@ namespace Ironfront.Tests
             yield return null;
             yield return null;
             Assert.IsTrue(overlay.IsShown);
-            Assert.Greater(overlay.FillCells, 1500, "the HQ territory is filled (π·55² / 4 m² ≈ 2400 cells)");
-            Assert.Greater(overlay.EdgeSegments, 100);
+            Assert.Greater(overlay.FillCells, 600, "the area within 10 m of the starting structures is filled (1 m cells)");
+            Assert.Greater(overlay.EdgeSegments, 40, "the outer edge of the build area is drawn");
             Assert.AreEqual(0, overlay.EnemySegments, "the enemy base has not been seen: no zone is drawn");
             _placement.CancelPlacement();
             yield return null;
@@ -335,7 +335,9 @@ namespace Ironfront.Tests
             Assert.AreEqual(0.6f, h.Current / h.Max, 0.02f, "health conversion: the vehicle's health fraction");
             Assert.AreEqual(Player, centre.FactionId);
             Assert.IsTrue(TerritorySystem.Covers(Player, centre.Footprint), "new construction territory registered immediately");
-            Assert.IsTrue(TerritorySystem.CoversPoint(Player, centre.transform.position + Vector3.right * 35f));
+            float reach = CentreDef.FootprintSize.x * 0.5f + TerritorySettings.Current.BuildRange;
+            Assert.IsTrue(TerritorySystem.CoversPoint(Player, centre.transform.position + Vector3.right * (reach - 1f)), "build range around the centre");
+            Assert.IsFalse(TerritorySystem.CoversPoint(Player, centre.transform.position + Vector3.right * (reach + 1f)));
             var obstacle = centre.GetComponent<NavMeshObstacle>();
             Assert.IsTrue(obstacle != null && obstacle.enabled && obstacle.carving, "navigation obstacle in place");
             Assert.IsNotNull(centre.GetComponent<Vision.VisionEntity>(), "fog of war: the centre reveals around it");
@@ -408,15 +410,30 @@ namespace Ironfront.Tests
             var made = new List<Building>();
             yield return Establish(site, made);
             var centre = made.Single();
-            // Build next to the centre, outside the HQ's territory.
-            var plant = Place("power_plant", Player, 14f, centre.transform.position);
+            // Build next to the centre, far from the home base: only possible thanks to the centre.
+            var plant = Place("power_plant", Player, 10f, centre.transform.position);
             Assert.IsTrue(TerritorySystem.Covers(Player, plant.Footprint));
-            var hqOnly = new Core.Territory.TerritoryMap();
-            hqOnly.Add(new Core.Territory.TerritoryAnchor(1, Player, new Vector2(_hq.x, _hq.z), 55f, 0f));
-            Assert.IsFalse(hqOnly.Covers(Player, plant.Footprint.Body), "only possible thanks to the forward centre");
-            var spot = plant.transform.position + (plant.transform.position - centre.transform.position).normalized * 12f;
+            Assert.Greater(Core.Territory.TerritoryMap.RectDistance(plant.Footprint.Body,
+                Building.All.First(b => b.FactionId == Player && b.Definition.Id == "headquarters").Footprint.Body), 50f);
+            // Every structure extends the range: a second plant can go beyond the centre's own reach, next to the first.
+            var plantDef = Def("power_plant");
+            var away = (plant.transform.position - centre.transform.position).normalized;
+            Building secondPlant = null;
+            foreach (var c in SiteSearch.Ranked(plant.transform.position, plant.transform.position + away * 20f, 10f, 26f, 1f))
+            {
+                var fp = plantDef.FootprintAt(c).Body;
+                if (Core.Territory.TerritoryMap.RectDistance(fp, centre.Footprint.Body) <= TerritorySettings.Current.BuildRange + 0.5f) continue;
+                if (_placement.Validate(plantDef, c, false, Player) != PlacementResult.Valid) continue;
+                Assert.IsTrue(_placement.TryPlace(plantDef, c, Player, out secondPlant, out var why), why);
+                break;
+            }
+            Assert.IsNotNull(secondPlant, "the base creeps outwards from the first plant");
+            // A spot on the far side of the centre is covered by the centre alone.
+            var spot = centre.transform.position - away * (CentreDef.FootprintSize.x * 0.5f + 6f);
+            var spotRect = new Rect(spot.x - 2.5f, spot.z - 2.5f, 5f, 5f);
+            Assert.IsTrue(TerritorySystem.Map.Covers(Player, spotRect));
 
-            // Sell the centre: the territory goes, the plant stays and keeps working.
+            // Sell the centre: its range goes, the plants stay, keep working and keep their own range.
             int start = Credits;
             int refund = centre.Sale.EstimatedRefund;
             Assert.AreEqual(2500, refund, "half the vehicle price at full health");
@@ -426,12 +443,10 @@ namespace Ironfront.Tests
             Time.timeScale = 1f;
             Assert.IsTrue(centre == null);
             Assert.AreEqual(start + refund, Credits);
-            Assert.IsFalse(TerritorySystem.Covers(Player, plant.Footprint), "territory removed");
+            Assert.IsFalse(TerritorySystem.Map.Covers(Player, spotRect), "the centre's range is gone");
             Assert.IsTrue(plant != null && plant.GetComponent<Health>().IsAlive, "the surrounding structure survives");
-            Assert.IsTrue(plant.IsRegistered, "and stays operational");
-            Assert.AreEqual(PlacementResult.OutsideTerritory, _placement.Validate(Def("power_plant"), spot, false, Player), "no construction there any more");
-            Assert.IsFalse(TerritorySystem.Map.Anchors.Any(a => a.Faction == Player && (a.Centre - new Vector2(plant.transform.position.x, plant.transform.position.z)).magnitude < 1f),
-                "ordinary structures never become anchors");
+            Assert.IsTrue(plant.IsRegistered && secondPlant.IsRegistered, "and stays operational");
+            Assert.IsTrue(TerritorySystem.Covers(Player, plant.Footprint), "the plants keep their own build range");
 
             // Destroyed rather than sold: the same.
             var made2 = new List<Building>();
@@ -518,9 +533,11 @@ namespace Ironfront.Tests
             Assert.AreEqual(1, ai.ForwardBasesEstablished);
             Assert.GreaterOrEqual(ai.DeployAttempts, 1);
 
-            // Every ordinary structure it built lies fully inside its territory.
-            foreach (var b in Building.All.Where(b => b.FactionId == Enemy && b.Definition.TerritoryRadius <= 0f && b.Definition.Id != "enemy_outpost"))
-                Assert.IsTrue(TerritorySystem.Covers(Enemy, b.Footprint), $"{b.Definition.DisplayName} at {b.transform.position} is inside territory");
+            // Every ordinary structure it built lies within build range of another of its structures.
+            var own = Building.All.Where(b => b.FactionId == Enemy && b.Definition != null).ToList();
+            foreach (var b in own.Where(b => !b.Definition.IsCommandStructure && b.Definition.Id != "enemy_outpost"))
+                Assert.IsTrue(own.Any(o => o != b && Core.Territory.TerritoryMap.RectDistance(o.Footprint.Body, b.Footprint.Body) <= o.Definition.BuildRange + 0.01f),
+                    $"{b.Definition.DisplayName} at {b.transform.position} is within build range of another structure");
         }
 
         // ---------- Restart ----------
@@ -541,7 +558,8 @@ namespace Ironfront.Tests
             Assert.AreEqual(0, BuildingSale.SoldBy(Player));
             Assert.AreEqual(0, Building.All.Count(b => b.Definition.Id == "forward_command"));
             int hqs = Building.All.Count(b => b.Definition.Id == "headquarters");
-            Assert.AreEqual(hqs, TerritorySystem.Map.Count, "only the new match's headquarters are anchors");
+            Assert.AreEqual(Building.All.Count, TerritorySystem.Map.Count, "only the new match's structures are anchors");
+            Assert.Greater(hqs, 0);
             Assert.AreEqual(1, Object.FindObjectsByType<TerritoryOverlay>().Length, "one overlay");
         }
     }

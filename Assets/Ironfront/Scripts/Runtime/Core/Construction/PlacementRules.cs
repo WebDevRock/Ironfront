@@ -43,7 +43,7 @@ namespace Ironfront.Core.Construction
         OverlapsObstacle,
         OverlapsResource,
         OverlapsUnit,
-        /// <summary>Milestone 010: part of the footprint lies outside the faction's construction territory.</summary>
+        /// <summary>Milestone 010: too far from every one of the faction's structures (outside its build range).</summary>
         OutsideTerritory,
         /// <summary>Milestone 010: inside a known enemy command structure's exclusion zone.</summary>
         EnemyTerritory,
@@ -120,7 +120,7 @@ namespace Ironfront.Core.Construction
                 case PlacementResult.OverlapsObstacle: return "Blocked by terrain";
                 case PlacementResult.OverlapsResource: return "Too close to an ore deposit";
                 case PlacementResult.OverlapsUnit: return "Units in the way";
-                case PlacementResult.OutsideTerritory: return "Outside your construction territory";
+                case PlacementResult.OutsideTerritory: return "Too far from your structures (outside build range)";
                 case PlacementResult.EnemyTerritory: return "Inside enemy territory";
                 default: return result.ToString();
             }

@@ -445,7 +445,7 @@ namespace Ironfront.AI
         private void Construct(AiAction action)
         {
             var def = action.Type == AiActionType.BuildRefinery ? _refineryDef
-                : action.Type == AiActionType.BuildPowerPlant ? _powerPlantDef
+                : action.Type == AiActionType.BuildPowerPlant || action.Type == AiActionType.ExtendBuildRange ? _powerPlantDef
                 : action.Type == AiActionType.BuildResearchCentre ? _researchDef
                 : action.Type == AiActionType.BuildGuardTower ? _towerDef
                 : action.Type == AiActionType.BuildAtTurret ? _atDef
@@ -514,6 +514,9 @@ namespace Ironfront.AI
             List<Vector3> candidates;
             switch (type)
             {
+                case AiActionType.ExtendBuildRange:
+                    candidates = CreepCandidates(home);
+                    break;
                 case AiActionType.BuildPowerPlant:
                     candidates = SiteSearch.Ranked(home, home - enemyDir * 10f, 11f, 24f, 2f);
                     break;

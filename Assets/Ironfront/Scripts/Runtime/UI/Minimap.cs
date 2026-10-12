@@ -176,34 +176,43 @@ namespace Ironfront.UI
         }
 
         private readonly System.Collections.Generic.List<Ironfront.Core.Territory.TerritoryAnchor> _territory = new System.Collections.Generic.List<Ironfront.Core.Territory.TerritoryAnchor>();
+        private readonly System.Collections.Generic.List<Vector2Int> _territoryPixels = new System.Collections.Generic.List<Vector2Int>();
+        private int _territoryVersion = -1, _territoryFaction = -1;
         private static readonly Color32 TerritoryColor = new Color32(110, 235, 255, 255);
 
         /// <summary>
-        /// Milestone 010: the player's construction territory as a dotted outline of the union of its circles (drawn after
-        /// the fog so it stays readable). Only the player's own territory is shown.
+        /// Milestone 010: the outline of the player's build range — the union of its structures' footprints grown by their
+        /// range — dotted, drawn after the fog so it stays readable. Only the player's own area is shown. Outlines are
+        /// recomputed only when the territory changes.
         /// </summary>
         private void DrawTerritory(int faction)
         {
-            var anchors = _territory;
-            TerritorySystem.Map.CopyAnchors(faction, anchors);
-            float metresPerPixel = _world.width / resolution;
-            for (int k = 0; k < anchors.Count; k++)
+            var map = TerritorySystem.Map;
+            if (map.Version != _territoryVersion || faction != _territoryFaction)
             {
-                var a = anchors[k];
-                int samples = Mathf.Clamp(Mathf.CeilToInt(2f * Mathf.PI * a.Radius / metresPerPixel), 16, 2048);
-                for (int i = 0; i < samples; i++)
+                // Rebuild the outline pixels only when the territory changes.
+                _territoryVersion = map.Version;
+                _territoryFaction = faction;
+                _territoryPixels.Clear();
+                var anchors = _territory;
+                map.CopyAnchors(faction, anchors);
+                float metresPerPixel = _world.width / resolution;
+                for (int k = 0; k < anchors.Count; k++)
                 {
-                    if ((i / 2) % 2 == 1) continue; // dotted
-                    float ang = i * Mathf.PI * 2f / samples;
-                    var p2 = a.Centre + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * a.Radius;
-                    bool inner = false;
-                    for (int j = 0; j < anchors.Count; j++)
-                        if (j != k && anchors[j] is var o && (p2 - o.Centre).sqrMagnitude < (o.Radius - 0.05f) * (o.Radius - 0.05f)) { inner = true; break; }
-                    if (inner) continue;
-                    var px = MinimapMath.WorldToPixel(new Vector3(p2.x, 0f, p2.y), _world, resolution);
-                    Plot(px.x, px.y, TerritoryColor);
+                    var a = anchors[k];
+                    var pts = Ironfront.Core.Territory.TerritoryMap.Outline(a.Area, a.Range, metresPerPixel);
+                    for (int i = 0; i < pts.Count; i++)
+                    {
+                        if ((i / 2) % 2 == 1) continue; // dotted
+                        var p2 = pts[i];
+                        bool inner = false;
+                        for (int j = 0; j < anchors.Count; j++)
+                            if (j != k && Ironfront.Core.Territory.TerritoryMap.DistanceToRect(p2, anchors[j].Area) < anchors[j].Range - 0.05f) { inner = true; break; }
+                        if (!inner) _territoryPixels.Add(MinimapMath.WorldToPixel(new Vector3(p2.x, 0f, p2.y), _world, resolution));
+                    }
                 }
             }
+            for (int i = 0; i < _territoryPixels.Count; i++) Plot(_territoryPixels[i].x, _territoryPixels[i].y, TerritoryColor);
         }
 
         private void DrawCameraView()

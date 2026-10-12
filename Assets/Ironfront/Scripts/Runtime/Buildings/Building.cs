@@ -88,6 +88,7 @@ namespace Ironfront.Buildings
         {
             s_All.Remove(this);
             Unregister();
+            TerritorySystem.OnDisabled(this); // Milestone 010: also when it never registered
         }
 
         public void SetSelected(bool selected)

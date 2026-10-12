@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Ironfront.Tests
 {
     /// <summary>
-    /// Milestone 010 pure rules: construction territory (whole-footprint coverage, overlapping zones, ownership, known-only
+    /// Milestone 010 pure rules: build range from every structure (edge-to-edge gap, creeping bases, ownership, known-only
     /// exclusion, removal), sale refunds and the sale state machine, the MCV deployment state machine and the computer's
     /// forward-base and selling rules.
     /// </summary>
@@ -17,41 +17,49 @@ namespace Ironfront.Tests
     {
         private static Rect At(float cx, float cz, float w, float h) => new Rect(cx - w * 0.5f, cz - h * 0.5f, w, h);
 
-        // ---------- Territory ----------
+        // ---------- Territory: build range from every structure ----------
+
+        private static TerritoryAnchor Building(int id, int faction, float cx, float cz, float size = 8f, float range = 10f, float exclusion = 0f) =>
+            new TerritoryAnchor(id, faction, At(cx, cz, size, size), range, exclusion);
 
         [Test]
-        public void Territory_RequiresTheWholeFootprint_NotJustItsCentre()
+        public void BuildRange_IsMeasuredFromTheNearestStructuresEdge_NotAFixedCentre()
         {
             var map = new TerritoryMap();
-            map.Add(new TerritoryAnchor(1, 1, Vector2.zero, 20f, 0f));
-            Assert.IsTrue(map.Covers(1, At(0f, 0f, 8f, 8f)));
-            Assert.IsTrue(map.Covers(1, At(12f, 0f, 6f, 6f)), "corners at (15, ±3) are inside 20 m");
-            // Centre at 17 m is inside, but the far corners (20, ±3) are not.
-            Assert.IsTrue(map.Covers(1, new Vector2(17f, 0f)));
-            Assert.IsFalse(map.Covers(1, At(17f, 0f, 6f, 6f)), "a footprint sticking out of the territory is refused");
-            Assert.IsFalse(map.Covers(1, At(40f, 0f, 4f, 4f)));
+            map.Add(Building(1, 1, 0f, 0f)); // 8 x 8 at the origin: edges at ±4
+            Assert.IsTrue(map.Covers(1, At(4f + 1.5f + 3f, 0f, 6f, 6f)), "1.5 m gap: inside");
+            Assert.IsTrue(map.Covers(1, At(4f + 10f + 3f, 0f, 6f, 6f)), "exactly 10 m gap: inside");
+            Assert.IsFalse(map.Covers(1, At(4f + 10.5f + 3f, 0f, 6f, 6f)), "10.5 m gap: outside");
+            Assert.AreEqual(0.5f, map.Gap(1, At(4f + 10.5f + 3f, 0f, 6f, 6f), out var nearest), 1e-4f);
+            Assert.AreEqual(1, nearest.Id);
+            Assert.IsFalse(map.Covers(1, At(40f, 0f, 6f, 6f)), "far away");
+            // Diagonal: the gap is measured corner to corner.
+            Assert.IsTrue(map.Covers(1, At(4f + 6f + 3f, 4f + 6f + 3f, 6f, 6f)), "8.5 m corner gap");
+            Assert.IsFalse(map.Covers(1, At(4f + 8f + 3f, 4f + 8f + 3f, 6f, 6f)), "11.3 m corner gap");
         }
 
         [Test]
-        public void Territory_OverlappingZones_FormOneBuildableArea()
+        public void BuildRange_GrowsWithEveryStructure_SoBasesCanCreep()
         {
             var map = new TerritoryMap();
-            map.Add(new TerritoryAnchor(1, 1, new Vector2(0f, 0f), 10f, 0f));
-            map.Add(new TerritoryAnchor(2, 1, new Vector2(16f, 0f), 10f, 0f));
-            var bridge = At(8f, 0f, 6f, 4f); // x 5..11: neither circle holds it alone
-            Assert.IsFalse(TerritoryMap.CircleHoldsRect(new Vector2(0f, 0f), 10f, bridge));
-            Assert.IsFalse(TerritoryMap.CircleHoldsRect(new Vector2(16f, 0f), 10f, bridge));
-            Assert.IsTrue(map.Covers(1, bridge), "the union of both circles covers it");
-            Assert.IsFalse(map.Covers(1, At(8f, 0f, 6f, 14f)), "the gap above and below the lens is not territory");
+            map.Add(Building(1, 1, 0f, 0f));
+            var far = At(31f, 0f, 6f, 6f); // 24 m from the first structure
+            Assert.IsFalse(map.Covers(1, far));
+            map.Add(Building(2, 1, 16f, 0f, 6f)); // a power plant 9 m from the first structure
+            Assert.IsTrue(map.Covers(1, far), "the new structure extends the area (9 m gap to it)");
+            Assert.IsTrue(map.HasTerritory(1));
+            var cover = new List<TerritoryAnchor>();
+            map.CopyAnchors(1, cover);
+            Assert.AreEqual(2, cover.Count, "ordinary structures are anchors too");
         }
 
         [Test]
-        public void Territory_IsNeverSharedBetweenFactions()
+        public void BuildRange_IsNeverSharedBetweenFactions()
         {
             var map = new TerritoryMap();
-            map.Add(new TerritoryAnchor(1, 2, Vector2.zero, 30f, 40f));
-            Assert.IsFalse(map.Covers(1, At(0f, 0f, 4f, 4f)), "enemy territory is not ours");
-            Assert.IsTrue(map.Covers(2, At(0f, 0f, 4f, 4f)));
+            map.Add(Building(1, 2, 0f, 0f, 8f, 10f, 40f));
+            Assert.IsFalse(map.Covers(1, At(10f, 0f, 4f, 4f)), "next to an enemy structure is not our territory");
+            Assert.IsTrue(map.Covers(2, At(10f, 0f, 4f, 4f)));
             Assert.IsFalse(map.HasTerritory(1));
         }
 
@@ -59,8 +67,8 @@ namespace Ironfront.Tests
         public void Exclusion_AppliesToKnownEnemyCommandStructuresOnly()
         {
             var map = new TerritoryMap();
-            map.Add(new TerritoryAnchor(7, 2, new Vector2(100f, 0f), 40f, 50f));
-            map.Add(new TerritoryAnchor(8, 1, new Vector2(0f, 0f), 55f, 70f));
+            map.Add(Building(7, 2, 100f, 0f, 9f, 10f, 50f));
+            map.Add(Building(8, 1, 0f, 0f, 8f, 10f, 70f));
             var near = At(55f, 0f, 9f, 9f);  // 40.5 m from the enemy centre: inside its 50 m zone
             Assert.IsTrue(map.Excluded(1, near, null, out var blocker));
             Assert.AreEqual(7, blocker.Id);
@@ -69,26 +77,31 @@ namespace Ironfront.Tests
             Assert.IsFalse(map.Excluded(1, At(40f, 0f, 9f, 9f), null, out _), "55.5 m away: outside the zone");
             Assert.AreEqual(0f, TerritoryMap.DistanceToRect(new Vector2(1f, 1f), At(0f, 0f, 4f, 4f)));
             Assert.AreEqual(3f, TerritoryMap.DistanceToRect(new Vector2(5f, 0f), At(0f, 0f, 4f, 4f)), 1e-4f);
+            Assert.AreEqual(5f, TerritoryMap.RectDistance(At(0f, 0f, 4f, 4f), At(0f, 9f, 4f, 4f)), 1e-4f);
         }
 
         [Test]
-        public void Territory_LostWhenTheAnchorIsRemoved_AndEveryChangeIsVersioned()
+        public void BuildRange_ShrinksWhenAStructureIsRemoved_AndEveryChangeIsVersioned()
         {
             var map = new TerritoryMap();
             var changed = new List<int>();
             map.Changed += f => changed.Add(f);
-            map.Add(new TerritoryAnchor(1, 1, Vector2.zero, 55f, 70f));
-            map.Add(new TerritoryAnchor(2, 1, new Vector2(120f, 0f), 40f, 50f));
+            map.Add(Building(1, 1, 0f, 0f));
+            map.Add(Building(2, 1, 120f, 0f, 9f));
             int v = map.Version;
-            Assert.IsTrue(map.Covers(1, At(120f, 0f, 9f, 9f)));
+            Assert.IsTrue(map.Covers(1, At(132f, 0f, 6f, 6f)));
             Assert.IsTrue(map.Remove(2));
-            Assert.IsFalse(map.Covers(1, At(120f, 0f, 9f, 9f)), "the forward territory disappears with its centre");
-            Assert.IsTrue(map.Covers(1, At(10f, 0f, 9f, 9f)), "home territory is unaffected");
+            Assert.IsFalse(map.Covers(1, At(132f, 0f, 6f, 6f)), "the area around the removed structure disappears");
+            Assert.IsTrue(map.Covers(1, At(12f, 0f, 6f, 6f)), "the rest is unaffected");
             Assert.Greater(map.Version, v);
             Assert.IsFalse(map.Remove(2), "removing twice is a no-op");
             CollectionAssert.AreEqual(new[] { 1, 1, 1 }, changed);
-            map.Add(new TerritoryAnchor(3, 1, Vector2.zero, 0f, 0f));
-            Assert.IsFalse(map.Contains(3), "structures without radii never become anchors");
+            map.Add(new TerritoryAnchor(3, 1, At(0f, 0f, 4f, 4f), 0f, 0f));
+            Assert.IsFalse(map.Contains(3), "an anchor without range or exclusion is ignored");
+            var outline = TerritoryMap.Outline(At(0f, 0f, 8f, 8f), 10f, 1f);
+            Assert.Greater(outline.Count, 40);
+            foreach (var p in outline)
+                Assert.AreEqual(10f, TerritoryMap.DistanceToRect(p, At(0f, 0f, 8f, 8f)), 0.05f, "outline lies exactly at the range");
         }
 
         // ---------- Sales ----------
@@ -270,6 +283,29 @@ namespace Ironfront.Tests
             localOre.OreNearRefinery = true;
             localOre.Credits = 2000;
             Assert.AreEqual(AiActionType.None, ForwardBaseRules.Next(localOre, StrategicState.Assemble, cfg, Costs).Type, "while the home field lasts, surplus only");
+        }
+
+        [Test]
+        public void Ai_BuildsTowardsANearbyField_InsteadOfBuyingAnMcv()
+        {
+            var cfg = CommanderSettings.Normal;
+            var s = Expanding;
+            s.CreepDistance = 30f; // an unclaimed field 30 m from the base: build towards it
+            var a = EconomyPlanner.Next(s, StrategicState.Assemble, cfg, Costs);
+            Assert.AreEqual(AiActionType.ExtendBuildRange, a.Type, a.ToString());
+            Assert.IsTrue(a.IsConstruction);
+            Assert.AreEqual(AiActionType.None, ForwardBaseRules.Next(s, StrategicState.Assemble, cfg, Costs).Type, "no MCV for a field in creeping distance");
+            s.Credits = 600; // below the plant + reserve
+            Assert.AreEqual(AiActionType.None, ForwardBaseRules.Creep(s, StrategicState.Assemble, cfg, Costs).Type, "cheap: never saved for");
+            s = Expanding;
+            s.CreepDistance = 30f;
+            Assert.AreEqual(AiActionType.None, ForwardBaseRules.Creep(s, StrategicState.Defend, cfg, Costs).Type, "not while defending");
+            s.RefineryBlockedByTerritory = false;
+            Assert.AreEqual(AiActionType.None, ForwardBaseRules.Creep(s, StrategicState.Assemble, cfg, Costs).Type, "a refinery site is already in range");
+            s = Expanding;
+            s.CreepDistance = 80f; // too far to creep: the forward base rule takes over
+            Assert.AreEqual(AiActionType.None, ForwardBaseRules.Creep(s, StrategicState.Assemble, cfg, Costs).Type);
+            Assert.AreEqual(AiActionType.ProduceMcv, ForwardBaseRules.Next(s, StrategicState.Assemble, cfg, Costs).Type);
         }
 
         [Test]
