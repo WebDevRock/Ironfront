@@ -98,6 +98,10 @@ Fog costs ~0.3 ms on the 600 m maps (300² cells) and ~0.1 ms on the 400 m maps;
 * **Test bugs found by running:** disabling commanders while iterating their registry; the computer legitimately spending credits before an assertion; a hard-coded time that predated the 180 s staleness.
 * **Tooling:** the renderer-feature-map stray character reappeared (restored before commit); long `eval` builds time out the bridge (harmless "1 error" in the build summary); a play-mode toggle via `eval` did not take effect once — `editor_play` worked.
 
+**Post-milestone fix (2026-10-12):** a director playtest found the enemy base visible through the fog from the start.
+Cause: a vision-tick ordering bug, present since M007, left starting enemy structures drawn; unexplored ground was also
+only 93 % dark. Both are fixed (see the AI log). Rendering is now checked by tests, not just the visibility rules.
+
 ## 7. Human verification still needed
 
 * The acceptance run: a full match against the computer on each map, returning to the menu between them.

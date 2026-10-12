@@ -116,10 +116,45 @@ namespace Ironfront.Tests
                 Assert.AreEqual(size, Object.FindAnyObjectByType<CameraControl.RtsCameraController>().BoundsMax.x * 2f, 0.01f, id + " camera bounds");
                 Assert.AreEqual(size, Object.FindAnyObjectByType<Minimap>().WorldRect.width, 0.01f, id + " minimap");
 
-                // Neither side is shown the other's base.
+                // Neither side is shown the other's base — in the rules and on screen.
                 Assert.IsFalse(VisionSystem.CanSee(Player, Hq(Enemy).GetComponent<Health>()), id + ": enemy base hidden from the player");
+                yield return null;
+                AssertEnemyStructuresNotRendered(id);
                 Assert.IsFalse(VisionSystem.CanSee(Enemy, Hq(Player).GetComponent<Health>()), id + ": player base hidden from the computer");
             }
+        }
+
+        /// <summary>
+        /// Every renderer of an enemy structure the player has never seen is switched off (regression: a vision tick
+        /// before the structure's Start left all starting enemy buildings drawn through the fog).
+        /// </summary>
+        private static void AssertEnemyStructuresNotRendered(string where)
+        {
+            int checkedRenderers = 0;
+            foreach (var b in Building.All)
+            {
+                if (b.FactionId == Player) continue;
+                var h = b.GetComponent<Health>();
+                if (h.Vision == null || h.Vision.SeenByPlayer) continue;
+                foreach (var r in b.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!r.enabled || !r.gameObject.activeInHierarchy) continue;
+                    Assert.IsTrue(r.forceRenderingOff, $"{where}: {b.name}/{r.name} is drawn although the player has never seen it");
+                    checkedRenderers++;
+                }
+            }
+            Assert.Greater(checkedRenderers, 0, where + ": there were hidden enemy structures to check");
+        }
+
+        [UnityTest]
+        public IEnumerator FixedLayoutMatch_HidesTheEnemyBaseOnScreen()
+        {
+            SceneManager.LoadScene("RTS_Match", LoadSceneMode.Single);
+            yield return null;
+            yield return null;
+            yield return null;
+            AssertEnemyStructuresNotRendered("RTS_Match");
+            Assert.AreEqual(1f, Shader.GetGlobalVector(FogOfWarView.FogParamsId).y, 1e-4f, "never-explored ground is fully dark");
         }
 
         [UnityTest]

@@ -584,3 +584,37 @@ Milestone 005), confirming the console errors are gone, re-running all tests and
 
 ### Known limitations
 - None new.
+
+## Follow-up — Fog of war hid nothing at match start (2026-10-12)
+
+### Feature requested
+Director playtest: "The fog of war is not dark enough. As a player I can see exactly where the AI base is at the
+beginning of the map and throughout."
+
+### Changes implemented
+- **Root cause (bug since Milestone 007):** `VisionEntity` collects its renderers in `Start`, but the vision system's
+  first tick runs before that. The tick marked unseen enemy structures as hidden while their renderer list was still
+  empty, and the later `Start` call skipped re-applying the same state. Every enemy building present at match start,
+  and some built later, stayed drawn under the fog, and showed through it because unexplored ground was only 93 % dark.
+  Fix: `Start` forces the hide/show state onto the collected renderers.
+- Never-explored ground is now fully dark (`unexploredDarkness` 0.93 → 1.0, the classic black shroud), set in every scene.
+  Explored-but-not-in-sight stays dimmed (0.48).
+
+### Tests attempted and results
+- New rendering checks: on every skirmish map and in RTS_Match, every renderer of an enemy structure the player has
+  never seen must be switched off at match start; RTS_Match also checks the shroud value. (The Milestone 007/008 tests
+  only checked the visibility rules, `CanSee`, not what is drawn — which is why this was missed.)
+- Live check on Iron Pass: enemy HQ 6/6 renderers hidden (before the fix: 10 drawn); a screenshot at the enemy HQ shows
+  only darkness, and the minimap shows only the player's base.
+- EditMode **242/242**, PlayMode **65/65**.
+
+### Problems encountered
+- The Editor hung in "compiling" with no CPU activity (as in Milestone 001); restarted with the director's approval.
+  Because of that hang, I did not re-run the new test against the reverted code. The live inspection before the fix showed
+  exactly the condition the test asserts against.
+
+### Human interventions required
+- The playtest report, and approval to restart the hung Editor.
+
+### Known limitations
+- Enemy structures stay drawn once seen (remembered, by design); destroyed-while-unseen ones leave a "last known" ghost.

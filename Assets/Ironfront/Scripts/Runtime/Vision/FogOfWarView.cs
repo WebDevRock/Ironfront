@@ -17,7 +17,7 @@ namespace Ironfront.Vision
         public static readonly int FogParamsId = Shader.PropertyToID("_IronfrontFogParams");
 
         [Tooltip("Darkness of never-explored ground (0..1).")]
-        [SerializeField, Range(0f, 1f)] private float unexploredDarkness = 0.93f;
+        [SerializeField, Range(0f, 1f)] private float unexploredDarkness = 1f; // never-explored ground is black (shroud)
         [Tooltip("Darkness of explored ground that is not currently in sight.")]
         [SerializeField, Range(0f, 1f)] private float exploredDarkness = 0.48f;
         [SerializeField] private float fadeSpeed = 6f;

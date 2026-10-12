@@ -6492,7 +6492,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ddea6b53a565454fbbd0c66efe4b299, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Vision.FogOfWarView
-  unexploredDarkness: 0.93
+  unexploredDarkness: 1
   exploredDarkness: 0.48
   fadeSpeed: 6
 --- !u!114 &1345065479

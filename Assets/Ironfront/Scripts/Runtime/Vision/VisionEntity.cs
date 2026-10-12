@@ -73,7 +73,9 @@ namespace Ironfront.Vision
             foreach (var r in GetComponentsInChildren<Renderer>(true))
                 if (!r.transform.name.Contains("SelectionIndicator")) list.Add(r);
             _renderers = list.ToArray();
-            if (VisionSystem.Current != null) ApplyDrawn(ShouldDraw((VisibleMask & VisionSystem.Current.FactionBit(VisionSystem.LocalFaction)) != 0));
+            // Force: a vision tick before Start may already have set _drawn = false while the renderer list was still
+            // empty, which left every enemy structure present at match start visible through the fog.
+            if (VisionSystem.Current != null) ApplyDrawn(ShouldDraw((VisibleMask & VisionSystem.Current.FactionBit(VisionSystem.LocalFaction)) != 0), force: true);
         }
 
         public void RevealTo(int faction, float until)
@@ -99,9 +101,9 @@ namespace Ironfront.Vision
             return visibleToPlayer;
         }
 
-        private void ApplyDrawn(bool drawn)
+        private void ApplyDrawn(bool drawn, bool force = false)
         {
-            if (drawn == _drawn) return;
+            if (drawn == _drawn && !force) return;
             _drawn = drawn;
             foreach (var r in _renderers)
                 if (r != null) r.forceRenderingOff = !drawn;
