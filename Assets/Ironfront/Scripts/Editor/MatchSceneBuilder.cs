@@ -284,7 +284,7 @@ namespace Ironfront.EditorTools
 
         // ---------- UI ----------
 
-        private static void CreateMatchFlow(GameObject canvas)
+        internal static void CreateMatchFlow(GameObject canvas)
         {
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var flowGo = new GameObject("MatchFlow");
@@ -346,7 +346,7 @@ namespace Ironfront.EditorTools
             panel.SetActive(false);
         }
 
-        private static void CreateDebugPanel(GameObject canvas)
+        internal static void CreateDebugPanel(GameObject canvas)
         {
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var panel = RtsSandboxBuilder.NewUiObject("AiDebugPanel", canvas.transform);

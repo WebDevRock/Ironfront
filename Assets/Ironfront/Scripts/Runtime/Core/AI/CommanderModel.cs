@@ -51,6 +51,50 @@ namespace Ironfront.Core.AI
         /// <summary>Target fraction of the army that is artillery once it is available and useful.</summary>
         public float ArtilleryShare;
 
+        // ---- Milestone 008 difficulty switches. Zero/false reproduces the Milestone 007 (Normal) behaviour. ----
+        /// <summary>Easy: a fixed unit mix that ignores what the enemy fields, never saves for expensive units.</summary>
+        public bool NoCounterBuilding;
+        /// <summary>Hard: stronger counter shares and anti-armour defences after the first enemy heavy.</summary>
+        public bool AdvancedCounters;
+        /// <summary>Hard: attack only with this multiple of the known enemy army strength (0 = off). Ignored at the army cap.</summary>
+        public float AttackStrengthEdge;
+        /// <summary>Easy: no attack before this many seconds of match time (0 = off). Defence is unaffected.</summary>
+        public float EarliestAttack;
+        /// <summary>
+        /// Milestone 008 pacing: units added to the attack group size and the army cap after each failed attack, up to
+        /// <see cref="MaxEscalation"/>, so repeated equal trades escalate into a decisive push instead of a stalemate.
+        /// </summary>
+        public int EscalationStep;
+        public int MaxEscalation;
+        /// <summary>
+        /// Harvesters at which a second factory becomes a priority it saves for (0 = only from surplus credits, the
+        /// Milestone 007 rule). Set by <see cref="ScaledForMap"/> on large maps.
+        /// </summary>
+        public int SecondFactoryHarvesters;
+        /// <summary>Seconds between replacement scouts once the enemy has been located (0 = no limit).</summary>
+        public float ReconReplaceSeconds;
+
+        /// <summary>Maps at least this wide (metres) count as large for <see cref="ScaledForMap"/>.</summary>
+        public const float LargeMapSize = 250f;
+
+        /// <summary>
+        /// Milestone 008 map adaptation: the Milestone 007 caps were tuned for a 100 m map. On large maps the same rules
+        /// produce economies and armies too small to ever force a decision (AI-vs-AI study: one factory, four harvesters
+        /// and ~1 unit a minute on a 600 m map). Large maps raise the harvester, refinery and army caps and lower the
+        /// credit level for expanding. Applies identically to every difficulty and changes no game rule.
+        /// </summary>
+        public CommanderSettings ScaledForMap(float mapSize)
+        {
+            var c = this;
+            if (mapSize < LargeMapSize) return c;
+            c.MaxHarvesters += 2;
+            c.MaxRefineries += 1;
+            c.MaxArmy += 4;
+            c.ExpansionCredits = (int)Math.Round(ExpansionCredits * 0.6);
+            c.SecondFactoryHarvesters = 5;
+            return c;
+        }
+
         public int EffectiveAttackSize =>
             Math.Max(2, (int)Math.Round(AttackArmySize * (1.5 - Math.Max(0f, Math.Min(1f, Aggressiveness)))));
 
@@ -76,7 +120,72 @@ namespace Ironfront.Core.AI
             MaxAtTurrets = 2,
             ResearchArmyThreshold = 5,
             ArtilleryShare = 0.25f,
+            EscalationStep = 1,
+            MaxEscalation = 4,
+            ReconReplaceSeconds = 150f,
         };
+
+        /// <summary>
+        /// Milestone 008 Easy: slower and less aggressive, a smaller economy and army, no scouting and no reaction to
+        /// the enemy's unit mix. Same rules and costs as everyone else.
+        /// </summary>
+        public static CommanderSettings Easy
+        {
+            get
+            {
+                var c = Normal;
+                c.MinStateDuration = 15f;
+                c.Aggressiveness = 0.2f;
+                c.DefenceAllocation = 0.35f;
+                c.RetreatFraction = 0.5f;
+                c.MaxHarvesters = 3;
+                c.MaxFactories = 1;
+                c.MaxArmy = 8;
+                c.MaxQueuedUnits = 1;
+                c.CreditReserve = 600;
+                c.ExpansionCredits = 6000;
+                c.ReconCount = 0;
+                c.MaxGuardTowers = 1;
+                c.MaxAtTurrets = 0;
+                c.ResearchArmyThreshold = 8;
+                c.ArtilleryShare = 0.1f;
+                c.NoCounterBuilding = true;
+                c.EarliestAttack = 300f;
+                c.EscalationStep = 1;
+                c.MaxEscalation = 2;
+                return c;
+            }
+        }
+
+        /// <summary>
+        /// Milestone 008 Hard: a larger, faster-growing economy, two scouts, stronger counter-building, attacks only
+        /// with a strength edge and retreats earlier to preserve the army. No bonuses of any kind.
+        /// </summary>
+        public static CommanderSettings Hard
+        {
+            get
+            {
+                var c = Normal;
+                c.MinStateDuration = 6f;
+                c.Aggressiveness = 0.5f;
+                c.DefenceAllocation = 0.2f;
+                c.RetreatFraction = 0.45f;
+                c.HarvestersPerRefinery = 3;
+                c.MaxHarvesters = 6;
+                c.MaxRefineries = 3;
+                c.MaxArmy = 16;
+                c.CreditReserve = 150;
+                c.ExpansionCredits = 2000;
+                c.ReconCount = 2;
+                c.MaxGuardTowers = 2;
+                c.MaxAtTurrets = 2;
+                c.ResearchArmyThreshold = 4;
+                c.ArtilleryShare = 0.3f;
+                c.AdvancedCounters = true;
+                c.AttackStrengthEdge = 1.15f;
+                return c;
+            }
+        }
     }
 
     /// <summary>Costs and power figures the planner needs, read from the same definitions the player uses.</summary>
@@ -122,6 +231,19 @@ namespace Ironfront.Core.AI
         /// <summary>Next research topic the commander would like (null = none) and its cost.</summary>
         public string WantedResearch;
         public int WantedResearchCost;
+
+        // ---- Milestone 008 ----
+        /// <summary>Estimated strength of the enemy army the commander has seen recently (perception memory).</summary>
+        public float KnownEnemyStrength;
+        /// <summary>Seconds since the match started.</summary>
+        public float MatchTime;
+        /// <summary>The commander has located the enemy (seen at least one of its structures).</summary>
+        public bool EnemyBaseKnown;
+        /// <summary>Extra attack-group size and army cap earned by failed attacks (see CommanderSettings.EscalationStep).</summary>
+        public int AttackEscalation;
+        /// <summary>A replacement scout was bought recently.</summary>
+        public bool ReconOnCooldown;
+        public int ArmyCap(in CommanderSettings cfg) => cfg.MaxArmy + AttackEscalation;
 
         public int ArmyCount => LightTanks + HeavyTanks + Artillery;
         public int ArmyIncludingQueued => ArmyCount + QueuedLight + QueuedHeavy + QueuedArtillery;

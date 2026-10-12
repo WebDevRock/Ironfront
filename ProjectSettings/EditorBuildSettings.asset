@@ -20,6 +20,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/RTS_Benchmark.unity
     guid: f7da802eb54ab2246910c3f0d5c9a274
+  - enabled: 1
+    path: Assets/Scenes/Maps/Skirmish_DustfallPlains.unity
+    guid: a0af3cd39eedcb14d94fba1588a43019
+  - enabled: 1
+    path: Assets/Scenes/Maps/Skirmish_IronPass.unity
+    guid: 6b45548e477f8fb40ae563aa2b1f0017
+  - enabled: 1
+    path: Assets/Scenes/Maps/Skirmish_GreenDivide.unity
+    guid: 77a6581abeb61ec45bd370b046298ba2
+  - enabled: 1
+    path: Assets/Scenes/Maps/Skirmish_BlackstoneBasin.unity
+    guid: fb5760610c8a938418ff1550d4988ed3
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

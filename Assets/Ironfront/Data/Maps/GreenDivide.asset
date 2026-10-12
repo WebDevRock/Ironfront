@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8b98aaaddef55648a3db83d57712809, type: 3}
+  m_Name: GreenDivide
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.MapDefinition
+  id: green_divide
+  displayName: Green Divide
+  sceneName: Skirmish_GreenDivide
+  description: "A ring of forest divides the outer lands from the central glades, broken by eight gaps; woods hide many side routes. Home fields are small, so expanding into the glades \u2014 and scouting the woods for the enemy \u2014 wins the game."
+  tagline: "Forest and glades \xB7 600 m \xB7 8 starts \xB7 expansion"
+  preview: {fileID: 2800000, guid: 8cd10ce4af3331d42b6eb17042847878, type: 3}
+  size: 600
+  startNames:
+  - East-north-east
+  - North-north-east
+  - North-north-west
+  - West-north-west
+  - West-south-west
+  - South-south-west
+  - South-south-east
+  - East-south-east
+  minSpawnSeparation: 300
+  maxSpawnImbalance: 0.12

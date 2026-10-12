@@ -398,6 +398,12 @@ namespace Ironfront.EditorTools.Art
 
         // ---------- Output ----------
 
+        /// <summary>
+        /// Milestone 008: false while building skirmish-map environment meshes. Their materials have no normal maps, so
+        /// tangents would only add a third to the (large) saved mesh assets.
+        /// </summary>
+        public static bool Tangents = true;
+
         public Mesh Build(string name)
         {
             var mesh = new Mesh { name = name };
@@ -408,7 +414,7 @@ namespace Ironfront.EditorTools.Art
             mesh.subMeshCount = _triangles.Count;
             for (int i = 0; i < _triangles.Count; i++) mesh.SetTriangles(_triangles[i], i, false);
             mesh.RecalculateBounds();
-            mesh.RecalculateTangents();
+            if (Tangents) mesh.RecalculateTangents();
             return mesh;
         }
 

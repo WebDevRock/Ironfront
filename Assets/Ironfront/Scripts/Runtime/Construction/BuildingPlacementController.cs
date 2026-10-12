@@ -136,21 +136,35 @@ namespace Ironfront.Construction
             }
         }
 
+        public Rect MapBounds => mapBounds;
+
         /// <summary>Checks the world-space centre for <paramref name="definition"/> against all placement rules.</summary>
         public PlacementResult Validate(BuildingDefinition definition, Vector3 center, bool facesSouth = false)
         {
-            var candidate = definition.FootprintAt(center, facesSouth);
-
             var structures = new List<Footprint>();
             foreach (var b in Building.All)
                 if (b.Definition != null) structures.Add(b.Footprint);
+            return Validate(definition, center, facesSouth, structures, includeUnits: true);
+        }
+
+        /// <summary>
+        /// Map validation (Milestone 008): the same rules against terrain, resources and the given planned structures
+        /// only (existing buildings and units are ignored). Works in Edit Mode on an unplayed scene.
+        /// </summary>
+        public PlacementResult ValidateTerrain(BuildingDefinition definition, Vector3 center, bool facesSouth, IReadOnlyList<Footprint> planned) =>
+            Validate(definition, center, facesSouth, planned, includeUnits: false);
+
+        private PlacementResult Validate(BuildingDefinition definition, Vector3 center, bool facesSouth, IReadOnlyList<Footprint> structures, bool includeUnits)
+        {
+            var candidate = definition.FootprintAt(center, facesSouth);
 
             // Query a region that covers the padded body and the apron.
             Rect query = PlacementRules.Expand(candidate.Body, Mathf.Max(clearance, resourceClearance));
             if (candidate.HasApron) query = Union(query, candidate.Apron);
 
             var result = PlacementRules.Evaluate(candidate, mapBounds, structures,
-                OverlapRects(query, obstacleLayers), OverlapRects(query, resourceLayers), OverlapRects(query, unitLayers),
+                OverlapRects(query, obstacleLayers), OverlapRects(query, resourceLayers),
+                includeUnits ? OverlapRects(query, unitLayers) : new List<Rect>(),
                 clearance, resourceClearance);
             if (result != PlacementResult.Valid) return result;
 

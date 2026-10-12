@@ -101,6 +101,13 @@ namespace Ironfront.AI
             placement = placementController;
         }
 
+        /// <summary>Selects the difficulty (skirmish setup). Must be called before Start.</summary>
+        public void SetDifficulty(AiDifficulty settings)
+        {
+            if (_initialised) Debug.LogWarning("[Ironfront] EnemyCommander.SetDifficulty after Start has no effect.", this);
+            difficulty = settings;
+        }
+
         /// <summary>Sets the variation seed (0 = none). Takes effect immediately, also on a running commander.</summary>
         public void SetSeed(int value)
         {
@@ -135,9 +142,12 @@ namespace Ironfront.AI
             }
             if (placement == null) placement = FindAnyObjectByType<BuildingPlacementController>();
 
-            _cfg = difficulty.Strategy;
+            // Milestone 008: caps scaled to the battlefield size (identical for every difficulty; see ScaledForMap).
+            var vision = Ironfront.Vision.VisionSystem.Current;
+            _cfg = difficulty.Strategy.ScaledForMap(vision != null ? Mathf.Max(vision.MapSize.x, vision.MapSize.y) : 100f);
             Log = new BoundedLog(difficulty.DecisionLogCapacity);
             _perception = new AiPerception(factionId, difficulty.VisionRange, difficulty.ThreatMemorySeconds);
+            _intel = new EnemyIntel(CandidateSites());
             if (!ResolveDefinitions())
             {
                 enabled = false;
@@ -181,14 +191,15 @@ namespace Ironfront.AI
             if (!_initialised || _halted) return;
             Decisions++;
 
-            var hq = Headquarters();
+            var hq = Home();
             if (hq == null)
             {
-                Halt("headquarters destroyed");
+                Halt("headquarters destroyed (no production left)");
                 return;
             }
 
             _perception.Update(Time.time);
+            UpdateIntel();
             RallyPoint = ComputeRallyPoint(hq.transform.position);
             SetupFactories();
 
@@ -225,6 +236,14 @@ namespace Ironfront.AI
 
             if (previous == StrategicState.Attack && next != StrategicState.Attack)
             {
+                // Milestone 008 pacing: a failed attack (most of the group lost) makes the next one bigger.
+                float left = _attackers.Where(u => u != null).Sum(Strength);
+                // Only a real attack counts: early probes with a handful of units must not inflate every later attack.
+                if (_attackStartStrength >= _cfg.AttackStrengthThreshold && left < _attackStartStrength * 0.5f && _escalation < _cfg.MaxEscalation)
+                {
+                    _escalation = Mathf.Min(_cfg.MaxEscalation, _escalation + _cfg.EscalationStep);
+                    Record($"Attack failed ({left:0.0}/{_attackStartStrength:0.0} strength left): next attack group +{_escalation}");
+                }
                 if (next == StrategicState.Recover)
                 {
                     foreach (var u in _attackers) Order(u, c => c.OrderMove(RallyPoint));
@@ -248,7 +267,7 @@ namespace Ironfront.AI
                 Credits = faction.Wallet.Credits,
                 PowerProduced = faction.Power.Produced,
                 PowerConsumed = faction.Power.Consumed,
-                HasHeadquarters = Headquarters() != null,
+                HasHeadquarters = Home() != null,
                 KnownEnemyLight = _perception.KnownEnemyLight,
                 KnownEnemyHeavy = _perception.KnownEnemyHeavy,
                 KnownEnemyArtillery = _perception.KnownEnemyArtillery,
@@ -257,6 +276,13 @@ namespace Ironfront.AI
                 RecentlyAttacked = Time.time - _lastThreatTime < 60f,
                 Recon = scouts.Count,
                 ResearchBusy = faction.Research.Current != null,
+                KnownEnemyStrength = _perception.KnownEnemyLight * ArmyMath.LightValue + _perception.KnownEnemyHeavy * ArmyMath.HeavyValue
+                                     + _perception.KnownEnemyArtillery * ArmyMath.ArtilleryValue,
+                MatchTime = Time.timeSinceLevelLoad,
+                EnemyBaseKnown = _intel != null && _intel.EnemyLocated,
+                AttackEscalation = _escalation,
+                ReconOnCooldown = _intel != null && _intel.EnemyLocated && _cfg.ReconReplaceSeconds > 0f
+                                  && Time.time - _lastReconQueued < _cfg.ReconReplaceSeconds,
             };
 
             var refineries = new List<Vector3>();
@@ -386,6 +412,7 @@ namespace Ironfront.AI
             var result = best.Enqueue(def);
             if (result == EnqueueResult.Ok)
             {
+                if (def == _reconDef) _lastReconQueued = Time.time;
                 _lastLoggedAction = null;
                 Record($"Queued {def.DisplayName} - {action.Reason}");
             }
@@ -400,12 +427,11 @@ namespace Ironfront.AI
         private bool FindSite(BuildingDefinition def, AiActionType type, out Vector3 site)
         {
             site = default;
-            var hq = Headquarters();
+            var hq = Home();
             if (hq == null || placement == null) return false;
             Vector3 home = hq.transform.position;
-            Vector3 enemyDir = (EnemyDirectionTarget(home) - home);
-            enemyDir.y = 0f;
-            enemyDir = enemyDir.sqrMagnitude > 1e-3f ? enemyDir.normalized : Vector3.forward;
+            // Milestone 008: "towards the enemy" follows the ground route, not the straight line (ridges, passes).
+            Vector3 enemyDir = RouteDirection(home);
 
             List<Vector3> candidates;
             switch (type)
@@ -421,8 +447,8 @@ namespace Ironfront.AI
                     break;
                 case AiActionType.BuildGuardTower:
                 case AiActionType.BuildAtTurret:
-                    // On the approach from the enemy, a little in front of the base.
-                    candidates = SiteSearch.Ranked(home, home + enemyDir * 18f, 12f, 26f, 2f);
+                    // On the approach route from the enemy, a little in front of the base (at a pass if there is one).
+                    candidates = SiteSearch.Ranked(home, PointAlongRoute(home, 18f), 12f, 26f, 2f);
                     break;
                 default:
                     var deposit = DepositForNewRefinery(home);
@@ -487,12 +513,15 @@ namespace Ironfront.AI
         private OreDeposit DepositForNewRefinery(Vector3 home)
         {
             var refineries = OwnStructures().Where(b => b.Definition.Id == "refinery").Select(b => b.transform.position).ToList();
-            return OreDeposit.All
-                .Where(d => !d.IsDepleted)
+            // Milestone 008: ranked by ground travel distance; deposits the commander's units cannot reach are skipped.
+            // Addendum: only ore fields this faction has actually seen.
+            var reachable = OreDeposit.All.Where(d => !d.IsDepleted && Ironfront.Vision.VisionSystem.IsExplored(factionId, d.transform.position)
+                                                      && GroundDistance(home, d) < float.MaxValue).ToList();
+            return reachable
                 .Where(d => refineries.Count == 0 || refineries.All(r => (r - d.transform.position).sqrMagnitude > 18f * 18f))
-                .OrderBy(d => (d.transform.position - home).sqrMagnitude)
+                .OrderBy(d => GroundDistance(home, d))
                 .FirstOrDefault()
-                ?? OreDeposit.All.Where(d => !d.IsDepleted).OrderBy(d => (d.transform.position - home).sqrMagnitude).FirstOrDefault();
+                ?? reachable.OrderBy(d => GroundDistance(home, d)).FirstOrDefault();
         }
 
         // ---------- Army ----------
@@ -513,7 +542,7 @@ namespace Ironfront.AI
 
         private void Defend(List<CombatUnit> army, List<Health> threats)
         {
-            var hq = Headquarters();
+            var hq = Home();
             var threat = threats.OrderBy(t => (t.transform.position - hq.transform.position).sqrMagnitude).First();
             Vector3 point = threat.transform.position;
             Objective = $"Defend base: {threats.Count} enemies near ({point.x:0},{point.z:0})";
@@ -551,7 +580,7 @@ namespace Ironfront.AI
             // All-in (no ore left anywhere): nothing to protect for later, so nobody stays home.
             int keep = StrategyRules.AllIn(LastSnapshot) ? 0 : Mathf.FloorToInt(ordered.Count * _cfg.DefenceAllocation);
             // Keep the units nearest home as defenders; the rest attack.
-            var hq = Headquarters();
+            var hq = Home();
             var byHome = ordered.OrderBy(u => (u.transform.position - hq.transform.position).sqrMagnitude).ToList();
             var defenders = new HashSet<CombatUnit>(byHome.Take(keep));
 
@@ -663,15 +692,23 @@ namespace Ironfront.AI
             }
 
             _objectiveTarget = null;
-            var enemyStart = difficulty.KnowsEnemyStartLocation ? HostileStart(from) : null;
-            if (enemyStart != null && (exclude == null || (from - enemyStart.transform.position).sqrMagnitude > 15f * 15f))
+            // Milestone 008: no structure known. Go where the enemy was last seen, else search the nearest candidate
+            // start site nobody has looked at yet; the army explores as it goes (sites it sees are crossed off).
+            var focus = _intel.KnownEnemyFocus();
+            var site = _intel.NextSiteToInvestigate(from.x, from.z, Time.time);
+            if (focus != null && (from - new Vector3(focus.Value.x, 0f, focus.Value.z)).sqrMagnitude > 15f * 15f)
             {
-                _objective = enemyStart.transform.position;
-                Objective = $"Advance on enemy start ({_objective.Value.x:0},{_objective.Value.z:0})";
+                _objective = new Vector3(focus.Value.x, 0f, focus.Value.z);
+                Objective = $"Advance on last known enemy position ({_objective.Value.x:0},{_objective.Value.z:0})";
+            }
+            else if (site != null)
+            {
+                _objective = new Vector3(site.X, 0f, site.Z);
+                Objective = $"Search start site {site.Id} ({site.X:0},{site.Z:0}) for the enemy";
             }
             else
             {
-                _objective = Vector3.zero; // no knowledge: sweep towards the map centre
+                _objective = Vector3.zero; // every site checked: sweep towards the map centre
                 Objective = "Search map centre";
             }
         }
@@ -712,7 +749,22 @@ namespace Ironfront.AI
             OrdersIssued++;
         }
 
-        private Building Headquarters()
+        /// <summary>
+        /// The building the commander works from: its headquarters, or (Annihilation mode, Milestone 008) any surviving
+        /// vehicle factory once the headquarters has fallen, since the faction is still in the match.
+        /// </summary>
+        private Building Home()
+        {
+            var hq = HeadquartersBuilding();
+            if (hq != null) return hq;
+            var flow = MatchFlowController.Current;
+            if (flow == null || flow.Victory != Ironfront.Core.Skirmish.VictoryMode.Annihilation) return null;
+            foreach (var b in OwnStructures())
+                if (b.Definition.Id == "vehicle_factory") return b;
+            return null;
+        }
+
+        private Building HeadquartersBuilding()
         {
             foreach (var b in Building.All)
                 if (b.FactionId == factionId && b.Definition != null && b.Definition.Id == "headquarters")
@@ -828,12 +880,37 @@ namespace Ironfront.AI
                 if (!arrived) continue;
                 Vector3 interest = EnemyDirectionTarget(u.transform.position);
                 Vector3 next;
-                if (vision != null && vision.FogEnabled && ScoutPlanner.NextWaypoint(vision.Grid, factionId, u.transform.position.x, u.transform.position.z,
-                        interest.x, interest.z, 12f, 0.35f, out float x, out float z))
+                // Nowhere known to expand to: finding ore near home comes before finding the enemy.
+                var ore = NeedsExpansionIntel() ? UnexploredDeposit(Home().transform.position) : null;
+                var site = ore != null ? null : _intel.NextSiteToInvestigate(u.transform.position.x, u.transform.position.z, Time.time,
+                    exclude: s => IsRejectedScoutPoint(s.X, s.Z) || _scoutTargets.Any(t => t.Key != u && (t.Value - new Vector3(s.X, 0f, s.Z)).sqrMagnitude < 30f * 30f));
+                if (ore == null && site == null) ore = UnexploredDeposit(u.transform.position);
+                if (ore != null)
+                    next = ore.transform.position; // resource discovery for expansion
+                else if (site != null)
+                    next = new Vector3(site.X, 0f, site.Z); // where might the enemy be?
+                else if (vision != null && vision.FogEnabled && ScoutPlanner.NextWaypoint(vision.Grid, factionId, u.transform.position.x, u.transform.position.z,
+                        interest.x, interest.z, 12f, 0.35f, out float x, out float z, skip: IsRejectedScoutPoint))
                     next = new Vector3(x, 0f, z);
                 else
-                    next = Vector3.Lerp(RallyPoint, interest, 0.45f); // explored: keep watch on the approach
-                if (NavMesh.SamplePosition(next, out var hit, 8f, NavMesh.AllAreas)) next = hit.position;
+                    next = PointAlongRoute(RallyPoint, 0.45f * Vector3.Distance(RallyPoint, interest)); // explored: watch the approach
+                var wanted = next;
+                if (NavMesh.SamplePosition(next, out var hit, 8f, NavMesh.AllAreas) && PathComplete(u.transform.position, hit.position))
+                    next = hit.position;
+                else
+                {
+                    // Unreachable (enclosed by terrain): remember it and never order it again.
+                    RejectScoutPoint(wanted);
+                    Record($"Scout point ({wanted.x:0},{wanted.z:0}) unreachable; skipped");
+                    continue;
+                }
+                // Already standing at the chosen point (nothing left to explore: watching the approach): stay put
+                // instead of re-issuing the same order every decision.
+                if ((u.transform.position - next).sqrMagnitude < 8f * 8f)
+                {
+                    _scoutTargets[u] = next;
+                    continue;
+                }
                 _scoutTargets[u] = next;
                 ScoutMissions++;
                 Order(u, c => c.OrderMove(next));
@@ -871,39 +948,224 @@ namespace Ironfront.AI
             if (fast.Count > 0) Record($"Counter-artillery: {fast.Count} units hunt {target.DisplayName}");
         }
 
-        private FactionStartLocation HostileStart(Vector3 from)
+        // ---------- Milestone 008: intelligence (no hidden knowledge of the enemy start) ----------
+
+        private EnemyIntel _intel;
+        private bool _announcedDiscovery;
+        private int _escalation;
+        private float _lastReconQueued = -999f;
+
+        /// <summary>Extra attack-group size earned by failed attacks (diagnostics / tests).</summary>
+        public int AttackEscalation => _escalation;
+
+        /// <summary>What the commander believes about the enemy's whereabouts (diagnostics / tests).</summary>
+        public EnemyIntel Intel => _intel;
+
+        /// <summary>
+        /// Candidate enemy start sites: the map's start slots other than its own (public map knowledge — the setup
+        /// screen shows them to the player as well). Older fixed-layout scenes without slots list their start markers.
+        /// Which site the enemy actually took is never read.
+        /// </summary>
+        private IEnumerable<(int, float, float)> CandidateSites()
         {
-            FactionStartLocation best = null;
+            var home = Home() != null ? Home().transform.position : transform.position;
+            if (Ironfront.Skirmish.StartSlot.All.Count > 0)
+            {
+                foreach (var s in Ironfront.Skirmish.StartSlot.All)
+                    if ((s.Headquarters - home).sqrMagnitude > 20f * 20f) yield return (s.Slot, s.Headquarters.x, s.Headquarters.z);
+                yield break;
+            }
+            int i = 0;
             foreach (var s in FactionStartLocation.All)
             {
-                if (!DamageRules.AreHostile(factionId, s.FactionId)) continue;
-                if (best == null || (s.transform.position - from).sqrMagnitude < (best.transform.position - from).sqrMagnitude) best = s;
+                if (s.FactionId != factionId && (s.transform.position - home).sqrMagnitude > 20f * 20f)
+                    yield return (i, s.transform.position.x, s.transform.position.z);
+                i++;
             }
-            return best;
         }
 
-        /// <summary>The commander builds with docks and exits facing its opponent (north or south).</summary>
+        private readonly List<EnemyIntel.Sighting> _sightings = new List<EnemyIntel.Sighting>();
+
+        private void UpdateIntel()
+        {
+            _sightings.Clear();
+            foreach (var s in _perception.Structures)
+                _sightings.Add(new EnemyIntel.Sighting(s.Position.x, s.Position.z, s.DefinitionId == "headquarters", s.LastSeen));
+            var vision = Ironfront.Vision.VisionSystem.Current;
+            bool fog = vision != null && vision.FogEnabled;
+            float range2 = difficulty.VisionRange * difficulty.VisionRange;
+            _intel.Observe(Time.time, (x, z) =>
+            {
+                var p = new Vector3(x, 0f, z);
+                if (fog) return Ironfront.Vision.VisionSystem.CanSeePoint(factionId, p);
+                foreach (var h in Health.All)
+                    if (h.IsAlive && h.FactionId == factionId && (h.transform.position - p).sqrMagnitude <= range2) return true;
+                return false;
+            }, _sightings);
+            if (_intel.EnemyLocated && !_announcedDiscovery)
+            {
+                _announcedDiscovery = true;
+                var f = _intel.KnownEnemyFocus().Value;
+                Record($"Enemy located at ({f.x:0},{f.z:0}) after {Time.timeSinceLevelLoad:0}s");
+            }
+        }
+
+        /// <summary>The commander builds with docks and exits facing the map centre (north or south).</summary>
         private bool FacesSouth()
         {
-            var hq = Headquarters();
-            if (hq == null) return false;
-            return EnemyDirectionTarget(hq.transform.position).z < hq.transform.position.z;
+            var hq = Home();
+            return hq != null && hq.transform.position.z > 0f;
         }
 
-        /// <summary>Where "towards the enemy" is: its start if known by configuration, otherwise the map centre.</summary>
+        /// <summary>Where "towards the enemy" is: the known or most likely enemy position, otherwise the map centre.</summary>
         private Vector3 EnemyDirectionTarget(Vector3 from)
         {
-            var s = difficulty.KnowsEnemyStartLocation ? HostileStart(from) : null;
-            return s != null ? s.transform.position : Vector3.zero;
+            var g = _intel?.BestGuess(from.x, from.z, Time.time);
+            return g != null ? new Vector3(g.Value.x, 0f, g.Value.z) : Vector3.zero;
         }
 
         private Vector3 ComputeRallyPoint(Vector3 hq)
         {
-            Vector3 dir = EnemyDirectionTarget(hq) - hq;
-            dir.y = 0f;
-            dir = dir.sqrMagnitude > 1e-3f ? dir.normalized : Vector3.forward;
-            Vector3 p = hq + dir * difficulty.RallyDistance + _rallyOffset;
+            // Milestone 008: along the ground route, so the rally point never snaps to the far side of a ridge.
+            Vector3 p = PointAlongRoute(hq, difficulty.RallyDistance) + _rallyOffset;
             return NavMesh.SamplePosition(p, out var hit, 8f, NavMesh.AllAreas) ? hit.position : p;
+        }
+
+        // ---------- Milestone 008: terrain awareness (ground routes, reachability) ----------
+
+        private NavMeshPath _path;
+        private readonly List<Vector3> _route = new List<Vector3>();
+        private Vector3 _routeFrom = new Vector3(float.NaN, 0f, 0f), _routeTo;
+        private readonly Dictionary<OreDeposit, float> _depositDistance = new Dictionary<OreDeposit, float>();
+        private Vector3 _depositFrom = new Vector3(float.NaN, 0f, 0f);
+        private readonly List<Vector3> _rejectedScoutPoints = new List<Vector3>();
+
+        /// <summary>Scout destinations found unreachable and never ordered again (diagnostics / tests).</summary>
+        public int RejectedScoutPoints => _rejectedScoutPoints.Count;
+        /// <summary>The current ground route towards the enemy (diagnostics / tests).</summary>
+        public IReadOnlyList<Vector3> CurrentRoute => _route;
+
+        private NavMeshPath ScratchPath => _path ??= new NavMeshPath();
+
+        private static bool OnNavMesh(Vector3 p, float radius, out Vector3 snapped)
+        {
+            bool ok = NavMesh.SamplePosition(p, out var hit, radius, NavMesh.AllAreas);
+            snapped = ok ? hit.position : p;
+            return ok;
+        }
+
+        private bool PathComplete(Vector3 from, Vector3 to)
+        {
+            if (!OnNavMesh(from, 4f, out var a) || !OnNavMesh(to, 4f, out var b)) return false;
+            return NavMesh.CalculatePath(a, b, NavMesh.AllAreas, ScratchPath) && ScratchPath.status == NavMeshPathStatus.PathComplete;
+        }
+
+        /// <summary>Ground route from home to where the enemy is expected (cached; recomputed when either end moves).</summary>
+        private List<Vector3> Route(Vector3 home)
+        {
+            Vector3 target = EnemyDirectionTarget(home);
+            if ((home - _routeFrom).sqrMagnitude < 1f && (target - _routeTo).sqrMagnitude < 1f) return _route;
+            _routeFrom = home;
+            _routeTo = target;
+            _route.Clear();
+            // Structures carve the NavMesh, so both ends are snapped to the nearest walkable ground.
+            if (OnNavMesh(home, 14f, out var a) && OnNavMesh(target, 14f, out var b)
+                && NavMesh.CalculatePath(a, b, NavMesh.AllAreas, ScratchPath) && ScratchPath.status != NavMeshPathStatus.PathInvalid)
+            {
+                _route.Add(home);
+                _route.AddRange(ScratchPath.corners);
+            }
+            return _route;
+        }
+
+        /// <summary>The point <paramref name="distance"/> metres along the ground route towards the enemy.</summary>
+        private Vector3 PointAlongRoute(Vector3 home, float distance)
+        {
+            var route = Route(home);
+            if (route.Count < 2)
+            {
+                Vector3 d = EnemyDirectionTarget(home) - home;
+                d.y = 0f;
+                return home + (d.sqrMagnitude > 1e-3f ? d.normalized : Vector3.forward) * distance;
+            }
+            float left = distance;
+            for (int i = 1; i < route.Count; i++)
+            {
+                float seg = Vector3.Distance(route[i - 1], route[i]);
+                if (seg >= left) return Vector3.Lerp(route[i - 1], route[i], seg <= 1e-4f ? 0f : left / seg);
+                left -= seg;
+            }
+            return route[route.Count - 1];
+        }
+
+        /// <summary>Initial direction of the ground route towards the enemy (falls back to the straight line).</summary>
+        private Vector3 RouteDirection(Vector3 home)
+        {
+            Vector3 d = PointAlongRoute(home, 14f) - home;
+            d.y = 0f;
+            return d.sqrMagnitude > 1e-3f ? d.normalized : Vector3.forward;
+        }
+
+        /// <summary>Path length from home to a deposit's edge (float.MaxValue = unreachable). Cached per home position.</summary>
+        private float GroundDistance(Vector3 home, OreDeposit deposit)
+        {
+            if ((home - _depositFrom).sqrMagnitude > 1f)
+            {
+                _depositFrom = home;
+                _depositDistance.Clear();
+            }
+            if (_depositDistance.TryGetValue(deposit, out float d)) return d;
+            d = float.MaxValue;
+            Vector3 target = deposit.transform.position;
+            if (OnNavMesh(home, 14f, out var a) && OnNavMesh(target, deposit.HarvestRadius + 4f, out var b)
+                && NavMesh.CalculatePath(a, b, NavMesh.AllAreas, ScratchPath) && ScratchPath.status == NavMeshPathStatus.PathComplete)
+            {
+                d = 0f;
+                var c = ScratchPath.corners;
+                for (int i = 1; i < c.Length; i++) d += Vector3.Distance(c[i - 1], c[i]);
+            }
+            _depositDistance[deposit] = d;
+            return d;
+        }
+
+        private void RejectScoutPoint(Vector3 p) => _rejectedScoutPoints.Add(p);
+
+        /// <summary>
+        /// True when every ore field the commander has seen is either spent or already served by one of its refineries:
+        /// its next expansion depends on discovering more ore.
+        /// </summary>
+        private bool NeedsExpansionIntel()
+        {
+            var refineries = OwnStructures().Where(b => b.Definition.Id == "refinery").Select(b => b.transform.position).ToList();
+            foreach (var d in OreDeposit.All)
+            {
+                if (d.IsDepleted || !Ironfront.Vision.VisionSystem.IsExplored(factionId, d.transform.position)) continue;
+                if (refineries.All(r => (r - d.transform.position).sqrMagnitude > LocalOreRadius * LocalOreRadius)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>Nearest ore field this faction has never seen (for scouts), skipping ones another scout is visiting.</summary>
+        private OreDeposit UnexploredDeposit(Vector3 from)
+        {
+            OreDeposit best = null;
+            float bestD = float.MaxValue;
+            foreach (var d in OreDeposit.All)
+            {
+                var p = d.transform.position;
+                if (d.IsDepleted || Ironfront.Vision.VisionSystem.IsExplored(factionId, p) || IsRejectedScoutPoint(p.x, p.z)) continue;
+                if (_scoutTargets.Values.Any(t => (t - p).sqrMagnitude < 20f * 20f)) continue;
+                float dist = (p - from).sqrMagnitude;
+                if (dist < bestD) { bestD = dist; best = d; }
+            }
+            return best;
+        }
+
+        private bool IsRejectedScoutPoint(float x, float z)
+        {
+            foreach (var r in _rejectedScoutPoints)
+                if ((r.x - x) * (r.x - x) + (r.z - z) * (r.z - z) < 36f) return true;
+            return false;
         }
 
         private void SetupFactories()

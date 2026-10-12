@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf9ff57e43df7694a947db99524734f9, type: 3}
+  m_Name: Hard
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.AiDifficulty
+  displayName: Hard
+  level: 2
+  summary: Expands fast, scouts with two units, counter-builds, waits for a strength edge and preserves its army. No bonuses.
+  decisionInterval: 1
+  strategy:
+    MinStateDuration: 6
+    Aggressiveness: 0.5
+    DefenceAllocation: 0.2
+    AttackArmySize: 6
+    AttackStrengthThreshold: 7
+    RetreatFraction: 0.45
+    HarvestersPerRefinery: 3
+    MaxHarvesters: 6
+    MaxRefineries: 3
+    MaxFactories: 2
+    MaxArmy: 16
+    MaxQueuedUnits: 2
+    CreditReserve: 150
+    PowerMargin: 10
+    ExpansionCredits: 2000
+    ReconCount: 2
+    MaxGuardTowers: 2
+    MaxAtTurrets: 2
+    ResearchArmyThreshold: 4
+    ArtilleryShare: 0.3
+    NoCounterBuilding: 0
+    AdvancedCounters: 1
+    AttackStrengthEdge: 1.15
+    EarliestAttack: 0
+    EscalationStep: 1
+    MaxEscalation: 4
+    SecondFactoryHarvesters: 0
+    ReconReplaceSeconds: 150
+  visionRange: 22
+  threatMemorySeconds: 40
+  defendRadius: 30
+  rallyDistance: 14
+  stuckDecisions: 2
+  decisionLogCapacity: 20

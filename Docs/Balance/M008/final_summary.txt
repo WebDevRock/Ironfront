@@ -1,0 +1,25 @@
+Study: final — 28 AI-vs-AI matches (10x time scale, seeded random starts)
+Outcomes: 27 decisive, 0 draws, 1 timeouts (limit 2700 s)
+Match length (decided): median 1099 s, mean 1327 s, min 473, max 2563
+First contact: median 112 s (range 82-249)
+Enemy base located (per commander): median 118 s (range 3-489), 56/56 commanders
+
+Per map:              n  decided  median s  max s  contact  income/side  recons/side  2nd refinery
+  blackstone_basin    7       7      1289   1960      108        44731          4.4  14/14
+  dustfall_plains     7       7       836   2263      114        37290          3.3  11/14
+  green_divide        7       6      2016   2700      126        54100          6.1  14/14
+  iron_pass           7       7       948   2013      105        37874          4.3  12/14
+
+Difficulty matchups (winner by difficulty):
+  Easy vs Normal   Easy 1, Normal 3
+  Hard vs Normal   Hard 8
+  Normal vs Normal Normal 15, no result 1
+
+Start position (Normal mirrors only): wins by slot id, per map
+  blackstone_basin   slot 0: 0W/1L  slot 1: 0W/1L  slot 2: 2W/0L  slot 3: 1W/1L  slot 4: 1W/0L  slot 5: 0W/1L
+  dustfall_plains    slot 0: 0W/1L  slot 2: 1W/0L  slot 3: 0W/1L  slot 4: 1W/0L  slot 5: 1W/0L  slot 6: 1W/0L  slot 7: 0W/2L
+  green_divide       slot 2: 1W/0L  slot 3: 1W/0L  slot 5: 1W/0L  slot 6: 0W/1L  slot 7: 0W/2L
+  iron_pass          slot 0: 0W/1L  slot 2: 1W/0L  slot 3: 0W/1L  slot 4: 1W/0L  slot 5: 1W/0L  slot 6: 1W/0L  slot 7: 0W/2L
+  Faction 1 vs faction 2 wins in mirrors: 10 / 5
+
+Economy of the winner vs loser (decisive matches): income ratio median 1.29

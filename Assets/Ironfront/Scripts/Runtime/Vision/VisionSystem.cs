@@ -100,6 +100,7 @@ namespace Ironfront.Vision
             Ticks++;
             float now = Time.time;
             _grid.BeginTick();
+            UpdateLastStand();
             for (int i = 0; i < s_entities.Count; i++)
             {
                 var e = s_entities[i];
@@ -119,13 +120,34 @@ namespace Ironfront.Vision
                     int faction = _factions[f];
                     bool sees = !_enabled || faction == e.OwnerFaction
                                 || _grid.AnyVisible(faction, p.x, p.z, e.HalfExtents.x, e.HalfExtents.y)
-                                || e.RevealedTo(faction, now);
+                                || e.RevealedTo(faction, now)
+                                || IsLastStandFaction(e.OwnerFaction);
                     if (sees) mask |= 1 << f;
                 }
                 e.SetVisibility(mask, FactionBit(LocalFaction));
             }
             Updated?.Invoke();
         }
+
+        // Annihilation "last stand" (Milestone 008): factions that can no longer produce are visible to everyone.
+        private readonly List<int> _lastStand = new List<int>();
+
+        private void UpdateLastStand()
+        {
+            _lastStand.Clear();
+            var flow = Match.MatchFlowController.Current;
+            if (flow == null || flow.Victory != Core.Skirmish.VictoryMode.Annihilation) return;
+            for (int i = 0; i < _factions.Length; i++)
+                if (flow.IsLastStand(_factions[i])) _lastStand.Add(_factions[i]);
+        }
+
+        private bool IsLastStandFaction(int faction) => _lastStand.Count > 0 && _lastStand.Contains(faction);
+
+        /// <summary>Factions currently revealed by the Annihilation last-stand rule (diagnostics / tests).</summary>
+        public IReadOnlyList<int> LastStandFactions => _lastStand;
+
+        public Vector2 MapMin => mapMin;
+        public Vector2 MapSize => mapSize;
 
         /// <summary>Bit for a faction in <see cref="VisionEntity.VisibleMask"/>, or 0 if unknown.</summary>
         public int FactionBit(int faction)

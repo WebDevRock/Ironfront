@@ -16,6 +16,19 @@ namespace Ironfront.Match
         private void OnEnable() { if (!s_All.Contains(this)) s_All.Add(this); }
         private void OnDisable() => s_All.Remove(this);
 
+        /// <summary>Creates a marker at runtime (skirmish maps spawn their bases; Milestone 008).</summary>
+        public static FactionStartLocation Create(int factionId, Vector3 position, Transform parent = null)
+        {
+            var go = new GameObject($"StartLocation_F{factionId}");
+            go.SetActive(false);
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+            var marker = go.AddComponent<FactionStartLocation>();
+            marker.factionId = factionId;
+            go.SetActive(true);
+            return marker;
+        }
+
         public static FactionStartLocation Of(int factionId)
         {
             foreach (var s in s_All)

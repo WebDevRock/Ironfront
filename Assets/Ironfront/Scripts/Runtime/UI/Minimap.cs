@@ -31,8 +31,9 @@ namespace Ironfront.UI
         [Tooltip("Layers treated as static terrain obstacles.")]
         [SerializeField] private LayerMask obstacleLayers = 1;
 
-        private static readonly Color32 Ground = new Color32(52, 66, 44, 255);
-        private static readonly Color32 Obstacle = new Color32(105, 108, 115, 255);
+        [Tooltip("Map background and terrain colours (Milestone 008: per battlefield).")]
+        [SerializeField] private Color groundColor = new Color32(52, 66, 44, 255);
+        [SerializeField] private Color obstacleColor = new Color32(105, 108, 115, 255);
         private static readonly Color32 Ore = new Color32(240, 190, 40, 255);
         private static readonly Color32 Selected = new Color32(255, 255, 255, 255);
         private static readonly Color32 View = new Color32(230, 236, 245, 255);
@@ -89,14 +90,14 @@ namespace Ironfront.UI
 
         private void PaintBackground()
         {
-            for (int i = 0; i < _background.Length; i++) _background[i] = Ground;
+            for (int i = 0; i < _background.Length; i++) _background[i] = (Color32)groundColor;
             foreach (var c in FindObjectsByType<Collider>())
             {
                 if (((1 << c.gameObject.layer) & obstacleLayers) == 0) continue;
                 if (c.GetComponentInParent<Building>() != null || c.GetComponentInParent<Health>() != null) continue;
                 var b = c.bounds;
                 if (b.size.x > _world.width * 0.9f && b.size.z > _world.height * 0.9f) continue; // the ground itself
-                FillRect(_background, b.min, b.max, Obstacle);
+                FillRect(_background, b.min, b.max, (Color32)obstacleColor);
             }
         }
 

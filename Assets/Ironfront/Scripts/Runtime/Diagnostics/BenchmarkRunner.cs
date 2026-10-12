@@ -82,6 +82,9 @@ namespace Ironfront.Diagnostics
             if (runOnStart) StartCoroutine(Run());
         }
 
+        /// <summary>Use only the measurement (Milestone 008 map benchmark). Call before Start.</summary>
+        public void DisableAutoRun() => runOnStart = false;
+
         public IEnumerator Run()
         {
             if (IsRunning) yield break;
@@ -170,7 +173,7 @@ namespace Ironfront.Diagnostics
             while (Time.realtimeSinceStartup < end) yield return null;
         }
 
-        private IEnumerator Measure(int size, string phase, float seconds)
+        public IEnumerator Measure(int size, string phase, float seconds)
         {
             var frameMs = new List<float>(4096);
             var gcAlloc = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame");
@@ -248,7 +251,7 @@ namespace Ironfront.Diagnostics
                       (r.markerMs.Count > 0 ? " | ms/frame " + string.Join(" ", r.markerMs) : ""));
         }
 
-        private void WriteResults()
+        public void WriteResults()
         {
             var args = Environment.GetCommandLineArgs();
             int idx = Array.IndexOf(args, OutputSwitch);

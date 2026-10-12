@@ -14,6 +14,7 @@ namespace Ironfront.Match
         [SerializeField] private MatchSetup setup;
 
         private readonly Dictionary<int, FactionState> _factions = new Dictionary<int, FactionState>();
+        private int _startingCreditsOverride = -1;
 
         public static MatchController Current { get; private set; }
 
@@ -21,6 +22,16 @@ namespace Ironfront.Match
         public IEnumerable<FactionState> Factions => _factions.Values;
         public int PlayerFactionId { get; private set; } = DefaultPlayerFactionId;
         public FactionState PlayerFaction => GetFaction(PlayerFactionId);
+
+        /// <summary>
+        /// Skirmish setup (Milestone 008): every faction starts with this many credits instead of the MatchSetup value.
+        /// Must be called before Awake (the <c>SkirmishInitializer</c> runs first).
+        /// </summary>
+        public void SetStartingCredits(int credits)
+        {
+            if (_factions.Count > 0) Debug.LogWarning("[Ironfront] SetStartingCredits after the match was initialised has no effect.", this);
+            _startingCreditsOverride = Mathf.Max(0, credits);
+        }
 
         private void Awake()
         {
@@ -37,7 +48,8 @@ namespace Ironfront.Match
             bool playerChosen = false;
             foreach (var f in setup.Factions)
             {
-                _factions[f.id] = new FactionState(f.id, f.displayName, f.humanControlled, f.startingCredits);
+                int credits = _startingCreditsOverride >= 0 ? _startingCreditsOverride : f.startingCredits;
+                _factions[f.id] = new FactionState(f.id, f.displayName, f.humanControlled, credits);
                 Buildings.ResearchCentre.HookUpgrades(_factions[f.id].Research, f.id);
                 if (f.humanControlled && !playerChosen)
                 {

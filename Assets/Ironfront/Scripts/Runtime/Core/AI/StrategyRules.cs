@@ -50,8 +50,20 @@ namespace Ironfront.Core.AI
         public static bool BaseReady(in CommanderSnapshot s) =>
             s.Refineries > 0 && s.Harvesters > 0 && s.Factories > 0 && s.PowerPlants > 0;
 
-        public static bool ReadyToAttack(in CommanderSnapshot s, in CommanderSettings cfg) =>
-            (s.ArmyCount >= cfg.EffectiveAttackSize && s.ArmyStrength >= cfg.AttackStrengthThreshold) || AllIn(s);
+        public static bool ReadyToAttack(in CommanderSnapshot s, in CommanderSettings cfg)
+        {
+            if (AllIn(s)) return true;
+            if (s.MatchTime < cfg.EarliestAttack) return false;
+            if (s.ArmyCount < cfg.EffectiveAttackSize + s.AttackEscalation || s.ArmyStrength < cfg.AttackStrengthThreshold) return false;
+            return HasStrengthEdge(s, cfg);
+        }
+
+        /// <summary>
+        /// Hard: attack only when stronger than the enemy army it has seen recently (or when its own army is at the cap,
+        /// so a cautious commander cannot wait forever).
+        /// </summary>
+        public static bool HasStrengthEdge(in CommanderSnapshot s, in CommanderSettings cfg) =>
+            cfg.AttackStrengthEdge <= 0f || s.ArmyCount >= s.ArmyCap(cfg) || s.ArmyStrength >= s.KnownEnemyStrength * cfg.AttackStrengthEdge;
 
         /// <summary>Retreat to rebuild only makes sense while there is an economy to rebuild.</summary>
         public static bool ShouldRetreat(in CommanderSnapshot s, in CommanderSettings cfg) =>

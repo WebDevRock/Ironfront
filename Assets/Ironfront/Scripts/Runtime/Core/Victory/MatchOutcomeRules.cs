@@ -18,6 +18,10 @@ namespace Ironfront.Core.Victory
         SimultaneousHeadquarters,
         /// <summary>No faction can affect the game any more (no army, no money, no ore to earn more).</summary>
         Exhaustion,
+        /// <summary>Annihilation mode: the loser has no production structure and no armed unit left.</summary>
+        Annihilated,
+        /// <summary>Annihilation mode: the last factions were eliminated in the same evaluation.</summary>
+        SimultaneousAnnihilation,
     }
 
     public readonly struct MatchOutcome
@@ -58,6 +62,34 @@ namespace Ironfront.Core.Victory
             if (alive == 0) return new MatchOutcome(MatchResult.Draw, 0, EndReason.SimultaneousHeadquarters);
             return new MatchOutcome(MatchResult.Ongoing, 0);
         }
+
+        /// <summary>
+        /// Annihilation victory (Milestone 008). A faction is eliminated when it has no living production-capable
+        /// structure (headquarters or vehicle factory) and no living armed mobile unit. The last faction standing
+        /// wins; if the last ones are eliminated in the same evaluation the match is a draw.
+        /// </summary>
+        public static MatchOutcome EvaluateAnnihilation(IReadOnlyList<(int factionId, int productionStructures, int armedUnits)> forces)
+        {
+            if (forces.Count < 2) return new MatchOutcome(MatchResult.Ongoing, 0);
+            int alive = 0, lastAlive = 0;
+            foreach (var (factionId, production, armed) in forces)
+            {
+                if (IsEliminated(production, armed)) continue;
+                alive++;
+                lastAlive = factionId;
+            }
+            if (alive == 1) return new MatchOutcome(MatchResult.Victory, lastAlive, EndReason.Annihilated);
+            if (alive == 0) return new MatchOutcome(MatchResult.Draw, 0, EndReason.SimultaneousAnnihilation);
+            return new MatchOutcome(MatchResult.Ongoing, 0);
+        }
+
+        public static bool IsEliminated(int productionStructures, int armedUnits) => productionStructures <= 0 && armedUnits <= 0;
+
+        /// <summary>
+        /// Annihilation "last stand": a faction that can no longer produce has its remaining forces revealed to every
+        /// faction, so the match cannot stall on a hidden unit (applies to the player and the computer alike).
+        /// </summary>
+        public static bool IsLastStand(int productionStructures) => productionStructures <= 0;
 
         /// <summary>Stalemate rule: if no competing faction can still affect the game, the match is a draw.</summary>
         /// <param name="canStillAct">For each competing faction, whether it can still fight or rebuild.</param>

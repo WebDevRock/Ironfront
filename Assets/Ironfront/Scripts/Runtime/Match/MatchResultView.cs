@@ -41,7 +41,11 @@ namespace Ironfront.Match
             title.color = draw ? new Color(1f, 0.78f, 0.3f) : won ? new Color(0.52f, 0.92f, 0.45f) : new Color(1f, 0.38f, 0.3f);
             string reason = outcome.Reason == EndReason.Exhaustion
                 ? "Stalemate: no ore, credits or forces remain for either side to continue."
+                : outcome.Reason == EndReason.SimultaneousAnnihilation ? "Both forces were eliminated at the same moment."
                 : draw ? "Both headquarters were destroyed at the same moment."
+                : outcome.Reason == EndReason.Annihilated
+                    ? (won ? "The enemy has been annihilated: no production and no armed units remain."
+                           : "Your forces have been annihilated: no production and no armed units remain.")
                 : won ? "The enemy headquarters has been destroyed." : "Your headquarters has been destroyed.";
             detail.text = $"{reason}\nMatch time {(int)(duration / 60)}:{(int)(duration % 60):00}";
             ShowStatistics(playerFaction);

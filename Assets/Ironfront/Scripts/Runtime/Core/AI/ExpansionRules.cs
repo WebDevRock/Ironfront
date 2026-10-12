@@ -17,13 +17,14 @@ namespace Ironfront.Core.AI
             if (!s.OreAvailable) return new AiAction(AiActionType.None, "no ore left");
             bool roomInQueue = EconomyPlanner.QueueHasRoom(s, cfg);
 
-            // Scout: one cheap recon once the first tanks exist (and replace it when lost).
-            if (cost.Recon > 0 && !defending && s.Recon + s.QueuedRecon < cfg.ReconCount && s.ArmyCount >= 2 && roomInQueue
+            // Scout: a cheap recon once the first tanks exist (and replace it when lost). Milestone 008: while the enemy
+            // has not been found, the first scout comes before any tank.
+            if (cost.Recon > 0 && !defending && !s.ReconOnCooldown && s.Recon + s.QueuedRecon < cfg.ReconCount && s.ArmyCount >= (s.EnemyBaseKnown ? 2 : 0) && roomInQueue
                 && EconomyPlanner.Affordable(s.Credits, cost.Recon))
                 return new AiAction(AiActionType.ProduceRecon, "scouting");
 
             // Anti-armour turret when heavy armour has been seen (counter), up to the cap.
-            if (cost.AtTurret > 0 && s.KnownEnemyHeavy >= 2 && s.AtTurrets < cfg.MaxAtTurrets)
+            if (cost.AtTurret > 0 && s.KnownEnemyHeavy >= (cfg.AdvancedCounters ? 1 : 2) && s.AtTurrets < cfg.MaxAtTurrets)
                 return EconomyPlanner.BuyOrSave(s.Credits, cost.AtTurret, AiActionType.BuildAtTurret, $"enemy heavies seen ({s.KnownEnemyHeavy})");
 
             // Guard tower after the base has been attacked, or one as early insurance once an army exists.

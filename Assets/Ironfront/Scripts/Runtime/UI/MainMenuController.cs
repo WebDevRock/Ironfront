@@ -5,8 +5,9 @@ using UnityEngine.UI;
 namespace Ironfront.UI
 {
     /// <summary>
-    /// Title screen: Start Match, Options (volume) and Quit, over a slowly drifting view of an Ironfront
-    /// diorama. Loads <see cref="matchScene"/> to start.
+    /// Title screen: Skirmish, Options (volume) and Quit, over a slowly drifting view of an Ironfront diorama.
+    /// Milestone 008: Skirmish opens the <see cref="SkirmishSetupPanel"/>; without one, Start loads
+    /// <see cref="matchScene"/> directly (the Milestone 006 behaviour).
     /// </summary>
     public class MainMenuController : MonoBehaviour
     {
@@ -19,6 +20,7 @@ namespace Ironfront.UI
         [SerializeField] private GameObject optionsPanel;
         [SerializeField] private Transform cameraPivot;
         [SerializeField] private float driftDegreesPerSecond = 2.5f;
+        [SerializeField] private SkirmishSetupPanel skirmish;
 
         private void Awake()
         {
@@ -27,6 +29,7 @@ namespace Ironfront.UI
             if (optionsButton != null) optionsButton.onClick.AddListener(() => ShowOptions(true));
             if (optionsBackButton != null) optionsBackButton.onClick.AddListener(() => ShowOptions(false));
             if (quitButton != null) quitButton.onClick.AddListener(Quit);
+            if (skirmish != null) skirmish.Closed += () => { if (mainPanel != null) mainPanel.SetActive(true); };
             ShowOptions(false);
         }
 
@@ -35,8 +38,17 @@ namespace Ironfront.UI
             if (cameraPivot != null) cameraPivot.Rotate(0f, driftDegreesPerSecond * Time.unscaledDeltaTime, 0f, Space.World);
         }
 
+        public SkirmishSetupPanel Skirmish => skirmish;
+
         public void StartMatch()
         {
+            if (skirmish != null)
+            {
+                if (mainPanel != null) mainPanel.SetActive(false);
+                if (optionsPanel != null) optionsPanel.SetActive(false);
+                skirmish.Open();
+                return;
+            }
             Ironfront.InputBindings.RtsInputMode.ResetAll();
             SceneManager.LoadScene(matchScene);
         }

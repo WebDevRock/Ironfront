@@ -30,22 +30,18 @@ namespace Ironfront.EditorTools.Art
             public readonly List<Vector3[]> Roads = new List<Vector3[]>();  // polylines
             public (string name, Vector3 center, Vector3 size)[] Obstacles = new (string, Vector3, Vector3)[0];
             public int Seed = 7;
+            /// <summary>Milestone 008: the battlefield's look (default: the Milestone 006 steppe).</summary>
+            public MapPalette Palette = MapPalette.Steppe;
         }
 
-        // Steppe palette.
-        private static readonly Color Grass = new Color(0.50f, 0.50f, 0.34f);
-        private static readonly Color Dirt = new Color(0.58f, 0.50f, 0.37f);
-        private static readonly Color Road = new Color(0.68f, 0.60f, 0.46f);
-        private static readonly Color Pad = new Color(0.60f, 0.58f, 0.52f);
-        private static readonly Color OreStain = new Color(0.38f, 0.29f, 0.22f);
-        private static readonly Color Edge = new Color(0.36f, 0.34f, 0.27f);
+        // Palettes: see MapPalette (Milestone 008; MapPalette.Steppe is the Milestone 006 look).
 
         // ---------- Ground ----------
 
         /// <summary>Paints the ground texture for a layout and returns a material using it (plus tiled detail).</summary>
         public static Material GroundMaterial(Layout layout, ArtLibrary a)
         {
-            const int res = 1024;
+            int res = layout.MapSize > 200f ? 2048 : 1024; // Milestone 008: large maps get a finer ground texture
             float half = layout.MapSize * 0.5f;
             var tex = new Texture2D(res, res, TextureFormat.RGBA32, true);
             var px = new Color[res * res];
@@ -73,10 +69,19 @@ namespace Ironfront.EditorTools.Art
 
         private static Color GroundColor(Layout l, Vector3 p, float u, float v)
         {
+            var P = l.Palette ?? MapPalette.Steppe;
+            Color Grass = P.Grass, Dirt = P.Dirt, Road = P.Road, Pad = P.Pad, OreStain = P.OreStain, Edge = P.Edge;
             float macro = ProceduralNoise.Fbm(u, v, 5, 5, l.Seed, tileable: false);
             float patches = ProceduralNoise.Fbm(u + 3.1f, v + 1.7f, 12, 3, l.Seed + 3, tileable: false);
             var c = Color.Lerp(Grass, Dirt, ProceduralNoise.Step(0.35f, 0.7f, macro));
             c = Color.Lerp(c, c * 0.94f, ProceduralNoise.Step(0.55f, 0.8f, patches));
+            if (P.Patch.a > 0f)
+            {
+                // Milestone 008 biome patches: sand drifts, moss, oil-blackened ground.
+                float drift = ProceduralNoise.Fbm(u + 7.3f, v + 2.9f, 7, 4, l.Seed + 17, tileable: false);
+                var patch = new Color(P.Patch.r, P.Patch.g, P.Patch.b, 1f);
+                c = Color.Lerp(c, patch, ProceduralNoise.Step(0.52f, 0.72f, drift) * P.Patch.a);
+            }
 
             // Base pads (gravel around each headquarters: the natural building area).
             foreach (var b in l.Bases)
@@ -116,6 +121,9 @@ namespace Ironfront.EditorTools.Art
             return c;
         }
 
+        /// <summary>Scatter density scale for larger maps (area-based, capped so merged prop meshes stay reasonable).</summary>
+        private static float AreaScale(Layout l) => Mathf.Clamp(l.MapSize * l.MapSize / 10000f, 1f, 2.5f);
+
         private static float Flat(Vector3 d) => Mathf.Sqrt(d.x * d.x + d.z * d.z);
 
         private static float SegmentDistance(Vector3 p, Vector3 a, Vector3 b)
@@ -152,6 +160,9 @@ namespace Ironfront.EditorTools.Art
             var root = new GameObject("Backdrop").transform;
             root.SetParent(parent, false);
             float half = l.MapSize * 0.5f;
+            var pal = l.Palette ?? MapPalette.Steppe;
+            var tm = TerrainStyles.For(pal, a);
+            Color Edge = pal.Edge;
 
             var skirtTex = ArtLibrary.Texture("Skirt_" + l.Name, 256, (u, v) =>
             {
@@ -165,7 +176,7 @@ namespace Ironfront.EditorTools.Art
             EditorUtility.SetDirty(skirtMat);
 
             var skirt = new MeshKit { UvScale = 1f / 120f };
-            const float s = 190f;
+            float s = Mathf.Max(190f, half + 150f); // the skirt reaches well past the far clip on large maps
             // A frame around the playable square (no overlap with the ground, so no z-fighting).
             skirt.Polygon(skirtMat, new Vector3(-s, -0.02f, -s), new Vector3(-s, -0.02f, s), new Vector3(-half, -0.02f, s), new Vector3(-half, -0.02f, -s));
             skirt.Polygon(skirtMat, new Vector3(half, -0.02f, -s), new Vector3(half, -0.02f, s), new Vector3(s, -0.02f, s), new Vector3(s, -0.02f, -s));
@@ -179,11 +190,13 @@ namespace Ironfront.EditorTools.Art
             var rng = new System.Random(l.Seed * 31 + 5);
             for (int side = 0; side < 4; side++)
             {
-                for (float t = -half - 8f; t <= half + 8f; t += 4.5f)
+                // Large maps: wider spacing and bigger rocks keep the ring's vertex count bounded (asset size).
+                float ring = Mathf.Max(1f, l.MapSize / 150f);
+                for (float t = -half - 8f; t <= half + 8f; t += 4.5f * ring)
                 {
                     for (int row = 0; row < 3; row++)
                     {
-                        float off = half + 5f + row * 4.5f + (float)rng.NextDouble() * 3f;
+                        float off = half + 5f + row * 4.5f * ring + (float)rng.NextDouble() * 3f;
                         float along = t + (float)rng.NextDouble() * 3f;
                         Vector3 pos = side switch
                         {
@@ -192,13 +205,54 @@ namespace Ironfront.EditorTools.Art
                             2 => new Vector3(-off, 0f, along),
                             _ => new Vector3(off, 0f, along),
                         };
-                        float size = 1.6f + row * 1.3f + (float)rng.NextDouble() * 1.6f;
-                        Boulder(rocks, row == 0 ? a.Rock : a.RockDark, pos, size, size * (0.32f + (float)rng.NextDouble() * 0.4f), rng);
+                        float size = (1.6f + row * 1.3f + (float)rng.NextDouble() * 1.6f) * Mathf.Sqrt(ring);
+                        float tall = pal.Style == MapPalette.Biome.Mountain ? 2.2f : 1f; // Iron Pass: peaks around the valley
+                        Boulder(rocks, row == 0 ? tm.Rock : tm.RockDark, pos, size, size * (0.32f + (float)rng.NextDouble() * 0.4f) * tall, rng);
                     }
                 }
             }
             ArtLibrary.Attach(root, "Ridges", "Ridges_" + l.Name, rocks);
+            if (!pal.IsDefault) BackdropExtras(root, l, pal, a, tm);
             GameObjectUtility.SetStaticEditorFlags(root.gameObject, StaticEditorFlags.BatchingStatic);
+        }
+
+        /// <summary>Milestone 008: biome silhouettes beyond the playable square (treelines, mesas, chimneys).</summary>
+        private static void BackdropExtras(Transform root, Layout l, MapPalette pal, ArtLibrary a, TerrainStyles.Mats tm)
+        {
+            var k = new MeshKit();
+            var rng = new System.Random(l.Seed * 13 + 1);
+            float half = l.MapSize * 0.5f;
+            for (int i = 0; i < 64; i++)
+            {
+                int side = i % 4;
+                float along = ((float)rng.NextDouble() - 0.5f) * (l.MapSize + 30f);
+                float off = half + 14f + (float)rng.NextDouble() * 14f;
+                Vector3 pos = side switch
+                {
+                    0 => new Vector3(along, 0f, -off),
+                    1 => new Vector3(along, 0f, off),
+                    2 => new Vector3(-off, 0f, along),
+                    _ => new Vector3(off, 0f, along),
+                };
+                var floor = pos;
+                switch (pal.Style)
+                {
+                    case MapPalette.Biome.Forest:
+                        TerrainStyles.Build(k, "Forest", new Vector3(6f, 7f + (float)rng.NextDouble() * 3f, 6f), floor, a, tm, rng);
+                        break;
+                    case MapPalette.Biome.Desert:
+                        if (i % 3 == 0) TerrainStyles.Build(k, "Mesa", new Vector3(9f, 6f + (float)rng.NextDouble() * 6f, 8f), floor, a, tm, rng);
+                        break;
+                    case MapPalette.Biome.Industrial:
+                        if (i % 4 == 0) TerrainStyles.Build(k, "Stack", new Vector3(3f, 14f + (float)rng.NextDouble() * 8f, 3f), floor, a, tm, rng);
+                        else if (i % 4 == 2) TerrainStyles.Build(k, "Tanks", new Vector3(10f, 5f, 4.5f), floor, a, tm, rng);
+                        break;
+                    case MapPalette.Biome.Mountain:
+                        if (i % 2 == 0) TerrainStyles.Build(k, "Ridge", new Vector3(12f, 10f + (float)rng.NextDouble() * 8f, 7f), floor, a, tm, rng);
+                        break;
+                }
+            }
+            ArtLibrary.Attach(root, "BiomeBackdrop", "Backdrop_" + l.Name, k);
         }
 
         /// <summary>Irregular faceted rock: a jittered lathe, squashed and rotated.</summary>
@@ -224,8 +278,9 @@ namespace Ironfront.EditorTools.Art
         /// styled mesh chosen by name: walls become concrete barriers, blocks bunker ruins, towers industrial silo
         /// towers and rocks rock outcrops.
         /// </summary>
-        public static void Obstacles(Transform parent, (string name, Vector3 center, Vector3 size)[] set, ArtLibrary a)
+        public static void Obstacles(Transform parent, (string name, Vector3 center, Vector3 size)[] set, ArtLibrary a, Layout layout = null)
         {
+            var tm = TerrainStyles.For(layout?.Palette, a);
             var root = new GameObject("Obstacles").transform;
             root.SetParent(parent, false);
             int seed = 0;
@@ -239,9 +294,10 @@ namespace Ironfront.EditorTools.Art
                 var k = new MeshKit();
                 var rng = new System.Random(1000 + seed++);
                 var floor = new Vector3(0f, -size.y * 0.5f, 0f);
-                if (name.Contains("Wall")) BarrierWall(k, a, size, floor);
+                if (TerrainStyles.Build(k, name, size, floor, a, tm, rng)) { } // Milestone 008 terrain families
+                else if (name.Contains("Wall")) BarrierWall(k, a, size, floor);
                 else if (name.Contains("Tower")) Tower(k, a, size, floor);
-                else if (name.Contains("Rock")) RockOutcrop(k, a, size, floor, rng);
+                else if (name.Contains("Rock")) RockOutcrop(k, tm, size, floor, rng);
                 else Bunker(k, a, size, floor, rng);
                 var mesh = ArtLibrary.SaveMesh(k.Build("Obstacle_" + name + "_" + Mathf.RoundToInt(size.x) + "x" + Mathf.RoundToInt(size.z)));
                 go.AddComponent<MeshFilter>().sharedMesh = mesh;
@@ -302,7 +358,7 @@ namespace Ironfront.EditorTools.Art
             }
         }
 
-        private static void RockOutcrop(MeshKit k, ArtLibrary a, Vector3 size, Vector3 floor, System.Random rng)
+        private static void RockOutcrop(MeshKit k, TerrainStyles.Mats a, Vector3 size, Vector3 floor, System.Random rng)
         {
             float w = Mathf.Min(size.x, size.z);
             Boulder(k, a.Rock, floor, w * 0.95f, size.y, rng);
@@ -322,6 +378,8 @@ namespace Ironfront.EditorTools.Art
             var root = new GameObject("Props").transform;
             root.SetParent(parent, false);
             var rng = new System.Random(l.Seed * 7 + 3);
+            var pal = l.Palette ?? MapPalette.Steppe;
+            var tm = TerrainStyles.For(pal, a);
             float half = l.MapSize * 0.5f;
             var nature = new MeshKit();
             var industry = new MeshKit();
@@ -340,9 +398,13 @@ namespace Ironfront.EditorTools.Art
             }
 
             // Rubble skirting each obstacle (just outside the collider, at most 0.35 m tall).
-            foreach (var (_, c, s) in l.Obstacles)
+            foreach (var (obstacleName, c, s) in l.Obstacles)
             {
+                // Milestone 008: forests and ridges bring their own undergrowth and scree; elsewhere the skirt is capped
+                // so maps with hundreds of obstacles keep a reasonable prop mesh (Milestone 006 scenes are unaffected).
+                if (!pal.IsDefault && (obstacleName.Contains("Forest") || obstacleName.Contains("Ridge"))) continue;
                 int n = Mathf.RoundToInt((s.x + s.z) * 0.8f);
+                if (!pal.IsDefault) n = Mathf.Min(n, 10);
                 for (int i = 0; i < n; i++)
                 {
                     float t = (float)rng.NextDouble();
@@ -356,34 +418,34 @@ namespace Ironfront.EditorTools.Art
                         _ => new Vector3(c.x + ex, 0f, c.z - ez + 2 * ez * t),
                     };
                     float w = 0.35f + (float)rng.NextDouble() * 0.45f;
-                    Boulder(nature, (i & 1) == 0 ? a.Rock : a.RockDark, p, w, Mathf.Min(0.35f, w * 0.6f), rng);
+                    Boulder(nature, (i & 1) == 0 ? tm.Rock : tm.RockDark, p, w, Mathf.Min(0.35f, w * 0.6f), rng);
                     count++;
                 }
             }
 
             // Shrubs and pebbles in open ground (at most ~0.4 m: tanks drive over them).
-            for (int i = 0; i < 260; i++)
+            for (int i = 0, n = Mathf.RoundToInt(pal.OpenProps * AreaScale(l)); i < n; i++)
             {
                 var p = new Vector3(((float)rng.NextDouble() - 0.5f) * (l.MapSize - 4f), 0f, ((float)rng.NextDouble() - 0.5f) * (l.MapSize - 4f));
                 if (!Clear(p, 17f, 6f, 3f)) continue;
-                if (rng.NextDouble() < 0.6)
+                if (rng.NextDouble() < pal.ShrubChance)
                 {
                     float r = 0.2f + (float)rng.NextDouble() * 0.22f;
                     nature.Push(p, Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f));
-                    nature.Lathe(a.Shrub, new[] { new Vector2(r, 0f), new Vector2(r * 1.2f, r * 0.5f), new Vector2(r * 0.5f, r * 0.9f), new Vector2(0f, r) },
+                    nature.Lathe(tm.Shrub, new[] { new Vector2(r, 0f), new Vector2(r * 1.2f, r * 0.5f), new Vector2(r * 0.5f, r * 0.9f), new Vector2(0f, r) },
                         5, Vector3.zero, capTop: false);
                     nature.Pop();
                 }
                 else
                 {
                     float w = 0.2f + (float)rng.NextDouble() * 0.35f;
-                    Boulder(nature, a.Rock, p, w, w * 0.5f, rng);
+                    Boulder(nature, tm.Rock, p, w, w * 0.5f, rng);
                 }
                 count++;
             }
 
             // Industrial debris lining the outside of the map edge (never inside the playable square).
-            for (int i = 0; i < 70; i++)
+            for (int i = 0, n = Mathf.RoundToInt(70 * Mathf.Max(1f, l.MapSize / 200f)); i < n; i++)
             {
                 float along = ((float)rng.NextDouble() - 0.5f) * (l.MapSize - 6f);
                 float outside = 0.9f + (float)rng.NextDouble() * 2.2f;
@@ -427,9 +489,62 @@ namespace Ironfront.EditorTools.Art
                 count++;
             }
 
+            if (!pal.IsDefault) count += BiomeProps(nature, industry, l, pal, a, tm, Clear);
             ArtLibrary.Attach(root, "Nature", "Props_Nature_" + l.Name, nature);
             ArtLibrary.Attach(root, "Industry", "Props_Industry_" + l.Name, industry);
             GameObjectUtility.SetStaticEditorFlags(root.gameObject, StaticEditorFlags.BatchingStatic);
+            return count;
+        }
+
+        /// <summary>
+        /// Milestone 008 biome clutter inside the map (collider-free, at most ~0.4 m tall so vehicles drive over it):
+        /// grass tufts in the forest, wind-cut stones in the desert, scree in the mountains, slabs, plates and oil
+        /// puddles in the industrial basin.
+        /// </summary>
+        private static int BiomeProps(MeshKit nature, MeshKit industry, Layout l, MapPalette pal, ArtLibrary a, TerrainStyles.Mats tm,
+            System.Func<Vector3, float, float, float, bool> clear)
+        {
+            var rng = new System.Random(l.Seed * 29 + 11);
+            int count = 0;
+            for (int i = 0, n = Mathf.RoundToInt(140 * AreaScale(l)); i < n; i++)
+            {
+                var p = new Vector3(((float)rng.NextDouble() - 0.5f) * (l.MapSize - 4f), 0f, ((float)rng.NextDouble() - 0.5f) * (l.MapSize - 4f));
+                if (!clear(p, 16f, 6f, 2.5f)) continue;
+                float yaw = (float)rng.NextDouble() * 360f;
+                switch (pal.Style)
+                {
+                    case MapPalette.Biome.Forest:
+                        for (int b = 0; b < 4; b++)
+                        {
+                            var q = p + new Vector3(((float)rng.NextDouble() - 0.5f) * 0.8f, 0f, ((float)rng.NextDouble() - 0.5f) * 0.8f);
+                            nature.Lathe((b & 1) == 0 ? tm.Shrub : tm.Foliage, new[] { new Vector2(0.06f, 0f), new Vector2(0f, 0.25f + (float)rng.NextDouble() * 0.15f) },
+                                4, q, capTop: false);
+                        }
+                        break;
+                    case MapPalette.Biome.Desert:
+                        Boulder(nature, (i & 1) == 0 ? tm.Rock : tm.Sand, p, 0.3f + (float)rng.NextDouble() * 0.4f, 0.18f, rng);
+                        break;
+                    case MapPalette.Biome.Mountain:
+                        for (int b = 0; b < 3; b++)
+                            Boulder(nature, (b & 1) == 0 ? tm.Rock : tm.RockDark, p + new Vector3(b * 0.4f - 0.4f, 0f, (b % 2) * 0.35f),
+                                0.25f + (float)rng.NextDouble() * 0.35f, 0.2f, rng);
+                        break;
+                    case MapPalette.Biome.Industrial:
+                        industry.Push(p, Quaternion.Euler(0f, yaw, 0f));
+                        switch (rng.Next(3))
+                        {
+                            case 0: industry.Box(a.ConcreteDark_, new Vector3(0f, 0.1f, 0f), new Vector3(1.1f, 0.2f, 0.7f), 0.04f); break;
+                            case 1: industry.Box(tm.Rust, new Vector3(0f, 0.03f, 0f), new Vector3(1.2f, 0.06f, 0.9f)); break;
+                            default:
+                                industry.Polygon(a.Wreck, new Vector3(-0.8f, 0.012f, 0f), new Vector3(-0.4f, 0.012f, 0.7f), new Vector3(0.5f, 0.012f, 0.6f),
+                                    new Vector3(0.9f, 0.012f, -0.1f), new Vector3(0.3f, 0.012f, -0.7f), new Vector3(-0.5f, 0.012f, -0.6f));
+                                break;
+                        }
+                        industry.Pop();
+                        break;
+                }
+                count++;
+            }
             return count;
         }
 
@@ -438,29 +553,30 @@ namespace Ironfront.EditorTools.Art
         public const string VolumeProfilePath = ArtLibrary.Root + "/Ironfront_PostFX.asset";
 
         /// <summary>Late-afternoon sun, cool sky ambient, light haze and the shared post-processing volume.</summary>
-        public static void Lighting(Camera cam)
+        public static void Lighting(Camera cam, MapPalette palette = null)
         {
+            var p = palette ?? MapPalette.Steppe;
             var sun = Object.FindAnyObjectByType<Light>();
             if (sun != null)
             {
-                sun.color = new Color(1f, 0.9f, 0.76f);
-                sun.intensity = 1.5f;
+                sun.color = p.Sun;
+                sun.intensity = p.SunIntensity;
                 sun.shadowStrength = 0.82f;
-                sun.transform.rotation = Quaternion.Euler(47f, -38f, 0f);
+                sun.transform.rotation = Quaternion.Euler(p.SunAngles.x, p.SunAngles.y, 0f);
             }
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.50f, 0.56f, 0.66f);
-            RenderSettings.ambientEquatorColor = new Color(0.44f, 0.42f, 0.38f);
-            RenderSettings.ambientGroundColor = new Color(0.24f, 0.21f, 0.18f);
+            RenderSettings.ambientSkyColor = p.AmbientSky;
+            RenderSettings.ambientEquatorColor = p.AmbientEquator;
+            RenderSettings.ambientGroundColor = p.AmbientGround;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Exponential;
-            RenderSettings.fogDensity = 0.0032f;
-            RenderSettings.fogColor = new Color(0.66f, 0.64f, 0.6f);
+            RenderSettings.fogDensity = p.FogDensity;
+            RenderSettings.fogColor = p.FogColor;
 
             var volumeGo = new GameObject("PostProcessing");
             var volume = volumeGo.AddComponent<Volume>();
             volume.isGlobal = true;
-            volume.sharedProfile = PostProfile();
+            volume.sharedProfile = PostProfile(p);
 
             if (cam != null)
             {
@@ -474,13 +590,16 @@ namespace Ironfront.EditorTools.Art
             }
         }
 
-        public static VolumeProfile PostProfile()
+        public static VolumeProfile PostProfile(MapPalette palette = null)
         {
-            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumeProfilePath);
+            var p = palette ?? MapPalette.Steppe;
+            // Milestone 008: each biome has its own grading profile; the steppe keeps the shared Milestone 006 one.
+            string path = p.IsDefault ? VolumeProfilePath : VolumeProfilePath.Replace(".asset", "_" + p.Name + ".asset");
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
             if (profile == null)
             {
                 profile = ScriptableObject.CreateInstance<VolumeProfile>();
-                AssetDatabase.CreateAsset(profile, VolumeProfilePath);
+                AssetDatabase.CreateAsset(profile, path);
             }
             T Get<T>() where T : VolumeComponent
             {
@@ -494,9 +613,9 @@ namespace Ironfront.EditorTools.Art
             }
             Get<Tonemapping>().mode.Override(TonemappingMode.ACES);
             var color = Get<ColorAdjustments>();
-            color.postExposure.Override(0.35f);
+            color.postExposure.Override(p.Exposure);
             color.contrast.Override(10f);
-            color.saturation.Override(4f);
+            color.saturation.Override(p.Saturation);
             var bloom = Get<Bloom>();
             bloom.threshold.Override(1.05f);
             bloom.intensity.Override(0.65f);
@@ -504,7 +623,7 @@ namespace Ironfront.EditorTools.Art
             var vignette = Get<Vignette>();
             vignette.intensity.Override(0.16f);
             vignette.smoothness.Override(0.45f);
-            Get<WhiteBalance>().temperature.Override(6f);
+            Get<WhiteBalance>().temperature.Override(p.Temperature);
             EditorUtility.SetDirty(profile);
             AssetDatabase.SaveAssets();
             return profile;

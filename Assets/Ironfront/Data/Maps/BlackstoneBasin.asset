@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8b98aaaddef55648a3db83d57712809, type: 3}
+  m_Name: BlackstoneBasin
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.MapDefinition
+  id: blackstone_basin
+  displayName: Blackstone Basin
+  sceneName: Skirmish_BlackstoneBasin
+  description: 'Ruined works, pipelines and slag heaps around a rich central basin. Every start has an equal yard field, but the rest of the ore is uneven: deep seams on the flanks, scattered small fields, and the richest deposits in the open basin. Control the map to control the economy.'
+  tagline: "Industrial wasteland \xB7 400 m \xB7 6 starts \xB7 map control"
+  preview: {fileID: 2800000, guid: 305bc96b9c632f84b8151e6c144f9f53, type: 3}
+  size: 400
+  startNames:
+  - North-east works
+  - North works
+  - North-west works
+  - South-west works
+  - South works
+  - South-east works
+  minSpawnSeparation: 200
+  maxSpawnImbalance: 0.15

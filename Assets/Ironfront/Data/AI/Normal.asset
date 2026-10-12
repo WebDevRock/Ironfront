@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Normal
   m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.AiDifficulty
   displayName: Normal
+  level: 1
+  summary: Balanced economy, sensible attacks and defences, counters what it sees. The standard opponent.
   decisionInterval: 1.5
   strategy:
     MinStateDuration: 8
@@ -35,9 +37,16 @@ MonoBehaviour:
     MaxAtTurrets: 2
     ResearchArmyThreshold: 5
     ArtilleryShare: 0.25
+    NoCounterBuilding: 0
+    AdvancedCounters: 0
+    AttackStrengthEdge: 0
+    EarliestAttack: 0
+    EscalationStep: 1
+    MaxEscalation: 4
+    SecondFactoryHarvesters: 0
+    ReconReplaceSeconds: 150
   visionRange: 22
   threatMemorySeconds: 20
-  knowsEnemyStartLocation: 1
   defendRadius: 24
   rallyDistance: 14
   stuckDecisions: 3

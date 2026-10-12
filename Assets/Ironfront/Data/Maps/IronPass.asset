@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8b98aaaddef55648a3db83d57712809, type: 3}
+  m_Name: IronPass
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.MapDefinition
+  id: iron_pass
+  displayName: Iron Pass
+  sceneName: Skirmish_IronPass
+  description: Ridges split the map into nine valleys joined by narrow passes. Eight valleys hold the starts; the central basin holds the richest ore. Hold the passes, shell over the ridges, and scout each valley to find the enemy.
+  tagline: "Mountain valleys \xB7 400 m \xB7 8 starts \xB7 chokepoints"
+  preview: {fileID: 2800000, guid: e7d7ccca4ca7a94499454eebd0bc866b, type: 3}
+  size: 400
+  startNames:
+  - East valley
+  - North-east valley
+  - North valley
+  - North-west valley
+  - West valley
+  - South-west valley
+  - South valley
+  - South-east valley
+  minSpawnSeparation: 200
+  maxSpawnImbalance: 0.12

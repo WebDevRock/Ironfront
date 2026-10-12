@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b30215f83f7d53747b394feec7a2d1b3, type: 3}
+  m_Name: MapCatalog
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.MapCatalog
+  maps:
+  - {fileID: 11400000, guid: a37cb070196bb7c4a83ca97720305775, type: 2}
+  - {fileID: 11400000, guid: e9fabaa7ca7ee244d82ae3f446eb16cb, type: 2}
+  - {fileID: 11400000, guid: 4ceab75af656d53409afc15e92e937e8, type: 2}
+  - {fileID: 11400000, guid: 94ac36f8ae75c0241be17635f407fbe8, type: 2}
+  difficulties:
+  - {fileID: 11400000, guid: f0f505368273a11409e5068c8377e30e, type: 2}
+  - {fileID: 11400000, guid: 480ce3c3310c08f4d8fc99f2d491981e, type: 2}
+  - {fileID: 11400000, guid: 9136534c0a071bd499525d7b08a0f4d3, type: 2}

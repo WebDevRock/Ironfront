@@ -13,10 +13,11 @@ namespace Ironfront.Core.AI
         /// <param name="spacing">Distance between candidate sample points (metres).</param>
         /// <param name="interestX">Point the commander most wants to learn about (enemy direction).</param>
         /// <param name="interestWeight">0 = pure nearest-first, 1 = strongly prefer points near the interest.</param>
+        /// <param name="skip">Optional: sample points to ignore (Milestone 008: unreachable destinations).</param>
         /// <returns>False when everything sampled is already explored.</returns>
         public static bool NextWaypoint(VisibilityGrid grid, int faction, float fromX, float fromZ, float interestX, float interestZ,
             float spacing, float interestWeight, out float x, out float z, float avoidX = float.NaN, float avoidZ = float.NaN,
-            float avoidRadius = 0f)
+            float avoidRadius = 0f, Func<float, float, bool> skip = null)
         {
             x = z = 0f;
             if (grid == null || spacing <= 0f) return false;
@@ -29,6 +30,7 @@ namespace Ironfront.Core.AI
                 {
                     if (grid.IsExplored(faction, px, pz)) continue;
                     if (!float.IsNaN(avoidX) && Sq(px - avoidX) + Sq(pz - avoidZ) < avoidRadius * avoidRadius) continue;
+                    if (skip != null && skip(px, pz)) continue; // e.g. points the caller found unreachable
                     float travel = (float)Math.Sqrt(Sq(px - fromX) + Sq(pz - fromZ));
                     float interest = (float)Math.Sqrt(Sq(px - interestX) + Sq(pz - interestZ));
                     float score = travel * (1f - interestWeight) + interest * interestWeight;

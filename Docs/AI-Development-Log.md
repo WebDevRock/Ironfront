@@ -500,3 +500,62 @@ Deliverables: playable game, tests, balance and performance analysis, report, lo
 
 ### Relevant commit hash
 Milestone commit: `267ecfa` (267ecfab7218ca9d3bc3d128d413394353a8b61b)
+
+## Milestone 008 — Multiple Maps, Skirmish Configuration and Difficulty (2026-10-11 to 2026-10-12)
+
+### Feature requested
+Turn the game into a configurable single-player skirmish: architecture review and design doc; four distinct maps
+(Dustfall Plains, Iron Pass, Green Divide, Blackstone Basin); an automated map validator; a skirmish setup menu
+(map, difficulty, starting resources, start location, victory condition); Easy/Normal/Hard that differ in behaviour
+only; robust match initialisation, restart and return to menu; an additional victory mode; AI adaptation to terrain;
+tests and multi-seed AI-vs-AI studies; performance and screenshots. **Addendum (mid-milestone):** much larger maps
+(600/400/600/400), six to eight validated spawn locations with rule-based, seeded pair selection, no automatic
+knowledge of enemy starts (both sides must scout), distributed resources, AI exploration behaviour, pacing review,
+and extended verification.
+
+### Changes implemented
+- **Pure core:** `Core/Skirmish` (`SkirmishSettings`, `SpawnTable`/`SpawnSelection`/`SpawnPairRules`), `Core/Maps/MapValidation`
+  (`IMapProbe`, `MapSpec`, `MapValidator`), `Core/AI/EnemyIntel`; `MatchOutcomeRules.EvaluateAnnihilation`/last stand;
+  `CommanderSettings` behaviour switches, Easy/Hard presets, failed-attack escalation, scout throttle, `ScaledForMap`;
+  composition/strategy/expansion rules use them; `ScoutPlanner` skip filter.
+- **Runtime:** `Skirmish/` (`SkirmishSession`, `SkirmishInitializer`, `StartSlot`, `NavMeshMapProbe`, `SceneMapValidation`);
+  `MapDefinition`, `MapCatalog`; `MatchController` starting-credit override; `MatchFlowController` victory modes;
+  `VisionSystem` last-stand reveal; `EnemyCommander` intelligence, route-aware rally/defence/attack, path-ranked and
+  explored-only expansion, ore-first scouting, unreachable-point memory, factory-based play after HQ loss in Annihilation;
+  `SkirmishSetupPanel` + `MainMenuController`; minimap colours; `BuildingPlacementController.ValidateTerrain`;
+  `MapBenchmarkRunner` (`-ironfrontMapBenchmark`, `-benchmarkShots`).
+- **Editor:** `SkirmishMapLayouts` (seeded symmetric generators), `SkirmishMapBuilder` (scenes, difficulties, catalog,
+  previews, two-pass validation storing the spawn table), `MapPalette` + `TerrainStyles` (ridges, mesas, dunes, forests,
+  stacks, pipelines, ruins, tank farms, slag), palette-aware `EnvironmentBuilder` (M006 look unchanged by default),
+  setup screen in `MainMenuBuilder`.
+- **Content:** 4 map scenes in `Assets/Scenes/Maps/`, Easy/Normal/Hard assets, 4 map definitions and previews, catalog.
+- **Docs:** `Docs/Milestone-008-Design.md`, `Docs/Milestone-008-Report.md`, `Docs/Balance/M008/`, `Docs/Performance/M008/`,
+  `Docs/Screenshots/M008/`.
+
+### Tests attempted and results
+- EditMode **242/242** (+32 in `Milestone008RulesTests`, incl. synthetic broken maps), PlayMode **64/64** (+7 in
+  `Milestone008PlayModeTests` in the real map scenes). Map validator: all four maps pass.
+- AI-vs-AI (explicit `SkirmishStudyPlayModeTests`), 28 matches, 4 maps, 27 distinct seeded start pairs: final
+  27 decisive / 1 timeout (Green Divide), Hard beat Normal 8/8, Normal beat Easy 3/4, all 56 commanders located the
+  enemy by scouting (median 118 s). The study's no-timeout assertion fails on that one match.
+- Release player map benchmark: 0.9–1.2 ms per frame idle/pan, 1.8–2.3 ms in a 100-tank battle on every map; fog
+  ~0.3 ms on 600 m maps.
+
+### Problems encountered
+- Addendum after the first maps were built: maps, spawn model and AI knowledge reworked.
+- Generated mesh assets reached 750 MB; reduced to ~132 MB (no tangents for environment meshes, capped scatter).
+- Validator flagged harmless NavMesh islands inside obstacles; changed to reachability.
+- Pacing on large maps: starved economies, attrition stalemates, scout churn, one-factory economies; fixed over three
+  study iterations without changing unit speeds or adding bonuses.
+- Tooling: stray character in `PC_Renderer.asset` again (restored); bridge timeouts on long `eval` calls.
+
+### Human interventions required
+- One mid-milestone requirement addendum from the director. No blockers.
+
+### Known limitations
+- Green Divide matches are long (AI-vs-AI median 34 min); ~132 MB of generated meshes in the repository; harvester
+  targeting and the end-game ore check use global deposit data; a 10/5 faction-1 lean in AI mirrors needs more seeds.
+- Acceptance playthrough on all four maps still to be done by a human.
+
+### Relevant commit hash
+(recorded after commit)

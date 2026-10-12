@@ -67,7 +67,7 @@ namespace Ironfront.Core.AI
                 return BuyOrSave(s.Credits, cost.PowerPlant, AiActionType.BuildPowerPlant, $"spare power {s.SparePower}");
 
             // While defending, a factory with no army gets units before more harvesters.
-            if (defending && s.Factories > 0 && s.ArmyIncludingQueued < cfg.MaxArmy && QueueHasRoom(s, cfg))
+            if (defending && s.Factories > 0 && s.ArmyIncludingQueued < s.ArmyCap(cfg) && QueueHasRoom(s, cfg))
             {
                 var unit = CompositionRules.Choose(s, cfg, cost, ignoreReserve: true);
                 if (unit != AiActionType.None) return new AiAction(unit, "base under attack");
@@ -98,9 +98,14 @@ namespace Ironfront.Core.AI
                 return new AiAction(AiActionType.BuildRefinery, "expand income");
             if (s.Factories < cfg.MaxFactories && s.Credits >= cost.Factory + cfg.ExpansionCredits)
                 return new AiAction(AiActionType.BuildFactory, "second factory");
+            // Milestone 008 (large maps): a strong economy saves for its second factory instead of waiting for a surplus
+            // that army spending never leaves.
+            if (cfg.SecondFactoryHarvesters > 0 && s.Factories < cfg.MaxFactories && s.Factories > 0 && s.Harvesters >= cfg.SecondFactoryHarvesters
+                && state != StrategicState.Defend)
+                return BuyOrSave(s.Credits, cost.Factory, AiActionType.BuildFactory, $"second factory ({s.Harvesters} harvesters)");
 
             // 6. Army, within the cap and keeping a reserve.
-            if (s.ArmyIncludingQueued < cfg.MaxArmy && QueueHasRoom(s, cfg))
+            if (s.ArmyIncludingQueued < s.ArmyCap(cfg) && QueueHasRoom(s, cfg))
             {
                 var unit = CompositionRules.Choose(s, cfg, cost, ignoreReserve: defending);
                 if (unit == AiActionType.SaveFor)
@@ -109,11 +114,11 @@ namespace Ironfront.Core.AI
                     return new AiAction(AiActionType.SaveFor, "army composition", goal);
                 }
                 if (unit != AiActionType.None)
-                    return new AiAction(unit, $"army {s.ArmyIncludingQueued + 1}/{cfg.MaxArmy}");
+                    return new AiAction(unit, $"army {s.ArmyIncludingQueued + 1}/{s.ArmyCap(cfg)}");
                 return new AiAction(AiActionType.SaveFor, "army unit", AiActionType.ProduceLightTank);
             }
 
-            return new AiAction(AiActionType.None, s.ArmyIncludingQueued >= cfg.MaxArmy ? "army at cap" : "factory queue full");
+            return new AiAction(AiActionType.None, s.ArmyIncludingQueued >= s.ArmyCap(cfg) ? "army at cap" : "factory queue full");
         }
 
         public static int DesiredHarvesters(in CommanderSnapshot s, in CommanderSettings cfg)
@@ -141,16 +146,32 @@ namespace Ironfront.Core.AI
         /// <summary>Fast light tanks are the answer to enemy artillery, so fewer heavies are wanted while it is around.</summary>
         public const float AntiArtilleryHeavyShare = 0.25f;
 
+        /// <summary>Easy (no counter-building): a fixed, light-heavy mix.</summary>
+        public const float FixedHeavyShare = 0.25f;
+        /// <summary>Hard (advanced counters): heavier answer to armour, lighter answer to artillery.</summary>
+        public const float AdvancedCounterHeavyShare = 0.75f;
+        public const float AdvancedAntiArtilleryHeavyShare = 0.15f;
+
         public static float DesiredHeavyShare(in CommanderSnapshot s) =>
             s.KnownEnemyHeavy > s.KnownEnemyLight ? CounterHeavyShare
             : s.KnownEnemyArtillery > 0 ? AntiArtilleryHeavyShare
             : BaseHeavyShare;
 
+        public static float DesiredHeavyShare(in CommanderSnapshot s, in CommanderSettings cfg)
+        {
+            if (cfg.NoCounterBuilding) return FixedHeavyShare;
+            if (!cfg.AdvancedCounters) return DesiredHeavyShare(s);
+            return s.KnownEnemyHeavy > s.KnownEnemyLight ? AdvancedCounterHeavyShare
+                : s.KnownEnemyArtillery > 0 ? AdvancedAntiArtilleryHeavyShare
+                : BaseHeavyShare;
+        }
+
         /// <summary>Artillery wanted: available (cost known, Research Centre built) and worth it (enemy defences known or a big army).</summary>
         public static bool WantArtillery(in CommanderSnapshot s, in CommanderSettings cfg, in CostTable cost)
         {
             if (cost.Artillery <= 0 || s.ResearchCentres == 0) return false;
-            if (s.KnownEnemyDefences == 0 && s.ArmyCount < 6) return false;
+            if (!cfg.NoCounterBuilding && s.KnownEnemyDefences == 0 && s.ArmyCount < 6) return false;
+            if (cfg.NoCounterBuilding && s.ArmyCount < 6) return false;
             int have = s.Artillery + s.QueuedArtillery;
             int want = System.Math.Max(1, (int)System.Math.Round(s.ArmyIncludingQueued * cfg.ArtilleryShare));
             return have < want;
@@ -167,15 +188,19 @@ namespace Ironfront.Core.AI
             if (!s.OreAvailable) ignoreReserve = true;
             int reserve = ignoreReserve ? 0 : cfg.CreditReserve;
             if (!ignoreReserve && WantArtillery(s, cfg, cost))
-                return EconomyPlanner.Affordable(s.Credits, cost.Artillery, reserve) ? AiActionType.ProduceArtillery : AiActionType.SaveFor;
+            {
+                if (EconomyPlanner.Affordable(s.Credits, cost.Artillery, reserve)) return AiActionType.ProduceArtillery;
+                if (!cfg.NoCounterBuilding) return AiActionType.SaveFor;
+            }
             int heavies = s.HeavyTanks + s.QueuedHeavy;
             int total = s.ArmyIncludingQueued;
             // Small tolerance: an exact match of the target share counts as met regardless of float rounding.
-            bool wantHeavy = total == 0 ? DesiredHeavyShare(s) >= 0.5f : (float)heavies / total < DesiredHeavyShare(s) - 1e-4f;
+            float share = DesiredHeavyShare(s, cfg);
+            bool wantHeavy = total == 0 ? share >= 0.5f : (float)heavies / total < share - 1e-4f;
 
             if (wantHeavy && EconomyPlanner.Affordable(s.Credits, cost.HeavyTank, reserve)) return AiActionType.ProduceHeavyTank;
             // Not an emergency: save for the heavy instead of always buying the cheaper tank (only with M007 content).
-            if (wantHeavy && !ignoreReserve && cost.Artillery > 0) return AiActionType.SaveFor;
+            if (wantHeavy && !ignoreReserve && cost.Artillery > 0 && !cfg.NoCounterBuilding) return AiActionType.SaveFor;
             if (EconomyPlanner.Affordable(s.Credits, cost.LightTank, reserve)) return AiActionType.ProduceLightTank;
             // End game: the last credits buy whatever armed unit they can (a recon), rather than sitting unspent.
             if (!s.OreAvailable && cost.Recon > 0 && EconomyPlanner.Affordable(s.Credits, cost.Recon)) return AiActionType.ProduceRecon;

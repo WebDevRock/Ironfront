@@ -17,12 +17,15 @@ namespace Ironfront.Core.Economy
         public StructureRoster Structures { get; } = new StructureRoster();
         /// <summary>Technology for this match only (Milestone 007).</summary>
         public ResearchState Research { get; } = new ResearchState();
+        /// <summary>Credits the faction started the match with (Milestone 008: set by the skirmish setup).</summary>
+        public int StartingCredits { get; }
 
         public FactionState(int id, string displayName, bool isHumanControlled, int startingCredits)
         {
             Id = id;
             DisplayName = displayName;
             IsHumanControlled = isHumanControlled;
+            StartingCredits = startingCredits;
             Wallet = new ResourceWallet(startingCredits);
         }
 

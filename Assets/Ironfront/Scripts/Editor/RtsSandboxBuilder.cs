@@ -321,12 +321,15 @@ namespace Ironfront.EditorTools
             EnvironmentBuilder.Props(env, layout, art);
         }
 
-        internal static GameObject CreateGround(Transform parent, Material material)
+        internal static GameObject CreateGround(Transform parent, Material material) => CreateGround(parent, material, MapSize);
+
+        /// <param name="size">Side of the square playable area (Milestone 008 maps differ in size).</param>
+        internal static GameObject CreateGround(Transform parent, Material material, float size)
         {
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane); // 10x10 units at scale 1
             ground.name = "Ground";
             ground.transform.SetParent(parent, false);
-            ground.transform.localScale = new Vector3(MapSize / 10f, 1f, MapSize / 10f);
+            ground.transform.localScale = new Vector3(size / 10f, 1f, size / 10f);
             ground.layer = GroundLayerIndex;
             ground.GetComponent<MeshRenderer>().sharedMaterial = material;
             GameObjectUtility.SetStaticEditorFlags(ground, StaticEditorFlags.BatchingStatic);
@@ -342,7 +345,9 @@ namespace Ironfront.EditorTools
         internal static void CreateObstacles(Transform parent, Material material, (string name, Vector3 center, Vector3 size)[] set) =>
             EnvironmentBuilder.Obstacles(parent, set, EconomyContentBuilder.Art);
 
-        internal static Camera CreateCameraRig()
+        internal static Camera CreateCameraRig() => CreateCameraRig(MapSize);
+
+        internal static Camera CreateCameraRig(float mapSize)
         {
             var rig = new GameObject("CameraRig");
             rig.transform.position = new Vector3(-28f, 0f, -33f);
@@ -360,8 +365,8 @@ namespace Ironfront.EditorTools
             var controller = rig.AddComponent<RtsCameraController>();
             var so = new SerializedObject(controller);
             so.FindProperty("controlledCamera").objectReferenceValue = cam;
-            so.FindProperty("boundsMin").vector2Value = new Vector2(-MapSize / 2f, -MapSize / 2f);
-            so.FindProperty("boundsMax").vector2Value = new Vector2(MapSize / 2f, MapSize / 2f);
+            so.FindProperty("boundsMin").vector2Value = new Vector2(-mapSize / 2f, -mapSize / 2f);
+            so.FindProperty("boundsMax").vector2Value = new Vector2(mapSize / 2f, mapSize / 2f);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             // Place the camera now so the saved scene already shows the RTS view.

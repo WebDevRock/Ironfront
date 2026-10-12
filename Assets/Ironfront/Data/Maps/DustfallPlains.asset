@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8b98aaaddef55648a3db83d57712809, type: 3}
+  m_Name: DustfallPlains
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.MapDefinition
+  id: dustfall_plains
+  displayName: Dustfall Plains
+  sceneName: Skirmish_DustfallPlains
+  description: Vast sand flats broken by mesas and dune ridges. Eight possible starts on a wide ring; the enemy could be anywhere, so scout early. Broad lanes and rich ore favour big armoured battles.
+  tagline: "Open desert \xB7 600 m \xB7 8 starts \xB7 generous ore"
+  preview: {fileID: 2800000, guid: a4570089ba2e91948962245722e2a3e6, type: 3}
+  size: 600
+  startNames:
+  - East-north-east
+  - North-north-east
+  - North-north-west
+  - West-north-west
+  - West-south-west
+  - South-south-west
+  - South-south-east
+  - East-south-east
+  minSpawnSeparation: 300
+  maxSpawnImbalance: 0.12

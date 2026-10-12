@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf9ff57e43df7694a947db99524734f9, type: 3}
+  m_Name: Easy
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.AiDifficulty
+  displayName: Easy
+  level: 0
+  summary: 'Slow, cautious and predictable: a small army, no scouting and no reaction to your unit mix. For learning the game.'
+  decisionInterval: 3
+  strategy:
+    MinStateDuration: 15
+    Aggressiveness: 0.2
+    DefenceAllocation: 0.35
+    AttackArmySize: 6
+    AttackStrengthThreshold: 7
+    RetreatFraction: 0.5
+    HarvestersPerRefinery: 2
+    MaxHarvesters: 3
+    MaxRefineries: 2
+    MaxFactories: 1
+    MaxArmy: 8
+    MaxQueuedUnits: 1
+    CreditReserve: 600
+    PowerMargin: 10
+    ExpansionCredits: 6000
+    ReconCount: 0
+    MaxGuardTowers: 1
+    MaxAtTurrets: 0
+    ResearchArmyThreshold: 8
+    ArtilleryShare: 0.1
+    NoCounterBuilding: 1
+    AdvancedCounters: 0
+    AttackStrengthEdge: 0
+    EarliestAttack: 300
+    EscalationStep: 1
+    MaxEscalation: 2
+    SecondFactoryHarvesters: 0
+    ReconReplaceSeconds: 150
+  visionRange: 22
+  threatMemorySeconds: 10
+  defendRadius: 18
+  rallyDistance: 14
+  stuckDecisions: 4
+  decisionLogCapacity: 20
