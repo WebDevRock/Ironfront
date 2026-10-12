@@ -618,3 +618,56 @@ beginning of the map and throughout."
 
 ### Known limitations
 - Enemy structures stay drawn once seen (remembered, by design); destroyed-while-unseen ones leave a "last known" ghost.
+
+## Milestone 009 — Building Repairs, Vehicle Repair Pads and Queuing (2026-10-12)
+
+### Feature requested
+In-place building repairs (toggle, gradual, cost proportional to health restored, pause without credits, AI parity);
+a Repair Pad structure (cost, construction time, power, one vehicle at a time, multiple pads, harvesters included);
+a FIFO repair queue with explicit states, safe waiting and exit positions and a hand-shake bay transfer; robust
+handling of destruction, power loss, cancellation, new orders, blocked routes, stuck vehicles, match end and restart
+without teleporting; UI (Repair button/hotkey, right-click a pad, cancel, status, no-pad message); AI pad building and
+repair decisions; visuals and audio separate from the logic; tests including 10+ vehicles at one pad and AI-vs-AI
+studies; design and report documents.
+
+### Changes implemented
+- **Pure core:** `HealthModel.Restore`; `Core/Repair` (`RepairMeter`, `RepairPadQueue`, `RepairOrderMachine` with
+  `IRepairVehicle`/`IRepairPadSite`, `RepairTimeouts`); `Core/AI/RepairPlanner`; repair fields in `CommanderSettings`,
+  `CostTable`, `CommanderSnapshot`; `AiActionType.BuildRepairPad` in `EconomyPlanner`/`ExpansionRules`.
+- **Runtime:** `BuildingRepair` (added by every `Building`), `RepairPad`, `RepairLedger`, `RepairClient` (drives
+  vehicles only through their normal orders); cancel hooks in `CombatUnit`/`Harvester`/`UnitCommandController`;
+  right-click pad, `IssueRepair`/`IssueCancelRepair`; `RepairHud` (Repair [R], Cancel, building toggle, status);
+  `SelectionHud` lines; `Repair` input action (R); `RepairPadFx`, `BuildingRepairFx`, `FxLibrary.RepairSparks`; repair
+  sounds; `EnemyCommander.ManageRepairs` and pad construction; `RepairSettings` data with `MatchSetup.Repair`;
+  `repairCostMultiplier` on building and unit definitions.
+- **Editor/content:** `RepairContentBuilder` (pad definition, settings, prefab, `RegenerateContent()`), `RepairModels`
+  (procedural pad), icon and audio generation; pad added to the construction options; difficulty assets regenerated.
+- **Docs:** `Docs/Milestone-009-Design.md`, `Docs/Milestone-009-Report.md`, `Docs/Balance/M009/`, `Docs/Screenshots/M009/`.
+
+### Tests attempted and results
+- EditMode **264/264** (+22 in `Milestone009RepairTests`), PlayMode **74/74** (+9 in `Milestone009RepairPlayModeTests`,
+  including 10 vehicles at one pad with never more than one in the bay). Console clean.
+- AI-vs-AI study, 12 matches on 4 maps (two iterations): final 11 decisive / 1 timeout (Dustfall 23), Hard beat
+  Normal 4/4, repairs 2–6 % of income. Median match length 1558 s against 927 s on the same seeds in M008. The study's
+  no-timeout assertion fails on that one match. Iteration 1 (building repair 2.5 %/s) had 2 timeouts; the rate was
+  lowered to 1 %/s.
+
+### Problems encountered
+- The recurring "Editor hang" turned out to be a hidden modal save dialog when tests start with a dirty scene; tests
+  now start from a clean scene.
+- Builder helpers are internal (unreachable from the CLI); added a public regeneration entry point.
+- Several test-setup issues (harvester income, prerequisite registration timing) and a double-counted completion, fixed.
+- Building repair at 2.5 %/s stalled sieges in the first study.
+- Memory pressure on the machine killed background watcher shells during the study (the study itself completed).
+
+### Human interventions required
+- The director chose to skip a control study (AI repairs off on the same seeds) and proceed to the commit.
+
+### Known limitations
+- Matches are about 1.5–1.7× longer with repairs, and one Normal mirror timed out. Without the control batch,
+  repair effects and run-to-run variance are not separated. Data-only tuning options are listed in the report.
+- The pad's construction time is an assembly phase after instant placement; structures have no build times.
+- Acceptance playtest by a human still needed.
+
+### Relevant commit hash
+Milestone commit: pending

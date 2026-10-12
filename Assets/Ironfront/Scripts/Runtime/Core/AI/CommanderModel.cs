@@ -71,6 +71,12 @@ namespace Ironfront.Core.AI
         /// Milestone 007 rule). Set by <see cref="ScaledForMap"/> on large maps.
         /// </summary>
         public int SecondFactoryHarvesters;
+        // ---- Milestone 009 repairs (0 = never: the Milestone 008 behaviour) ----
+        public int MaxRepairPads;
+        /// <summary>Vehicles below this health fraction are sent to a Repair Pad (when the situation allows).</summary>
+        public float VehicleRepairThreshold;
+        /// <summary>Important structures below this health fraction are repaired in place.</summary>
+        public float BuildingRepairThreshold;
         /// <summary>Seconds between replacement scouts once the enemy has been located (0 = no limit).</summary>
         public float ReconReplaceSeconds;
 
@@ -123,6 +129,9 @@ namespace Ironfront.Core.AI
             EscalationStep = 1,
             MaxEscalation = 4,
             ReconReplaceSeconds = 150f,
+            MaxRepairPads = 1,
+            VehicleRepairThreshold = 0.45f,
+            BuildingRepairThreshold = 0.7f,
         };
 
         /// <summary>
@@ -153,6 +162,8 @@ namespace Ironfront.Core.AI
                 c.EarliestAttack = 300f;
                 c.EscalationStep = 1;
                 c.MaxEscalation = 2;
+                c.VehicleRepairThreshold = 0.35f;
+                c.BuildingRepairThreshold = 0.5f;
                 return c;
             }
         }
@@ -183,6 +194,9 @@ namespace Ironfront.Core.AI
                 c.ArtilleryShare = 0.3f;
                 c.AdvancedCounters = true;
                 c.AttackStrengthEdge = 1.15f;
+                c.MaxRepairPads = 2;
+                c.VehicleRepairThreshold = 0.5f;
+                c.BuildingRepairThreshold = 0.75f;
                 return c;
             }
         }
@@ -196,6 +210,8 @@ namespace Ironfront.Core.AI
         public int RefineryDrain, FactoryDrain, PowerPlantOutput;
         /// <summary>Milestone 007 content (0 = not available, which disables the related decisions).</summary>
         public int Recon, Artillery, ResearchCentre, GuardTower, AtTurret;
+        /// <summary>Milestone 009 (0 = not available).</summary>
+        public int RepairPad;
     }
 
     /// <summary>What the commander knows at a decision point (its own state plus what it has seen).</summary>
@@ -243,6 +259,8 @@ namespace Ironfront.Core.AI
         public int AttackEscalation;
         /// <summary>A replacement scout was bought recently.</summary>
         public bool ReconOnCooldown;
+        /// <summary>Milestone 009: Repair Pads owned.</summary>
+        public int RepairPads;
         public int ArmyCap(in CommanderSettings cfg) => cfg.MaxArmy + AttackEscalation;
 
         public int ArmyCount => LightTanks + HeavyTanks + Artillery;

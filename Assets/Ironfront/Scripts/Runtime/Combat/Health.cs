@@ -135,6 +135,18 @@ namespace Ironfront.Combat
         }
         private void OnDisable() => s_All.Remove(this);
 
+        /// <summary>Raised with the health restored by a repair (Milestone 009; effects and HUD listen).</summary>
+        public event Action<float> Restored;
+
+        /// <summary>Restores up to <paramref name="amount"/> health (repairs). Returns the health actually restored.</summary>
+        public float Restore(float amount)
+        {
+            if (_model == null || !IsAlive) return 0f;
+            float restored = _model.Restore(amount);
+            if (restored > 0f) Restored?.Invoke(restored);
+            return restored;
+        }
+
         /// <summary>
         /// Applies damage from <paramref name="attackerFaction"/>. Same-faction damage is ignored unless
         /// <paramref name="allowFriendlyFire"/>. Returns the damage dealt after armour.

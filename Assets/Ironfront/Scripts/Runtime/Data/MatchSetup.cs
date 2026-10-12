@@ -30,6 +30,8 @@ namespace Ironfront.Data
         [SerializeField] private List<ResearchDefinition> research = new List<ResearchDefinition>();
         [Tooltip("Faction-specific visibility and exploration (Milestone 007).")]
         [SerializeField] private bool fogOfWar = true;
+        [Tooltip("Repair costs, rates and recovery limits (Milestone 009).")]
+        [SerializeField] private RepairSettings repair;
 
         public IReadOnlyList<FactionSetup> Factions => factions;
         public IReadOnlyList<BuildingDefinition> ConstructionOptions => constructionOptions;
@@ -39,6 +41,7 @@ namespace Ironfront.Data
         public CombatVisuals CombatVisuals => combatVisuals;
         public IReadOnlyList<ResearchDefinition> Research => research;
         public bool FogOfWar => fogOfWar;
+        public RepairSettings Repair => repair;
 
         public ResearchDefinition FindResearch(string id)
         {

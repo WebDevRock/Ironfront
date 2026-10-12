@@ -25,7 +25,7 @@ namespace Ironfront.Core.Audio
             "place_structure", "construction_complete", "unit_ready", "delivery",
             "ui_click", "ui_hover", "ui_error", "alert", "victory", "defeat",
             "ambience_wind_loop", "engine_loop", "distant_battle_a", "distant_battle_b", "distant_battle_c",
-            "machine_gun_a", "machine_gun_b", "rocket_launch_a", "rocket_launch_b", "research_complete",
+            "machine_gun_a", "machine_gun_b", "rocket_launch_a", "rocket_launch_b", "research_complete", "repair_work_a", "repair_work_b", "repair_complete",
         };
 
         /// <summary>True for recipes designed to loop seamlessly.</summary>
@@ -73,6 +73,9 @@ namespace Ironfront.Core.Audio
                 case "rocket_launch_a": return RocketLaunch(151);
                 case "rocket_launch_b": return RocketLaunch(152);
                 case "research_complete": return Chime(new[] { 587.33f, 783.99f, 987.77f, 1174.66f, 1567.98f }, 0.09f, 1.2f, 0.75f);
+                case "repair_work_a": return RepairWork(161);
+                case "repair_work_b": return RepairWork(162);
+                case "repair_complete": return RepairComplete(171);
                 default: throw new ArgumentException("Unknown recipe " + name);
             }
         }
@@ -372,6 +375,51 @@ namespace Ironfront.Core.Audio
             }
             var ding = Chime(new[] { 1318.5f, 1760f }, 0.07f, 0.35f, 0.5f);
             Mix(s, ding, Len(0.2f), 1f);
+            return Fade(Normalize(s, 0.6f));
+        }
+
+        /// <summary>
+        /// Milestone 009 repair work: an arc-welder crackle (band-limited noise with random bursts) over a few ratchet
+        /// clicks from a power wrench.
+        /// </summary>
+        private static float[] RepairWork(int seed)
+        {
+            var n = new Noise(seed);
+            var s = new float[Len(0.75f)];
+            var lp = new LowPass(); var hp = new HighPass();
+            float burst = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = T(i);
+                if (i % 220 == 0) burst = Math.Abs(n.Next()) > 0.35f ? 1f : 0.25f;
+                float crackle = hp.Run(lp.Run(n.Next(), 5200f), 1400f) * burst * Env(t, 0.01f, 0.5f) * 1.6f;
+                s[i] = crackle;
+            }
+            for (int c = 0; c < 4; c++)
+            {
+                int start = Len(0.12f + c * 0.09f);
+                float f = 1800f + n.Next() * 300f;
+                for (int i = start; i < Math.Min(s.Length, start + Len(0.03f)); i++)
+                {
+                    float t = T(i - start);
+                    s[i] += (Sin(2 * Math.PI * f * t) + n.Next() * 0.6f) * Env(t, 0.0003f, 0.008f) * 0.8f;
+                }
+            }
+            return Fade(Normalize(s, 0.6f), 0.002f, 0.1f);
+        }
+
+        /// <summary>Milestone 009: repair finished — a short pneumatic hiss into a rising two-note chime.</summary>
+        private static float[] RepairComplete(int seed)
+        {
+            var n = new Noise(seed);
+            var s = new float[Len(0.8f)];
+            var hp = new HighPass();
+            for (int i = 0; i < Len(0.25f); i++)
+            {
+                float t = T(i);
+                s[i] = hp.Run(n.Next(), 2500f) * Env(t, 0.005f, 0.12f) * 0.5f;
+            }
+            Mix(s, Chime(new[] { 880f, 1318.5f }, 0.08f, 0.45f, 0.55f), Len(0.12f), 1f);
             return Fade(Normalize(s, 0.6f));
         }
 

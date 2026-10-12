@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb45c7de50a198f4a93840797192cb50, type: 3}
+  m_Name: RepairPad
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.BuildingDefinition
+  id: repair_pad
+  displayName: Repair Pad
+  cost: 1000
+  footprintSize: {x: 7, y: 5}
+  apronDepth: 8
+  powerOutput: 0
+  powerDrain: 20
+  prerequisites:
+  - {fileID: 11400000, guid: 8e1d567c3aad37f49af0caf2c9df4142, type: 2}
+  constructible: 1
+  prefab: {fileID: 6353404385887225366, guid: e85074a7ef92d4c48945d282d68dd532, type: 3}
+  producibleUnits: []
+  maxHealth: 900
+  armour: 0.2
+  icon: {fileID: 21300000, guid: 8c41e89f23927294fbb94b441133f686, type: 3}
+  description: Repairs one friendly vehicle at a time on its bay; others queue beside it. Select damaged vehicles and press Repair [R] or right-click the pad. Costs credits per health restored; pauses on low power.
+  sightRange: 10
+  weapon: {fileID: 0}
+  needsPower: 1
+  repairCostMultiplier: 1

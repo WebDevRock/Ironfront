@@ -31,3 +31,4 @@ MonoBehaviour:
   sightRange: 9
   weapon: {fileID: 0}
   needsPower: 0
+  repairCostMultiplier: 1

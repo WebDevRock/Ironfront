@@ -68,7 +68,9 @@ namespace Ironfront.Tests
             public string Json(EnemyCommander ai) =>
                 $"{{\"difficulty\":\"{ai.Difficulty.Level}\",\"spent\":{Spent},\"income\":{Income},\"produced\":{D(Produced)},\"built\":{D(Built)}," +
                 $"\"located\":{(ai.Intel.FirstDiscovery < 0f ? -1f : ai.Intel.FirstDiscovery - MatchStart):0},\"escalation\":{ai.AttackEscalation},\"scoutMissions\":{ai.ScoutMissions},\"attacks\":{ai.AttacksLaunched}," +
-                $"\"sitesCleared\":{ai.Intel.Count(Core.AI.EnemyIntel.SiteState.Empty)},\"rejectedScoutPoints\":{ai.RejectedScoutPoints}}}";
+                $"\"sitesCleared\":{ai.Intel.Count(Core.AI.EnemyIntel.SiteState.Empty)},\"rejectedScoutPoints\":{ai.RejectedScoutPoints}," +
+                $"\"repairOrders\":{ai.RepairsOrdered},\"buildingRepairs\":{ai.BuildingRepairsStarted},\"vehiclesRepaired\":{Ironfront.Buildings.RepairLedger.VehiclesRepaired(ai.FactionId)}," +
+                $"\"repairCreditsVehicles\":{Ironfront.Buildings.RepairLedger.VehicleCredits(ai.FactionId)},\"repairCreditsBuildings\":{Ironfront.Buildings.RepairLedger.BuildingCredits(ai.FactionId)}}}";
 
             private static string D(Dictionary<string, int> d) => "{" + string.Join(",", d.OrderBy(k => k.Key).Select(k => $"\"{k.Key}\":{k.Value}")) + "}";
         }

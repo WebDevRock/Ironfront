@@ -45,6 +45,7 @@ namespace Ironfront.Match
                 return;
             }
 
+            Buildings.RepairLedger.Reset(); // Milestone 009: repair spending is per match
             bool playerChosen = false;
             foreach (var f in setup.Factions)
             {

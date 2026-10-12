@@ -39,12 +39,15 @@ namespace Ironfront.Data
         [SerializeField] private WeaponDefinition weapon;
         [Tooltip("Defences: stops firing while the owner is low on power.")]
         [SerializeField] private bool needsPower;
+        [Tooltip("Scales this structure's repair cost (Milestone 009; 1 = the RepairSettings cost).")]
+        [SerializeField, Min(0f)] private float repairCostMultiplier = 1f;
 
         public Sprite Icon => icon;
         public string Description => description;
         public float SightRange => sightRange;
         public WeaponDefinition Weapon => weapon;
         public bool NeedsPower => needsPower;
+        public float RepairCostMultiplier => repairCostMultiplier;
 
         public string Id => id;
         public string DisplayName => displayName;

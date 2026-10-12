@@ -75,6 +75,8 @@ namespace Ironfront.EditorTools.Art
                 (SoundId.MachineGun, "machine_gun", SoundCategory.Effects, 0.35f, 0.08f, 5, 0.05f, true),
                 (SoundId.RocketLaunch, "rocket_launch", SoundCategory.Effects, 0.6f, 0.06f, 4, 0.08f, true),
                 (SoundId.ResearchComplete, "research_complete", SoundCategory.Interface, 0.55f, 0f, 1, 1f, false),
+                (SoundId.RepairWork, "repair_work", SoundCategory.Effects, 0.4f, 0.06f, 3, 0.4f, true),
+                (SoundId.RepairComplete, "repair_complete", SoundCategory.Effects, 0.5f, 0f, 2, 0.5f, true),
             };
             entries.arraySize = specs.Length;
             for (int i = 0; i < specs.Length; i++)

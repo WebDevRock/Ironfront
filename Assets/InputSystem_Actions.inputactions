@@ -1086,6 +1086,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Repair",
+                    "type": "Button",
+                    "id": "5e349466-9f6f-481a-969c-4c91192d5aef",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "ToggleAiDebug",
                     "type": "Button",
                     "id": "39179fa1-bc3c-4db2-8f4b-5c503331da00",
@@ -1428,6 +1437,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Hold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cd3a9f1c-fc32-4fc3-b712-1c47afb42061",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Repair",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

@@ -25,6 +25,9 @@ namespace Ironfront.Audio
         MachineGun,
         RocketLaunch,
         ResearchComplete,
+        // Milestone 009
+        RepairWork,
+        RepairComplete,
     }
 
     /// <summary>Mixer category; each has its own volume setting.</summary>

@@ -54,6 +54,16 @@ namespace Ironfront.Buildings
 
         private FactionMember Member => _member != null ? _member : (_member = GetComponent<FactionMember>());
 
+        /// <summary>In-place repairs (Milestone 009); every structure has one.</summary>
+        public BuildingRepair Repair { get; private set; }
+
+        private void Awake()
+        {
+            Repair = GetComponent<BuildingRepair>();
+            if (Repair == null) Repair = gameObject.AddComponent<BuildingRepair>();
+            if (GetComponent<Visuals.BuildingRepairFx>() == null) gameObject.AddComponent<Visuals.BuildingRepairFx>();
+        }
+
         private void OnEnable()
         {
             if (!s_All.Contains(this)) s_All.Add(this);

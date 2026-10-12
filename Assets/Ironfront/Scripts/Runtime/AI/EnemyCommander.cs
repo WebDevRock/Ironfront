@@ -47,6 +47,7 @@ namespace Ironfront.AI
         private UnitDefinition _harvesterDef, _lightDef, _heavyDef;
         // Milestone 007 content (optional: null in scenes without it).
         private BuildingDefinition _researchDef, _towerDef, _atDef;
+        private BuildingDefinition _repairPadDef; // Milestone 009 (null in scenes without it)
         private UnitDefinition _reconDef, _artilleryDef;
         private float _lastThreatTime = -999f;
         private readonly Dictionary<CombatUnit, Vector3> _scoutTargets = new Dictionary<CombatUnit, Vector3>();
@@ -203,7 +204,8 @@ namespace Ironfront.AI
             RallyPoint = ComputeRallyPoint(hq.transform.position);
             SetupFactories();
 
-            var all = OwnArmy();
+            // Milestone 009: vehicles on a repair order are unavailable (any order would cancel their repair).
+            var all = OwnArmy().Where(u => !InRepair(u)).ToList();
             var scouts = all.Where(IsRecon).ToList();
             var army = all.Where(u => !IsRecon(u)).ToList();
             foreach (var dead in _unitKeys.Keys.Where(k => k == null).ToList()) _unitKeys.Remove(dead);
@@ -225,6 +227,72 @@ namespace Ironfront.AI
             ManageArmy(army, threats);
             ManageScouts(scouts);
             CounterArtillery(army, basePoints);
+            ManageRepairs(army, scouts);
+        }
+
+        // ---------- Milestone 009: repairs (same pads, queues and prices as the player) ----------
+
+        public int RepairsOrdered { get; private set; }
+        public int BuildingRepairsStarted { get; private set; }
+
+        private static bool InRepair(Component u)
+        {
+            var c = RepairClient.Of(u);
+            return c != null && c.IsBusy;
+        }
+
+        private void ManageRepairs(List<CombatUnit> army, List<CombatUnit> scouts)
+        {
+            var match = MatchController.Current;
+            int credits = match.GetFaction(factionId).Wallet.Credits;
+            bool defending = State == StrategicState.Defend;
+
+            // Important structures: repair in place while affordable, stop before production is starved.
+            if (_cfg.BuildingRepairThreshold > 0f)
+                foreach (var b in OwnStructures().ToList())
+                {
+                    if (b.Repair == null || !RepairPlanner.IsImportantStructure(b.Definition.Id)) continue;
+                    var h = b.GetComponent<Health>();
+                    bool want = RepairPlanner.ShouldRepairBuilding(h.Current / h.Max, _cfg.BuildingRepairThreshold, b.Repair.IsOn, credits, _cfg.CreditReserve);
+                    if (want == b.Repair.IsOn) continue;
+                    if (b.Repair.SetRepairing(want) && want)
+                    {
+                        BuildingRepairsStarted++;
+                        Record($"Repairing {b.Definition.DisplayName} ({h.Current / h.Max * 100f:0}%)");
+                    }
+                }
+
+            // Vehicles: only when a pad exists, the vehicle is damaged enough and the situation allows it.
+            if (_cfg.VehicleRepairThreshold <= 0f || RepairPad.CountFor(factionId) == 0) return;
+            int away = 0;
+            foreach (var c in CombatUnit.All)
+                if (c != null && FactionMember.Of(c) == factionId && InRepair(c)) away++;
+            int armySize = army.Count + scouts.Count + away;
+            var candidates = new List<Component>();
+            candidates.AddRange(army);
+            candidates.AddRange(scouts);
+            foreach (var h in Health.All)
+                if (h.IsAlive && h.FactionId == factionId && h.GetComponent<Harvester>() != null && !InRepair(h)) candidates.Add(h);
+            foreach (var u in candidates.OrderBy(c => c.GetComponent<Health>().Current / c.GetComponent<Health>().Max))
+            {
+                var h = u.GetComponent<Health>();
+                var combat = u.GetComponent<CombatUnit>();
+                bool engaged = combat != null && combat.Machine != null && combat.Machine.Activity == Core.Combat.CombatActivity.Engaging;
+                bool attacking = combat != null && _attackers.Contains(combat);
+                var pad = RepairPad.Best(factionId, u.transform.position);
+                if (pad == null) return;
+                int cost = pad.EstimateCost(h);
+                bool isHarvester = combat == null;
+                if (!RepairPlanner.ShouldSendVehicle(h.Current / h.Max, _cfg.VehicleRepairThreshold, engaged || attacking, defending && !isHarvester,
+                        isHarvester ? 0 : away, isHarvester ? 0 : armySize, credits, _cfg.CreditReserve, cost))
+                    continue;
+                if (!RepairClient.Request(u, pad, out _)) continue;
+                if (combat != null) _attackers.Remove(combat);
+                if (!isHarvester) away++;
+                credits -= cost;
+                RepairsOrdered++;
+                Record($"{h.DisplayName} ({h.Current / h.Max * 100f:0}%) sent for repair");
+            }
         }
 
         private void EnterState(StrategicState next, List<CombatUnit> army)
@@ -296,6 +364,7 @@ namespace Ironfront.AI
                     case "research_centre": s.ResearchCentres++; break;
                     case "guard_tower": s.GuardTowers++; break;
                     case "at_turret": s.AtTurrets++; break;
+                    case "repair_pad": s.RepairPads++; break;
                 }
             }
 
@@ -372,7 +441,8 @@ namespace Ironfront.AI
                 : action.Type == AiActionType.BuildPowerPlant ? _powerPlantDef
                 : action.Type == AiActionType.BuildResearchCentre ? _researchDef
                 : action.Type == AiActionType.BuildGuardTower ? _towerDef
-                : action.Type == AiActionType.BuildAtTurret ? _atDef : _factoryDef;
+                : action.Type == AiActionType.BuildAtTurret ? _atDef
+                : action.Type == AiActionType.BuildRepairPad ? _repairPadDef : _factoryDef;
             if (def == null) return;
 
             if (!FindSite(def, action.Type, out var site))
@@ -444,6 +514,10 @@ namespace Ironfront.AI
                     break;
                 case AiActionType.BuildResearchCentre:
                     candidates = SiteSearch.Ranked(home, home - enemyDir * 8f, 10f, 24f, 2f);
+                    break;
+                case AiActionType.BuildRepairPad:
+                    // Beside the base, between it and the rally point: damaged units do not drive through the enemy.
+                    candidates = SiteSearch.Ranked(home, home + enemyDir * 6f + new Vector3(enemyDir.z, 0f, -enemyDir.x) * 14f, 12f, 28f, 2f);
                     break;
                 case AiActionType.BuildGuardTower:
                 case AiActionType.BuildAtTurret:
@@ -1205,6 +1279,7 @@ namespace Ironfront.AI
             _towerDef = setup2.ConstructionOptions.FirstOrDefault(d => d != null && d.Id == "guard_tower");
             _atDef = setup2.ConstructionOptions.FirstOrDefault(d => d != null && d.Id == "at_turret");
             _reconDef = _factoryDef.ProducibleUnits.FirstOrDefault(u => u != null && u.Id == "recon");
+            _repairPadDef = setup2.ConstructionOptions.FirstOrDefault(d => d != null && d.Id == "repair_pad");
             _artilleryDef = _factoryDef.ProducibleUnits.FirstOrDefault(u => u != null && u.Id == "rocket_artillery");
 
             _cost = new CostTable
@@ -1223,6 +1298,7 @@ namespace Ironfront.AI
                 ResearchCentre = _researchDef != null ? _researchDef.Cost : 0,
                 GuardTower = _towerDef != null ? _towerDef.Cost : 0,
                 AtTurret = _atDef != null ? _atDef.Cost : 0,
+                RepairPad = _repairPadDef != null ? _repairPadDef.Cost : 0,
             };
             return true;
         }

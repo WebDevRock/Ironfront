@@ -34,6 +34,8 @@ namespace Ironfront.Data
         [SerializeField] private ArmourClass armourClass = ArmourClass.Light;
         [Tooltip("A structure the faction must own before this unit can be queued (e.g. a Research Centre).")]
         [SerializeField] private BuildingDefinition requiredStructure;
+        [Tooltip("Scales this vehicle's repair cost (Milestone 009; 1 = the RepairSettings cost).")]
+        [SerializeField, Min(0f)] private float repairCostMultiplier = 1f;
 
         public string Id => id;
         public string DisplayName => displayName;
@@ -49,5 +51,6 @@ namespace Ironfront.Data
         public float SightRange => sightRange;
         public ArmourClass ArmourClass => armourClass;
         public BuildingDefinition RequiredStructure => requiredStructure;
+        public float RepairCostMultiplier => repairCostMultiplier;
     }
 }

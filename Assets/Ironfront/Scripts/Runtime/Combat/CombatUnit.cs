@@ -87,11 +87,12 @@ namespace Ironfront.Combat
 
         // ---------- Orders (used by commands, scenario scripts and tests) ----------
 
-        public void OrderMove(Vector3 destination) => Machine?.OrderMove(this, destination);
-        public void OrderAttack(Health target) => Machine?.OrderAttack(this, target);
-        public void OrderAttackMove(Vector3 destination) => Machine?.OrderAttackMove(this, destination);
-        public void OrderStop() => Machine?.OrderStop(this);
-        public void OrderHold() => Machine?.OrderHold(this);
+        // Milestone 009: any order from anyone but the vehicle's own repair client cancels its repair.
+        public void OrderMove(Vector3 destination) { RepairClient.NotifyExternalOrder(this); Machine?.OrderMove(this, destination); }
+        public void OrderAttack(Health target) { RepairClient.NotifyExternalOrder(this); Machine?.OrderAttack(this, target); }
+        public void OrderAttackMove(Vector3 destination) { RepairClient.NotifyExternalOrder(this); Machine?.OrderAttackMove(this, destination); }
+        public void OrderStop() { RepairClient.NotifyExternalOrder(this); Machine?.OrderStop(this); }
+        public void OrderHold() { RepairClient.NotifyExternalOrder(this); Machine?.OrderHold(this); }
 
         public string DescribeOrder() => Machine != null ? Machine.Describe() : "-";
 

@@ -31,6 +31,22 @@ namespace Ironfront.Core.Combat
         /// <summary>Changes armour (research upgrades); clamped like the constructor value.</summary>
         public void SetArmour(float armour) => Armour = DamageRules.ClampArmour(armour);
 
+        /// <summary>Raised with the health actually restored (Milestone 009 repairs).</summary>
+        public event Action<float> Restored;
+
+        /// <summary>
+        /// Restores up to <paramref name="amount"/> health, never above <see cref="Max"/>. Dead models cannot be restored.
+        /// Returns the health actually restored.
+        /// </summary>
+        public float Restore(float amount)
+        {
+            if (IsDead || amount <= 0f || Current >= Max) return 0f;
+            float restored = Math.Min(amount, Max - Current);
+            Current += restored;
+            Restored?.Invoke(restored);
+            return restored;
+        }
+
         /// <summary>Applies raw damage (armour is applied here). Returns the damage dealt.</summary>
         public float ApplyDamage(float rawDamage)
         {

@@ -86,10 +86,18 @@ namespace Ironfront.Economy
         }
 
         /// <summary>Player order: harvest from this deposit (and keep cycling).</summary>
-        public void OrderHarvest(OreDeposit deposit) => Machine.StartHarvesting(this, deposit);
+        public void OrderHarvest(OreDeposit deposit)
+        {
+            Units.RepairClient.NotifyExternalOrder(this); // Milestone 009: a new order cancels a repair
+            Machine.StartHarvesting(this, deposit);
+        }
 
         /// <summary>Player order overrides automation (e.g. a move order). Cargo is kept.</summary>
-        public void StopHarvesting() => Machine.Stop();
+        public void StopHarvesting()
+        {
+            Units.RepairClient.NotifyExternalOrder(this);
+            Machine.Stop();
+        }
 
         private void UpdateCargoVisual()
         {

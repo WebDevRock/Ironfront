@@ -38,6 +38,11 @@ namespace Ironfront.Core.AI
 
             if (defending) return new AiAction(AiActionType.None, "defending");
 
+            // Milestone 009: a Repair Pad once an army exists to use it, bought without touching the reserve.
+            if (cost.RepairPad > 0 && s.RepairPads < cfg.MaxRepairPads && s.Factories > 0 && s.ArmyCount >= 6
+                && EconomyPlanner.Affordable(s.Credits, cost.RepairPad, cfg.CreditReserve))
+                return new AiAction(AiActionType.BuildRepairPad, $"repairs ({s.RepairPads + 1}/{cfg.MaxRepairPads})");
+
             // Technology: a Research Centre once the army can protect the investment.
             if (cost.ResearchCentre > 0 && s.ResearchCentres == 0 && s.ArmyCount >= cfg.ResearchArmyThreshold && s.Harvesters >= 2)
                 return EconomyPlanner.BuyOrSave(s.Credits, cost.ResearchCentre, AiActionType.BuildResearchCentre, "technology");

@@ -44,6 +44,9 @@ MonoBehaviour:
     EscalationStep: 1
     MaxEscalation: 4
     SecondFactoryHarvesters: 0
+    MaxRepairPads: 2
+    VehicleRepairThreshold: 0.5
+    BuildingRepairThreshold: 0.75
     ReconReplaceSeconds: 150
   visionRange: 22
   threatMemorySeconds: 40

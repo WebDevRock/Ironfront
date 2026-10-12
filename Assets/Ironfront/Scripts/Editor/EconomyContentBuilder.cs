@@ -62,6 +62,7 @@ namespace Ironfront.EditorTools
             public CombatVisuals CombatVisuals;
             public CombatContentBuilder.Defs Combat;
             public ExpansionContentBuilder.Defs Expansion;
+            public RepairContentBuilder.Defs Repair;
             public GameObject DepositPrefab;
             public Material GhostValid, GhostInvalid;
         }
@@ -130,6 +131,7 @@ namespace Ironfront.EditorTools
             SetBuildingCombat(c.Refinery, maxHealth: 1200f, armour: 0.2f);
             SetBuildingCombat(c.PowerPlant, maxHealth: 800f, armour: 0.2f);
             SetBuildingCombat(c.VehicleFactory, maxHealth: 1500f, armour: 0.25f);
+            var repair = RepairContentBuilder.CreateDefinitions(c); // Milestone 009 (needs the factory as prerequisite)
 
             SetUnit(c.Harvester, "harvester", "Harvester", cost: 800, buildTime: 10f);
             Set(c.Harvester, so =>
@@ -150,7 +152,8 @@ namespace Ironfront.EditorTools
                     new Color(0.85f, 0.15f, 0.12f), human: false, credits: StartingCredits); // equal start for the AI match
                 so.FindProperty("combatVisuals").objectReferenceValue = combat.Visuals;
                 SetList(so.FindProperty("constructionOptions"), c.Refinery, c.PowerPlant, c.VehicleFactory,
-                    expansion.ResearchCentre, expansion.GuardTower, expansion.AtTurret);
+                    expansion.ResearchCentre, expansion.GuardTower, expansion.AtTurret, repair.RepairPad);
+                so.FindProperty("repair").objectReferenceValue = repair.Settings;
                 SetList(so.FindProperty("research"), expansion.Research);
                 so.FindProperty("fogOfWar").boolValue = true;
                 so.FindProperty("creditsPerOre").intValue = 1;
@@ -166,6 +169,7 @@ namespace Ironfront.EditorTools
             SetPrefab(c.Harvester, SavePrefab(BuildHarvester(c.Harvester, pal), $"{UnitPrefabsDir}/Harvester.prefab"));
             CombatContentBuilder.CreatePrefabs(combat, pal);
             ExpansionContentBuilder.CreatePrefabs(expansion, pal);
+            RepairContentBuilder.CreatePrefab(repair, pal);
             c.DepositPrefab = SavePrefab(BuildDeposit(pal), DepositPrefabPath);
 
             AssetDatabase.SaveAssets();
@@ -192,6 +196,7 @@ namespace Ironfront.EditorTools
             };
             c.Combat = CombatContentBuilder.Load();
             c.Expansion = ExpansionContentBuilder.Load();
+            c.Repair = RepairContentBuilder.Load();
             c.LightTank = c.Combat.LightTank;
             c.HeavyTank = c.Combat.HeavyTank;
             c.Outpost = c.Combat.Outpost;

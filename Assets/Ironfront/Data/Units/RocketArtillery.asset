@@ -26,3 +26,4 @@ MonoBehaviour:
   sightRange: 12
   armourClass: 0
   requiredStructure: {fileID: 11400000, guid: cbc05e4140efa3e4197b3588f48e1b49, type: 2}
+  repairCostMultiplier: 1

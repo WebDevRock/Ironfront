@@ -24,6 +24,8 @@ namespace Ironfront.InputBindings
         public static InputAction AttackMove => Get("AttackMove");
         public static InputAction Stop => Get("Stop");
         public static InputAction Hold => Get("Hold");
+        /// <summary>Milestone 009: send the selected damaged vehicles for repair (R).</summary>
+        public static InputAction Repair => Get("Repair");
         public static InputAction ToggleAiDebug => Get("ToggleAiDebug");
         public static InputAction Help => Get("Help");
         public static InputAction GameMenu => Get("GameMenu");

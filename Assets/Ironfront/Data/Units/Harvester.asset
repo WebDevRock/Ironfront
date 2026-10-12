@@ -26,6 +26,7 @@ MonoBehaviour:
   sightRange: 10
   armourClass: 1
   requiredStructure: {fileID: 0}
+  repairCostMultiplier: 1
   cargoCapacity: 200
   harvestRate: 50
   unloadRate: 100

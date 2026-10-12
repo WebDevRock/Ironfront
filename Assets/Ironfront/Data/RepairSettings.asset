@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68b0025039f746d47a99470e6f6d5b6a, type: 3}
+  m_Name: RepairSettings
+  m_EditorClassIdentifier: Ironfront.Runtime::Ironfront.Data.RepairSettings
+  buildingCostFraction: 0.5
+  buildingRatePerSecond: 0.01
+  unbuyableBuildingValue: 2000
+  vehicleCostFraction: 0.4
+  padRatePerSecond: 0.06
+  padAssemblyTime: 15
+  bayRadius: 3
+  stallSeconds: 8
+  stallDistance: 1
+  maxReroutes: 3
+  travelTimeout: 120
+  enterTimeout: 25
+  exitTimeout: 20
+  bayBlockerSeconds: 10

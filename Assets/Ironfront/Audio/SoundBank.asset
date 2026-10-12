@@ -222,6 +222,25 @@ MonoBehaviour:
     maxVoices: 1
     minInterval: 1
     positional: 0
+  - id: 22
+    clips:
+    - {fileID: 8300000, guid: 3b0e1f86d1aa73846bd93dc5fc81c844, type: 3}
+    - {fileID: 8300000, guid: e03e023b508c9be479d5db22541d707b, type: 3}
+    category: 0
+    volume: 0.4
+    pitchJitter: 0.06
+    maxVoices: 3
+    minInterval: 0.4
+    positional: 1
+  - id: 23
+    clips:
+    - {fileID: 8300000, guid: 32e6332dfe6984043abffdaf6b507fa4, type: 3}
+    category: 0
+    volume: 0.5
+    pitchJitter: 0
+    maxVoices: 2
+    minInterval: 0.5
+    positional: 1
   ambienceLoop: {fileID: 8300000, guid: 8017f88eeb1370a4f8646d73df674498, type: 3}
   engineLoop: {fileID: 8300000, guid: 8984f822e56ac244aa0c3af1c82ce127, type: 3}
   distantBattle:

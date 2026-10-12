@@ -25,7 +25,7 @@ namespace Ironfront.UI
 
         private const string Help =
             "LMB: select   Drag: box select   Shift+LMB: toggle   WASD / edge: pan   Wheel: zoom\n" +
-            "RMB: move / attack enemy / harvest / rally   F: attack-move   X: stop   H: hold";
+            "RMB: move / attack enemy / harvest / rally / repair pad   F: attack-move   X: stop   H: hold   R: repair";
 
         private float _refreshTimer;
 
@@ -96,6 +96,8 @@ namespace Ironfront.UI
                 if (b == null) return "Selected units: 0";
                 string text = $"Selected: {(b.Definition != null ? b.Definition.DisplayName : b.name)}  {HealthText(b.GetComponent<Health>())}";
                 if (b.GetComponent<VehicleFactory>() != null) text += "\nRMB ground: set rally point";
+                if (b.Repair != null && b.Repair.IsOn)
+                    text += b.Repair.State == BuildingRepair.Status.PausedNoCredits ? "\nRepair: paused (insufficient credits)" : "\nRepair: on";
                 return text;
             }
 
@@ -125,6 +127,9 @@ namespace Ironfront.UI
 
             var harvester = unit.GetComponent<Harvester>();
             if (harvester != null && harvester.Machine != null) text += $"\n{harvester.StatusText}";
+            var repair = RepairClient.Of(unit);
+            if (repair != null && repair.IsBusy)
+                text += repair.QueuePosition >= 0 ? $"\nRepair: {repair.State} (place {repair.QueuePosition + 1} in queue)" : $"\nRepair: {repair.State}";
 
             var combat = unit.GetComponent<CombatUnit>();
             if (combat != null && combat.Weapon != null)

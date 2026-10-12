@@ -18,6 +18,8 @@ namespace Ironfront.Core.AI
         BuildGuardTower,
         BuildAtTurret,
         StartResearch,
+        // Milestone 009
+        BuildRepairPad,
     }
 
     public readonly struct AiAction
@@ -38,7 +40,8 @@ namespace Ironfront.Core.AI
         }
 
         public bool IsConstruction => Type == AiActionType.BuildRefinery || Type == AiActionType.BuildPowerPlant || Type == AiActionType.BuildFactory
-                                      || Type == AiActionType.BuildResearchCentre || Type == AiActionType.BuildGuardTower || Type == AiActionType.BuildAtTurret;
+                                      || Type == AiActionType.BuildResearchCentre || Type == AiActionType.BuildGuardTower || Type == AiActionType.BuildAtTurret
+                                      || Type == AiActionType.BuildRepairPad;
         public bool IsProduction => Type == AiActionType.ProduceHarvester || Type == AiActionType.ProduceLightTank || Type == AiActionType.ProduceHeavyTank
                                     || Type == AiActionType.ProduceRecon || Type == AiActionType.ProduceArtillery;
 

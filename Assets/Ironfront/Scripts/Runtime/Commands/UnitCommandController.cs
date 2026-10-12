@@ -15,8 +15,9 @@ namespace Ironfront.Commands
 {
     /// <summary>
     /// Orders for the selected units. Right-click: on an enemy, armed units attack it; on an Ore deposit,
-    /// harvesters harvest it; on the ground, units move there in a grid formation (or, with only a factory
-    /// selected, its rally point is set). Attack-move, stop and hold are issued through
+    /// harvesters harvest it; on a friendly Repair Pad, damaged vehicles queue there for repair (Milestone 009); on the
+    /// ground, units move there in a grid formation (or, with only a factory selected, its rally point is set).
+    /// Attack-move, stop and hold are issued through
     /// <see cref="OrderInputController"/>.
     /// </summary>
     public class UnitCommandController : MonoBehaviour
@@ -36,6 +37,8 @@ namespace Ironfront.Commands
         public event Action<Vector3> MoveOrdered;
         public event Action<Vector3> AttackMoveOrdered;
         public event Action<Health> AttackOrdered;
+        /// <summary>Milestone 009: a repair order was issued (count sent, pad, message for the HUD).</summary>
+        public event Action<int, RepairPad, string> RepairOrdered;
 
         private void Awake()
         {
@@ -52,6 +55,9 @@ namespace Ironfront.Commands
 
             var enemy = RaycastEnemy(pointer);
             if (enemy != null && IssueAttack(enemy) > 0) return;
+
+            var pad = RaycastFriendlyPad(pointer);
+            if (pad != null && IssueRepair(pad) > 0) return;
 
             var deposit = RaycastDeposit(pointer);
             bool hasGround = TryGetGroundPoint(pointer, out var point);
@@ -103,6 +109,17 @@ namespace Ironfront.Commands
             return DamageRules.AreHostile(PlayerFactionId, health.FactionId) ? health : null;
         }
 
+        /// <summary>The player's own Repair Pad under the pointer, or null.</summary>
+        public RepairPad RaycastFriendlyPad(Vector2 screenPosition)
+        {
+            var cam = selectionManager != null ? selectionManager.ViewCamera : null;
+            if (cam == null || targetLayers == 0) return null;
+            if (!Physics.Raycast(cam.ScreenPointToRay(screenPosition), out var hit, maxRayDistance, targetLayers, QueryTriggerInteraction.Ignore))
+                return null;
+            var pad = hit.collider.GetComponentInParent<RepairPad>();
+            return pad != null && pad.IsAlive && pad.FactionId == PlayerFactionId ? pad : null;
+        }
+
         private OreDeposit RaycastDeposit(Vector2 screenPosition)
         {
             var cam = selectionManager != null ? selectionManager.ViewCamera : null;
@@ -133,6 +150,61 @@ namespace Ironfront.Commands
             if (count > 0) AttackOrdered?.Invoke(target);
             return count;
         }
+
+        // ---------- Milestone 009: repairs ----------
+
+        /// <summary>Selected friendly vehicles that are damaged (candidates for a repair order).</summary>
+        public List<SelectableUnit> DamagedSelectedVehicles()
+        {
+            var list = new List<SelectableUnit>();
+            foreach (var u in SelectedUnits())
+                if (RepairClient.IsRepairableVehicle(u, PlayerFactionId) && RepairClient.IsDamaged(u)) list.Add(u);
+            return list;
+        }
+
+        /// <summary>
+        /// Sends the selected damaged vehicles to <paramref name="pad"/>, or to the pad with the shortest expected wait
+        /// when null. Returns how many were queued; <see cref="LastRepairMessage"/> explains the result.
+        /// </summary>
+        public int IssueRepair(RepairPad pad = null)
+        {
+            var damaged = DamagedSelectedVehicles();
+            if (damaged.Count == 0)
+            {
+                LastRepairMessage = "No damaged vehicles selected";
+                RepairOrdered?.Invoke(0, pad, LastRepairMessage);
+                return 0;
+            }
+            int sent = 0;
+            RepairPad used = pad;
+            foreach (var u in damaged)
+            {
+                var target = pad != null ? pad : RepairPad.Best(PlayerFactionId, u.transform.position);
+                if (target == null) break;
+                if (RepairClient.Request(u, target, out _)) { sent++; used = target; }
+            }
+            LastRepairMessage = used == null ? "No Repair Pad: build one (requires a Vehicle Factory)"
+                : sent == 0 ? "Could not queue for repair"
+                : $"{sent} vehicle{(sent == 1 ? "" : "s")} sent to Repair Pad" + (pad == null && RepairPad.CountFor(PlayerFactionId) > 1 ? " (shortest wait)" : "");
+            RepairOrdered?.Invoke(sent, used, LastRepairMessage);
+            return sent;
+        }
+
+        /// <summary>Cancels the selected vehicles' outstanding repair orders. Returns how many were cancelled.</summary>
+        public int IssueCancelRepair()
+        {
+            int n = 0;
+            foreach (var u in SelectedUnits())
+            {
+                var c = RepairClient.Of(u);
+                if (c != null && c.IsBusy) { c.Cancel("cancelled by order"); n++; }
+            }
+            LastRepairMessage = n > 0 ? $"Repair cancelled for {n} vehicle{(n == 1 ? "" : "s")}" : "No repair orders to cancel";
+            RepairOrdered?.Invoke(0, null, LastRepairMessage);
+            return n;
+        }
+
+        public string LastRepairMessage { get; private set; } = "";
 
         /// <summary>Orders every selected harvester to harvest <paramref name="deposit"/>. Returns how many did.</summary>
         public int IssueHarvest(OreDeposit deposit)
@@ -187,6 +259,7 @@ namespace Ironfront.Commands
                 if (combat != null && combat.Machine != null) combat.OrderStop();
                 else
                 {
+                    RepairClient.NotifyExternalOrder(unit);
                     var harvester = unit.GetComponent<Harvester>();
                     if (harvester != null) harvester.StopHarvesting();
                     var mover = unit.GetComponent<UnitMover>();
@@ -207,6 +280,7 @@ namespace Ironfront.Commands
                 if (combat != null && combat.Machine != null) combat.OrderHold();
                 else
                 {
+                    RepairClient.NotifyExternalOrder(unit);
                     var mover = unit.GetComponent<UnitMover>();
                     if (mover != null) mover.Stop();
                 }
@@ -262,6 +336,7 @@ namespace Ironfront.Commands
                     continue;
                 }
 
+                RepairClient.NotifyExternalOrder(units[i]);
                 var harvester = units[i].GetComponent<Harvester>();
                 if (harvester != null) harvester.StopHarvesting();
                 if (units[i].GetComponent<UnitMover>().MoveTo(slot)) accepted++;

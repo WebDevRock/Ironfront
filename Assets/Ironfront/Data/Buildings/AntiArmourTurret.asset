@@ -31,3 +31,4 @@ MonoBehaviour:
   sightRange: 16
   weapon: {fileID: 11400000, guid: 97b0638e29275ab4f8b0574d857d0bc1, type: 2}
   needsPower: 1
+  repairCostMultiplier: 1

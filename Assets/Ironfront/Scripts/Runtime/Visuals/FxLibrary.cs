@@ -411,6 +411,18 @@ namespace Ironfront.Visuals
             }
         }
 
+        /// <summary>Milestone 009: welding sparks and a small flash (Repair Pad arms, building repairs).</summary>
+        public static void RepairSparks(Vector3 position)
+        {
+            var fx = Gate(position, 3f);
+            if (fx == null) return;
+            fx.Emit(fx._flash, position, Vector3.zero, Random.Range(0.25f, 0.45f), 0.05f, new Color(0.75f, 0.9f, 1f));
+            int n = Random.Range(3, 7);
+            for (int i = 0; i < n; i++)
+                fx.Emit(fx._spark, position, Random.onUnitSphere * Random.Range(1.5f, 4f) + Vector3.down * 0.5f, Random.Range(0.03f, 0.06f),
+                    Random.Range(0.15f, 0.35f), new Color(1f, 0.85f, 0.45f));
+        }
+
         /// <summary>Ore sparkle (harvesting, unloading at a refinery, idle deposits).</summary>
         public static void Glint(Vector3 position, float size = 0.5f)
         {

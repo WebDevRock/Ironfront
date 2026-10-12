@@ -30,6 +30,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: cbc05e4140efa3e4197b3588f48e1b49, type: 2}
   - {fileID: 11400000, guid: 15e957c2776fae64fa32f4c8ca29d3e5, type: 2}
   - {fileID: 11400000, guid: de60f77a775d20940a490c46b85ae639, type: 2}
+  - {fileID: 11400000, guid: d52419ada49510f4db60274a8bdf755f, type: 2}
   creditsPerOre: 1
   lowPowerProductionMultiplier: 0.5
   productionQueueCapacity: 5
@@ -39,3 +40,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7c0b304b6174be84295965a3b3ae92e5, type: 2}
   - {fileID: 11400000, guid: 0fac82817e46b5949b61954eb6872f8a, type: 2}
   fogOfWar: 1
+  repair: {fileID: 11400000, guid: 2a4af784c93dd4949982e2ed235d6340, type: 2}

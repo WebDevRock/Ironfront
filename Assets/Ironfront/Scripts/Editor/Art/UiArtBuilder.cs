@@ -190,6 +190,7 @@ namespace Ironfront.EditorTools.Art
                 (c.Expansion.GuardTower, "Icon_GuardTower", t => ExpansionModels.GuardTower(t, a)),
                 (c.Expansion.AtTurret, "Icon_AntiArmourTurret", t => ExpansionModels.AntiArmourTurret(t, a)),
                 (c.Expansion.ResearchCentre, "Icon_ResearchCentre", t => ExpansionModels.ResearchCentre(t, a)),
+                (c.Repair.RepairPad, "Icon_RepairPad", t => RepairModels.RepairPad(t, a)),
             };
             foreach (var (def, name, build) in jobs)
             {
