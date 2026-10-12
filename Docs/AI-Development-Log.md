@@ -734,4 +734,4 @@ MCVs from legitimate knowledge only. Tests, multi-map AI-vs-AI studies, exploit 
 - Acceptance playtest by a human still needed.
 
 ### Relevant commit hash
-Milestone commit: pending
+Milestone commit: `7cadc75` (7cadc758382684699da4661633b434710d4957c1)

@@ -1,6 +1,6 @@
 # Milestone 010 — Report: Construction Territory, Building Sales and Mobile Command Vehicles
 
-**Date:** 2026-10-12 · **Base:** `9dc7a75` (Milestone 009) · **Design:** `Docs/Milestone-010-Design.md`
+**Date:** 2026-10-12 · **Base:** `9dc7a75` (Milestone 009) · **Design:** `Docs/Milestone-010-Design.md` · **Commit:** `7cadc75`
 
 Milestone 009 status checked first: committed, EditMode 264/264, PlayMode 74/74. Repair pads, queues and building
 repairs are unchanged. Milestone 010 builds on them: the MCV uses Repair Pads, and the Forward Command Centre (FCC) can
