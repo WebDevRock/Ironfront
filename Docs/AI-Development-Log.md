@@ -772,3 +772,6 @@ needs to be within a certain range of any building. not a fixed centre point …
 ### Known limitations
 - 3 of 12 AI matches still time out, Blackstone being the weak map.
 - The 10 m range is a starting value for playtesting.
+
+### Relevant commit hash
+Commit: `7d30882`
