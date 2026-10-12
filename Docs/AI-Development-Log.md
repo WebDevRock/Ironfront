@@ -558,4 +558,4 @@ and extended verification.
 - Acceptance playthrough on all four maps still to be done by a human.
 
 ### Relevant commit hash
-(recorded after commit)
+Milestone commit: `62781b8` (62781b83bd4c8b4ecf37e995d6d2113ab1cc62c6)
